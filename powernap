@@ -1,0 +1,113 @@
+#!/bin/bash -e
+# Note that this script requires bash for array support!
+#
+#    powernap
+#    Copyright (C) 2009 Canonical Ltd.
+#
+#    Authors: Dustin Kirkland <kirkland@canonical.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+set -x
+
+PKG="powernap"
+LOCK="/var/run/$PKG"
+CONFIG="/etc/$PKG/config"
+
+# Ensure that only one instance runs
+[ -f "$LOCK" ] && error "Another $PKG is running ($LOCK exists)"
+touch $LOCK
+# Clean up lock on exit
+trap "rm -f $LOCK 2>/dev/null || true" EXIT INT QUIT TERM
+
+error() {
+	echo "ERROR: $1" 2>&1
+	exit 1
+}
+
+load_config() {
+	[ -r "$CONFIG" ] || error "Configuration file not found [$CONFIG]"
+	. $CONFIG
+	[ -z "$SLEEP" ] && SLEEP=5
+}
+
+reset_counters() {
+	COUNTERS=
+	for (( i=0 ; i<${#PROCESSES[@]}; i++ )); do
+		COUNTERS[$i]=0
+	done
+}
+
+
+# Load configuration files
+load_config
+# Initiate idle counters to zero
+reset_counters
+
+# Reload configuration file on SIGHUP
+trap "load_config; reset_counters" HUP
+
+
+# Define the main monitoring loop
+powernap_loop() {
+	while true; do
+		take_action=0
+		# Examine process table, compute idle times of each monitored process
+		for (( i=0 ; i<${#PROCESSES[@]}; i++ )); do
+			found=0
+			p="${PROCESSES[$i]}"
+			if echo "$p" | grep -qs "^[0-9]\+$"; then
+				# Numeric, so match on process id's
+				if ps "$p" >/dev/null; then
+					found=1
+				fi
+			else
+				# Non-numeric, so match on process names
+				if pgrep -f "$p" >/dev/null; then
+					found=1
+				fi
+			fi
+			# Update idle times
+			if [ "$found" = "1" ]; then
+				# Process seen, so zero idle time
+				COUNTERS[$i]=0
+			else
+				# Process not seen, so increment idle time
+				COUNTERS[$i]+=$SLEEP
+				if [ ${COUNTERS[$i]} -gt $IDLE ]; then
+					take_action+=1
+				fi
+			fi
+		done
+		# Determine if action needs to be taken
+		if [ $take_action -eq ${#PROCESSES[@]} ]; then
+			# Notify authorities
+			if [ -n "$MAIL" ]; then
+				# Send email
+				true
+			fi
+			reset_counters
+			# Take action
+			eval $ACTION
+		fi
+		# Sleep
+		sleep $SLEEP
+	done
+}
+
+# Run the Daemon, itself
+if [ "$1" = "-f" ]; then
+	powernap_loop
+else
+	powernap_loop &
+fi
