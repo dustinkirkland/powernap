@@ -23,12 +23,15 @@ set -x
 PKG="powernap"
 LOCK="/var/run/$PKG"
 CONFIG="/etc/$PKG/config"
+SLEEP=5
+
 
 # Ensure that only one instance runs
 [ -f "$LOCK" ] && error "Another $PKG is running ($LOCK exists)"
 touch $LOCK
 # Clean up lock on exit
-trap "rm -f $LOCK 2>/dev/null || true" EXIT INT QUIT TERM
+trap "rm -f $LOCK 2>/dev/null || true" EXIT HUP INT QUIT TERM
+
 
 error() {
 	echo "ERROR: $1" 2>&1
@@ -38,7 +41,6 @@ error() {
 load_config() {
 	[ -r "$CONFIG" ] || error "Configuration file not found [$CONFIG]"
 	. $CONFIG
-	[ -z "$SLEEP" ] && SLEEP=5
 }
 
 reset_counters() {
@@ -53,9 +55,6 @@ reset_counters() {
 load_config
 # Initiate idle counters to zero
 reset_counters
-
-# Reload configuration file on SIGHUP
-trap "load_config; reset_counters" HUP
 
 
 # Define the main monitoring loop
@@ -83,9 +82,9 @@ powernap_loop() {
 				COUNTERS[$i]=0
 			else
 				# Process not seen, so increment idle time
-				COUNTERS[$i]+=$SLEEP
+				let "COUNTERS[$i] += $SLEEP"
 				if [ ${COUNTERS[$i]} -gt $IDLE ]; then
-					take_action+=1
+					let "take_action += 1"
 				fi
 			fi
 		done
@@ -104,6 +103,7 @@ powernap_loop() {
 		sleep $SLEEP
 	done
 }
+
 
 # Run the Daemon, itself
 if [ "$1" = "-f" ]; then
