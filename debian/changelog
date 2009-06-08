@@ -1,0 +1,7 @@
+powernap (1.0) unreleased; urgency=low
+
+  [ Initial release ]
+  * powernap: shell wrapper script
+  * powernap.py: python daemon
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Mon, 08 Jun 2009 12:08:58 -0500

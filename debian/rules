@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+PKG=powernap
+VER=`head -n 1 debian/changelog | sed 's/^.*(//' | sed 's/).*//' | sed 's/-.*//'`
+
+get-orig-source:
+	dh_testdir
+	bzr export ../${PKG}_${VER}.orig.tar.gz
+
+prebuild:
+
+build:
+
+clean:
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_install -X.bzr
+
+# Everything else is handled by dh_install
+
+# Build architecture-independent files here.
+binary-indep: build install
+	dh_testdir -i
+	dh_testroot -i
+	dh_installdocs -X.bzr -i
+#	dh_installman -i powernap.1
+	dh_installchangelogs -i
+	dh_installdebconf -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary: binary-indep
+.PHONY: build clean binary-indep binary install prebuild get-orig-source
+
+binary-arch:
