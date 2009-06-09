@@ -1,0 +1,43 @@
+#! /bin/sh -e
+### BEGIN INIT INFO
+# Provides:          powernap
+# Default-Start:     2 3 4 5
+# Default-Stop:      1
+# Short-Description: execute action when processes absent for some time
+### END INIT INFO
+#
+# Author:	Dustin Kirkland <kirkland@canonical.com>
+#
+
+PKG=powernap
+DAEMON=/usr/sbin/$PKG
+
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting PowerNap .zZ" "$PKG"
+		start_daemon $DAEMON
+		log_end_msg $?
+	;;
+	stop)
+		log_daemon_msg "Stopping PowerNap .zZ" "$PKG"
+		killproc $DAEMON
+		log_end_msg $?
+	;;
+	force-reload|restart)
+		$0 stop
+		$0 start
+	;;
+	status)
+		status_of_proc $DAEMON $PKG && exit 0 || exit $?
+	;;
+	*)
+		log_warning_msg "Usage: /etc/init.d/$PKG {start|stop|restart|force-reload|status}"
+		exit 1
+	;;
+esac
+
+exit 0

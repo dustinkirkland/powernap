@@ -29,10 +29,6 @@ CONFIG = "/etc/"+PKG+"/config"
 INTERVAL = 5
 
 
-#############
-# Functions #
-#############
-
 def error(msg):
     print "ERROR: "+msg
     exit(1)
@@ -85,31 +81,29 @@ def powernap_loop(processes, absence, action):
             os.system(action)
         time.sleep(INTERVAL)
 
-########
-# Main #
-########
-
-# Ensure that only one instance runs
-establish_lock(LOCK)
-
-try:
-    # Set signal handlers
-    signal.signal(signal.SIGHUP, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGQUIT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    # Load configuration
-
+def main():
+    # Ensure that only one instance runs
+    establish_lock(LOCK)
     try:
-        # Configuration should load variables:
-        # ACTION, IDLE, PROCESSES
-        execfile(CONFIG)
-        ballot = reset_ballot(len(PROCESSES))
-    except:
-        error("Invalid configuration ["+CONFIG+"]")
+        # Set signal handlers
+        signal.signal(signal.SIGHUP, signal_handler)
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGQUIT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        # Load configuration
+        try:
+            # Configuration should load variables:
+            # ACTION, IDLE, PROCESSES
+            execfile(CONFIG)
+            ballot = reset_ballot(len(PROCESSES))
+        except:
+            error("Invalid configuration ["+CONFIG+"]")
+        powernap_loop(PROCESSES, ABSENCE, ACTION)
+    finally:
+        if os.path.exists(LOCK):
+            os.remove(LOCK)
 
-    powernap_loop(PROCESSES, ABSENCE, ACTION)
+######################################################################
 
-finally:
-    if os.path.exists(LOCK):
-        os.remove(LOCK)
+if __name__ == '__main__':
+    main()
