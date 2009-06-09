@@ -11,14 +11,16 @@ Package: powernap
 Architecture: all
 Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python
 Recommends: pm-utils
-Description: brings a system to a lower power state when not running something
- PowerNap is a configurable daemon that will bring a running system to a lower
- power state according to a set of configuration preferences.  It acts as a sort
- of "screensaver" for servers, watching the process table for activity rather
- than the keyboard or mouse.
- .
- PowerNap will run $ACTION when none of $PROCESSES have executed for some number
- of $IDLE seconds.
+Description: take a defined action when not running some specific processes
+ PowerNap will run an administrator-specified ACTION when none of a list of
+ PROCESSES have executed for some number of ABSENCE seconds, checking the
+ process table every INTERVAL seconds.
+.
+ PowerNap can be used to bring a running system to a lower power state when
+ none of a list of critical processes have run for some amount of time.  It
+ can act as sort of a "screensaver" for servers, watching the process table
+ for activity rather than the keyboard or mouse.
  .
  For instance, PowerNap can automatically "pm-suspend" a system if no instance of
- "kvm" runs for some contiguous block of "300" seconds.
+ "kvm" runs for some contiguous block of "300" seconds, checking the process table
+ every "10" seconds.
