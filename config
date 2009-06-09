@@ -27,9 +27,9 @@ ABSENCE = 300
 ACTION = ""
 
 # Minimum run time of a process in the list of PROCESSES.
-# The powernap daemon will wake every DELAY seconds and check the process table
-# for matching processes.  Lower values of DELAY will provide more detailed
-# process monitoring but will consume more system resources.  Higher values of
-# DELAY will consume less system resources, but might miss processes that
-# execute for less than DELAY seconds.
-DELAY = 10
+# The powernap daemon will wake every INTERVAL seconds and check the process
+# table for matching processes.  Lower values of INTERVAL will provide more
+# detailed process monitoring but will consume more system resources.  Higher
+# values of INTERVAL will consume less system resources, but might miss
+# processes that execute for less than INTERVAL seconds.
+INTERVAL = 10

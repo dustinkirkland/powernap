@@ -26,7 +26,7 @@ import time
 PKG = "powernap"
 LOCK = "/var/run/"+PKG
 CONFIG = "/etc/"+PKG+"/config"
-DELAY = 5
+INTERVAL = 5
 
 
 #############
@@ -70,7 +70,7 @@ def powernap_loop(processes, absence, action):
         for i in range(0, len(processes)-1):
             if os.system('pgrep -f "'+processes[i]+'" >/dev/null'):
                 # process not running, increment absence time
-                ballot[i] += DELAY
+                ballot[i] += INTERVAL
                 if ballot[i] >= absence:
                     # process missing for >= absence threshold, mark absent
                     absent_processes += 1
@@ -83,7 +83,7 @@ def powernap_loop(processes, absence, action):
             notify_authorities()
             reset_ballot(len(processes))
             os.system(action)
-        time.sleep(DELAY)
+        time.sleep(INTERVAL)
 
 ########
 # Main #
