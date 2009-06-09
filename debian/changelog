@@ -4,5 +4,6 @@ powernap (1.0) unreleased; urgency=low
   * powernap: shell wrapper script
   * powernap.py: python daemon
   * config: global configuration file
+  * powernap.1: manpage documentation
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 09 Jun 2009 10:10:25 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 09 Jun 2009 10:24:03 -0500

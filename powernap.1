@@ -1,0 +1,23 @@
+.TH powernap 1 "9 Feb 2009" powernap "powernap"
+.SH NAME
+powernap \- configurable daemon that will run an ACTION when all of a list of monitored PROCESSES are missing from the system process table for ABSENCE seconds
+
+.SH DESCRIPTION
+powernap will run ACTION when none of PROCESSES have executed for some number of ABSENCE seconds.  The powernape daemon will check the process table using "pgrep -f" every DELAY seconds.  Note that PROCESSES taking less than DELAY seconds to execute may be overlooked by powernap.  Choose your DELAY value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
+
+It acts as a sort of "screensaver" for servers, watching the process table for activity rather than the keyboard or mouse.  For instance, PowerNap can automatically "pm-suspend" a system if no instance of "kvm" runs for some contiguous block of "300" seconds.
+
+.TP
+\fIhttp://launchpad.net/powernap\fP
+.PD
+
+.SH FILES
+\fI/etc/powernap/config\fP
+
+.SH SEE ALSO
+\fBpgrep\fP(1)
+
+.SH AUTHOR
+This manpage and the utility was written by Dustin Kirkland <kirkland@canonical.com> for Ubuntu systems (but may be used by others).  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 3 published by the Free Software Foundation.
+
+On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
