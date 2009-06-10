@@ -31,11 +31,11 @@ LOCK = "/var/run/"+PKG
 CONFIG = "/etc/"+PKG+"/config"
 
 # CONFIG values should override these
-global INTERVAL, PROCESSES, ACTION, ABSENCE, DEBUG
+global INTERVAL, PROCESSES, ACTION, ABSENT, DEBUG
 INTERVAL = 1
 PROCESSES = [ "init" ]
 ACTION = ""
-ABSENCE = sys.maxint
+ABSENT = sys.maxint
 DEBUG = 1
 # Load configuration file
 try:
@@ -96,28 +96,28 @@ def notify_authorities(action):
     # TODO: notify authorities (mail, signals)
     debug("Taking action ["+action+"], email authorities")
 
-def powernap_loop(processes, absence, action, interval):
+def powernap_loop(processes, absent, action, interval):
     ballot = reset_ballot(len(processes))
     regexes = compile_regexes(processes)
     debug("Starting "+PKG+", sleeping ["+str(interval)+"] seconds")
     while 1:
         time.sleep(interval)
-        # Examine process table, compute absence time of each monitored process
+        # Examine process table, compute absent time of each monitored process
         debug("Examining process table")
         absent_processes = 0
         ps = commands.getoutput("ps -eo args").splitlines()
         for i in range(len(regexes)):
             debug("Looking for ["+str(processes[i])+"]")
             if find_process(ps, regexes[i]):
-                # process running, so reset absence time
+                # process running, so reset absent time
                 debug("Process found, reset absent time")
                 ballot[i] = 0
             else:
-                # process not running, increment absence time
+                # process not running, increment absent time
                 ballot[i] += interval
-                debug("Process not found, increment absence time ["+str(ballot[i])+"/"+str(absence)+"]")
-                if ballot[i] >= absence:
-                    # process missing for >= absence threshold, mark absent
+                debug("Process not found, increment absent time ["+str(ballot[i])+"/"+str(absent)+"]")
+                if ballot[i] >= absent:
+                    # process missing for >= absent threshold, mark absent
                     debug("Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
@@ -133,7 +133,7 @@ def main():
     establish_lock(LOCK)
     try:
         # Run the main powernap loop
-        powernap_loop(PROCESSES, ABSENCE, ACTION, INTERVAL)
+        powernap_loop(PROCESSES, ABSENT, ACTION, INTERVAL)
     finally:
         # Clean up the lock file
         if os.path.exists(LOCK):

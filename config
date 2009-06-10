@@ -15,8 +15,8 @@ PROCESSES = []
 
 # Number of seconds that all processes must be absent from the process table.
 # Example:
-# ABSENCE = 300
-ABSENCE = 300
+# ABSENT = 300
+ABSENT = 300
 
 # Quoted shell commands to run when all PROCESSES have been idle for IDLE time.
 # Examples:

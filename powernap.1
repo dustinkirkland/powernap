@@ -1,9 +1,9 @@
 .TH powernap 1 "9 Jun 2009" powernap "powernap"
 .SH NAME
-powernap \- configurable daemon that will run at a specified INTERVAL, executing an ACTION when all of a list of monitored PROCESSES are missing from the system process table for a contiguous ABSENCE seconds
+powernap \- configurable daemon that will run at a specified INTERVAL, executing an ACTION when all of a list of monitored PROCESSES are missing from the system process table for a contiguous ABSENT seconds
 
 .SH DESCRIPTION
-powernap will run ACTION when none of a set of PROCESSES have executed for some number of ABSENCE seconds.
+powernap will run ACTION when none of a set of PROCESSES have executed for some number of ABSENT seconds.
 
 The powernap daemon will check the process table using "pgrep -f" every INTERVAL seconds.  Note that PROCESSES taking less than INTERVAL seconds to execute may be overlooked by powernap.  Choose your INTERVAL value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
 
