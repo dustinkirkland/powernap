@@ -60,7 +60,7 @@ def establish_lock(lock):
         error("Another instance is running ["+pid+"]")
     else:
         f = open(LOCK,'w')
-        f.write(`os.getpid()`)
+        f.write(os.getpid())
         f.close()
         # Set signal handlers
         signal.signal(signal.SIGHUP, signal_handler)
@@ -107,18 +107,18 @@ def powernap_loop(processes, absent, action, interval):
         absent_processes = 0
         ps = commands.getoutput("ps -eo args").splitlines()
         for i in range(len(regexes)):
-            debug("Looking for ["+str(processes[i])+"]")
+            debug("  Looking for ["+str(processes[i])+"]")
             if find_process(ps, regexes[i]):
                 # process running, so reset absent time
                 ballot[i] = 0
-                debug("Process found, reset absent time ["+str(ballot[i])+"/"+str(absent)+"]")
+                debug("    Process found, reset absent time ["+str(ballot[i])+"/"+str(absent)+"]")
             else:
                 # process not running, increment absent time
                 ballot[i] += interval
-                debug("Process not found, increment absent time ["+str(ballot[i])+"/"+str(absent)+"]")
+                debug("    Process not found, increment absent time ["+str(ballot[i])+"/"+str(absent)+"]")
                 if ballot[i] >= absent:
                     # process missing for >= absent threshold, mark absent
-                    debug("Process absent for >= threshold, so mark absent")
+                    debug("    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
         if absent_processes == len(processes):
