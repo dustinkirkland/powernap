@@ -24,7 +24,7 @@ ABSENT = 300
 #   ACTION = "/usr/sbin/pm-suspend"
 #   ACTION = "/usr/sbin/pm-hibernate"
 #   ACTION = "/sbin/poweroff"
-#   ACTION = "echo 'burning electricity uselessly' | mail admin@example.com"
+#   ACTION = "echo 'I am wasting electricity' | mail algore@example.com"
 ACTION = ""
 
 # Minimum run time of a process in the list of PROCESSES.
