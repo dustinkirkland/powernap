@@ -19,6 +19,7 @@ PROCESSES = []
 ABSENT = 300
 
 # Quoted shell commands to run when all PROCESSES have been idle for IDLE time.
+# Use "ps -eo args" to define these.
 # Examples:
 #   ACTION = "/usr/sbin/pm-suspend"
 #   ACTION = "/usr/sbin/pm-hibernate"
