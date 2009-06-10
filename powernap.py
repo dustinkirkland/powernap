@@ -18,20 +18,39 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import commands
 import os
+import re
 import signal
 import sys
 import time
 
+global PKG, LOCK, CONFIG
 PKG = "powernap"
 LOCK = "/var/run/"+PKG
 CONFIG = "/etc/"+PKG+"/config"
-INTERVAL = 5
+
+# CONFIG values should override these
+global INTERVAL, PROCESSES, ACTION, ABSENCE, DEBUG
+INTERVAL = 1
+PROCESSES = [ "init" ]
+ACTION = ""
+ABSENCE = sys.maxint
+DEBUG = 1
+# Load configuration file
+try:
+    execfile(CONFIG)
+except:
+    error("Invalid configuration ["+CONFIG+"]")
 
 
 def error(msg):
-    print "ERROR: "+msg
+    print("ERROR: "+msg)
     exit(1)
+
+def debug(msg):
+    if DEBUG:
+        print("DEBUG: "+msg)
 
 def establish_lock(lock):
     if os.path.exists(lock):
@@ -43,6 +62,11 @@ def establish_lock(lock):
         f = open(LOCK,'w')
         f.write(`os.getpid()`)
         f.close()
+        # Set signal handlers
+        signal.signal(signal.SIGHUP, signal_handler)
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGQUIT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
 def signal_handler(signal, frame):
     if os.path.exists(LOCK):
@@ -50,56 +74,68 @@ def signal_handler(signal, frame):
     exit(1)
 
 def reset_ballot(size):
-    ballot = []
-    for i in range (0, size-1):
-        ballot[i] = 0
+    ballot = list()
+    for i in range(size):
+        ballot.append(0)
     return ballot
 
-def notify_authorities():
-    # TODO: notify authorities (mail, signals)
-    print("Taking action, email authorities")
+def compile_regexes(processes):
+    regexes = list()
+    for i in range(len(processes)):
+        regexes.append(re.compile(processes[i]))
+    return regexes
 
-def powernap_loop(processes, absence, action):
+def find_process(ps, p):
+    for i in range(len(ps)):
+        if p.search(ps[i]):
+            return 1
+    return 0
+
+
+def notify_authorities(action):
+    # TODO: notify authorities (mail, signals)
+    debug("Taking action ["+action+"], email authorities")
+
+def powernap_loop(processes, absence, action, interval):
+    ballot = reset_ballot(len(processes))
+    regexes = compile_regexes(processes)
+    debug("Starting "+PKG+", sleeping ["+str(interval)+"] seconds")
     while 1:
-        absent_processes = 0
+        time.sleep(interval)
         # Examine process table, compute absence time of each monitored process
-        for i in range(0, len(processes)-1):
-            if os.system('pgrep -f "'+processes[i]+'" >/dev/null'):
+        debug("Examining process table")
+        absent_processes = 0
+        ps = commands.getoutput("ps -eo args").splitlines()
+        for i in range(len(regexes)):
+            debug("Looking for ["+str(processes[i])+"]")
+            if find_process(ps, regexes[i]):
+                # process running, so reset absence time
+                debug("Process found, reset absent time")
+                ballot[i] = 0
+            else:
                 # process not running, increment absence time
-                ballot[i] += INTERVAL
+                ballot[i] += interval
+                debug("Process not found, increment absence time ["+str(ballot[i])+"/"+str(absence)+"]")
                 if ballot[i] >= absence:
                     # process missing for >= absence threshold, mark absent
+                    debug("Process absent for >= threshold, so mark absent")
                     absent_processes += 1
-            else:
-                # process running, so reset absence time
-                ballot[i] = 0
         # Determine if action needs to be taken
         if absent_processes == len(processes):
             # All processes are absent, take action!
-            notify_authorities()
-            reset_ballot(len(processes))
+            notify_authorities(action)
+            ballot = reset_ballot(len(processes))
             os.system(action)
-        time.sleep(INTERVAL)
+        debug("Done with powernap_loop, sleeping ["+str(interval)+"] seconds")
 
 def main():
     # Ensure that only one instance runs
     establish_lock(LOCK)
     try:
-        # Set signal handlers
-        signal.signal(signal.SIGHUP, signal_handler)
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGQUIT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
-        # Load configuration
-        try:
-            # Configuration should load variables:
-            # ACTION, IDLE, PROCESSES
-            execfile(CONFIG)
-            ballot = reset_ballot(len(PROCESSES))
-        except:
-            error("Invalid configuration ["+CONFIG+"]")
-        powernap_loop(PROCESSES, ABSENCE, ACTION)
+        # Run the main powernap loop
+        powernap_loop(PROCESSES, ABSENCE, ACTION, INTERVAL)
     finally:
+        # Clean up the lock file
         if os.path.exists(LOCK):
             os.remove(LOCK)
 
