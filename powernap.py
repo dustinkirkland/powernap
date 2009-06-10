@@ -110,8 +110,8 @@ def powernap_loop(processes, absent, action, interval):
             debug("Looking for ["+str(processes[i])+"]")
             if find_process(ps, regexes[i]):
                 # process running, so reset absent time
-                debug("Process found, reset absent time")
                 ballot[i] = 0
+                debug("Process found, reset absent time ["+str(ballot[i])+"/"+str(absent)+"]")
             else:
                 # process not running, increment absent time
                 ballot[i] += interval
