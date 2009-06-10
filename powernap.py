@@ -46,7 +46,7 @@ except:
 
 def error(msg):
     print("ERROR: "+msg)
-    exit(1)
+    sys.exit(1)
 
 def debug(msg):
     if DEBUG:
@@ -71,26 +71,19 @@ def establish_lock(lock):
 def signal_handler(signal, frame):
     if os.path.exists(LOCK):
         os.remove(LOCK)
-    exit(1)
+    sys.exit(1)
 
 def reset_ballot(size):
-    ballot = list()
-    for i in range(size):
-        ballot.append(0)
-    return ballot
+    return [0]*size
 
 def compile_regexes(processes):
-    regexes = list()
-    for i in range(len(processes)):
-        regexes.append(re.compile(processes[i]))
-    return regexes
+    return [re.compile(x) for x in processes]
 
 def find_process(ps, p):
-    for i in range(len(ps)):
-        if p.search(ps[i]):
+    for x in ps:
+        if p.search(x):
             return 1
     return 0
-
 
 def notify_authorities(action):
     # TODO: notify authorities (mail, signals)
