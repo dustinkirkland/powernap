@@ -15,7 +15,7 @@ Description: take a defined action when not running some specific processes
  PowerNap will run an administrator-specified ACTION when none of a list of
  PROCESSES have executed for some number of ABSENT seconds, checking the
  process table every INTERVAL seconds.
-.
+ .
  PowerNap can be used to bring a running system to a lower power state when
  none of a list of critical processes have run for some amount of time.  It
  can act as sort of a "screensaver" for servers, watching the process table
