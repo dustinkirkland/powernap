@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 #    powernap - monitor a system process table; if IDLE amount of time
-#               goes by with no monitored PROCESSES running, run ACTION
+#               goes by with no MONITORED_PROCESSES running, run ACTION
 #    Copyright (C) 2009 Canonical Ltd.
 #
 #    Authors: Dustin Kirkland <kirkland@canonical.com>
@@ -31,9 +31,9 @@ LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
 
 # CONFIG values should override these
-global INTERVAL_SECONDS, PROCESSES, ACTION, ABSENT_SECONDS, DEBUG
+global INTERVAL_SECONDS, MONITORED_PROCESSES, ACTION, ABSENT_SECONDS, DEBUG
 INTERVAL_SECONDS = 10
-PROCESSES = [ "^/sbin/init" ]
+MONITORED_PROCESSES = [ "^/sbin/init" ]
 ACTION = ""
 ABSENT_SECONDS = sys.maxint
 DEBUG = 0
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     establish_lock(LOCK)
     try:
         # Run the main powernap loop
-        processes = [Process(p) for p in PROCESSES]
+        processes = [Process(p) for p in MONITORED_PROCESSES]
         powernap_loop(processes, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS)
     finally:
         # Clean up the lock file

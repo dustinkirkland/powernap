@@ -6,19 +6,21 @@
 # To enact changes to this configuration, restart the daemon.
 
 # Processes to monitor.
-# The PROCESSES variable should be a Python list of quoted regular expressions.
+# The MONITORED_PROCESSES variable should be a Python list of quoted regular
+# expressions.
 # Each item in this list will be passed to: pgrep -f <item>
 # Examples:
-#   PROCESSES = [  "^/usr/bin/kvm", "sshd: " ]
-#   PROCESSES = [  "^/usr/bin/mplayer", "^/usr/bin/xine", "^/usr/bin/mythfrontend" ]
-PROCESSES = []
+#   MONITORED_PROCESSES = [  "^/usr/bin/kvm", "sshd: " ]
+#   MONITORED_PROCESSES = [  "^/usr/bin/mplayer", "^/usr/bin/xine", "^/usr/bin/mythfrontend" ]
+MONITORED_PROCESSES = []
 
 # Number of seconds that all processes must be absent from the process table.
 # Example:
 # ABSENT_SECONDS = 300
 ABSENT_SECONDS = 300
 
-# Quoted shell commands to run when all PROCESSES have been idle for IDLE time.
+# Quoted shell command(s) to run when all MONITORED_PROCESSES have not executed
+# for ABSENT_SECONDS.
 # Use "ps -eo args" to define these.
 # Examples:
 #   ACTION = "/usr/sbin/pm-suspend"
@@ -27,7 +29,7 @@ ABSENT_SECONDS = 300
 #   ACTION = "echo 'I am wasting electricity' | mail AlGore@example.com"
 ACTION = ""
 
-# Minimum run time of a process in the list of PROCESSES.
+# Minimum run time of a process in the list of MONITORED_PROCESSES.
 # The powernap daemon will wake every INTERVAL_SECONDS and check the process
 # table for matching processes.  Lower values of INTERVAL_SECONDS will provide
 # more detailed process monitoring but will consume more system resources.
