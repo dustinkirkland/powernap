@@ -25,6 +25,14 @@ import signal
 import sys
 import time
 
+def error(msg):
+    print("ERROR: %s" % msg)
+    sys.exit(1)
+
+def debug(msg):
+    if DEBUG:
+        print("DEBUG: %s" % msg)
+
 global PKG, LOCK, CONFIG
 PKG = "powernap"
 LOCK = "/var/run/%s.pid" % PKG
@@ -48,14 +56,6 @@ class Process(object):
         self.process = process
         self.regex = re.compile(process)
         self.absent_seconds = 0
-
-def error(msg):
-    print("ERROR: %s" % msg)
-    sys.exit(1)
-
-def debug(msg):
-    if DEBUG:
-        print("DEBUG: %s" % msg)
 
 def establish_lock(lock):
     if os.path.exists(lock):
