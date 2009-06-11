@@ -11,10 +11,6 @@ get-orig-source:
 	dh_testdir
 	bzr export ../${PKG}_${VER}.orig.tar.gz
 
-prebuild:
-
-build:
-
 clean:
 	dh_clean
 
@@ -24,9 +20,6 @@ install: build
 	dh_clean -k
 	dh_install -X.bzr
 
-# Everything else is handled by dh_install
-
-# Build architecture-independent files here.
 binary-indep: build install
 	dh_testdir -i
 	dh_testroot -i
@@ -43,6 +36,6 @@ binary-indep: build install
 	dh_builddeb -i
 
 binary: binary-indep
-.PHONY: build clean binary-indep binary install prebuild get-orig-source
+.PHONY: clean binary-indep binary install get-orig-source
 
 binary-arch:

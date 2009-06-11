@@ -9,7 +9,7 @@
 ### END INIT INFO
 #
 # Author:	Dustin Kirkland <kirkland@canonical.com>
-#
+
 
 PKG=powernap
 DAEMON=/usr/sbin/$PKG
