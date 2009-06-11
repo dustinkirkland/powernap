@@ -2,8 +2,7 @@
 # See powernap(1) for more information.
 
 # This file is Python syntax, and will be sourced by the powernap daemon
-# on start.
-# To enact changes to this configuration, restart the daemon.
+# on start. To enact changes to this configuration, restart the daemon.
 
 # Processes to monitor.
 # The MONITORED_PROCESSES variable should be a Python list of quoted regular
@@ -16,7 +15,7 @@ MONITORED_PROCESSES = []
 
 # Number of seconds that all processes must be absent from the process table.
 # Example:
-# ABSENT_SECONDS = 300
+#   ABSENT_SECONDS = 300
 ABSENT_SECONDS = 300
 
 # Quoted shell command(s) to run when all MONITORED_PROCESSES have not executed
@@ -29,10 +28,13 @@ ABSENT_SECONDS = 300
 #   ACTION = "echo 'I am wasting electricity' | mail AlGore@example.com"
 ACTION = ""
 
-# Minimum run time of a process in the list of MONITORED_PROCESSES.
 # The powernap daemon will wake every INTERVAL_SECONDS and check the process
 # table for matching processes.  Lower values of INTERVAL_SECONDS will provide
 # more detailed process monitoring but will consume more system resources.
 # Higher values of INTERVAL_SECONDS will consume less system resources, but
 # might miss processes that execute for less than INTERVAL_SECONDS.
+# The runtime of a MONITORED_PROCESSES should not be less than
+# INTERVAL_SECONDS.
+# Example:
+#   INTERVAL_SECONDS=10
 INTERVAL_SECONDS = 10
