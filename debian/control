@@ -21,6 +21,6 @@ Description: take a defined action when not running some specific processes
  can act as sort of a "screensaver" for servers, watching the process table
  for activity rather than the keyboard or mouse.
  .
- For instance, PowerNap can automatically "pm-suspend" a system if no instance of
- "kvm" runs for some contiguous block of "300" seconds, checking the process table
- every "10" seconds.
+ For instance, PowerNap can automatically "pm-suspend" a system if no instance
+ of "kvm" runs for some contiguous block of "300" seconds, checking the process
+ table every "10" seconds.
