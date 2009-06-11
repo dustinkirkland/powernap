@@ -1,5 +1,5 @@
 Source: powernap
-Section: misc
+Section: admin
 Priority: optional
 Maintainer: Dustin Kirkland <kirkland@ubuntu.com>
 Standards-Version: 3.8.0
@@ -11,7 +11,7 @@ Package: powernap
 Architecture: all
 Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python
 Recommends: pm-utils
-Description: take a defined action when not running some specific processes
+Description: run a defined action if not running some particular processes
  PowerNap will run an administrator-specified ACTION when none of a list of
  MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS,
  checking the process table every INTERVAL_SECONDS.
