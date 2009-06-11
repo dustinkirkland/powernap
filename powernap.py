@@ -18,6 +18,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Imports
 import commands
 import os
 import re
@@ -25,6 +26,7 @@ import signal
 import sys
 import time
 
+# Define globals
 global PKG, LOCK, CONFIG
 PKG = "powernap"
 LOCK = "/var/run/%s.pid" % PKG
@@ -38,6 +40,7 @@ ACTION = ""
 INTERVAL_SECONDS = 10
 DEBUG = 0
 
+# Generic error function
 def error(msg):
     print("ERROR: %s" % msg)
     sys.exit(1)
@@ -48,16 +51,19 @@ try:
 except:
     error("Invalid configuration [%s]" % CONFIG)
 
+# Define Process object to hold regex and absence counter
 class Process(object):
     def __init__(self, process):
         self.process = process
         self.regex = re.compile(process)
         self.absent_seconds = 0
 
+# Generic debug function
 def debug(msg):
     if DEBUG:
         print("DEBUG: %s" % msg)
 
+# Lock function, using a pidfile in /var/run
 def establish_lock(lock):
     if os.path.exists(lock):
         f = open(lock,'r')
@@ -74,21 +80,24 @@ def establish_lock(lock):
         signal.signal(signal.SIGQUIT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
+# Clean up lock file on termination signals
 def signal_handler(signal, frame):
     if os.path.exists(LOCK):
         os.remove(LOCK)
     sys.exit(1)
 
+# Search process list for regex, return on first match
 def find_process(ps, p):
     for str in ps:
         if p.search(str):
             return 1
     return 0
 
+# TODO: notify authorities about action taken
 def notify_authorities(action):
-    # TODO: notify authorities (mail, signals)
     debug("Taking action [%s], email authorities" % action)
 
+# Main loop, search process table, increment counters, take actions, sleep
 def powernap_loop(processes, absent_seconds, action, interval_seconds):
     debug("Starting %s, sleeping [%d] seconds" % (PKG, interval_seconds))
     while 1:

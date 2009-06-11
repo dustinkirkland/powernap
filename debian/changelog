@@ -6,4 +6,4 @@ powernap (1.0) unreleased; urgency=low
   * config: global configuration file
   * powernap.1: manpage documentation
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 09 Jun 2009 10:24:03 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 11 Jun 2009 14:12:37 -0500
