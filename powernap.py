@@ -27,16 +27,16 @@ import time
 
 global PKG, LOCK, CONFIG
 PKG = "powernap"
-LOCK = "/var/run/%s" % PKG
+LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
 
 # CONFIG values should override these
-global INTERVAL, PROCESSES, ACTION, ABSENT, DEBUG
-INTERVAL = 1
-PROCESSES = [ "init" ]
+global INTERVAL_SECONDS, PROCESSES, ACTION, ABSENT_SECONDS, DEBUG
+INTERVAL_SECONDS = 10
+PROCESSES = [ "^/sbin/init" ]
 ACTION = ""
-ABSENT = sys.maxint
-DEBUG = 1
+ABSENT_SECONDS = sys.maxint
+DEBUG = 0
 # Load configuration file
 try:
     execfile(CONFIG)
@@ -47,7 +47,7 @@ class Process(object):
     def __init__(self, process):
         self.process = process
         self.regex = re.compile(process)
-        self.absent_time = 0
+        self.absent_seconds = 0
 
 def error(msg):
     print("ERROR: %s" % msg)
@@ -88,10 +88,10 @@ def notify_authorities(action):
     # TODO: notify authorities (mail, signals)
     debug("Taking action [%s], email authorities" % action)
 
-def powernap_loop(processes, absent, action, interval):
-    debug("Starting %s, sleeping [%d] seconds" % (PKG, interval))
+def powernap_loop(processes, absent_seconds, action, interval_seconds):
+    debug("Starting %s, sleeping [%d] seconds" % (PKG, interval_seconds))
     while 1:
-        time.sleep(interval)
+        #time.sleep(interval_seconds)
         # Examine process table, compute absent time of each monitored process
         debug("Examining process table")
         absent_processes = 0
@@ -100,14 +100,14 @@ def powernap_loop(processes, absent, action, interval):
             debug("  Looking for [%s]" % p.process)
             if find_process(ps, p.regex):
                 # process running, so reset absent time
-                p.absent_time = 0
-                debug("    Process found, reset absent time [%d/%d]" % (p.absent_time, absent))
+                p.absent_seconds = 0
+                debug("    Process found, reset absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
             else:
                 # process not running, increment absent time
-                p.absent_time += interval
-                debug("    Process not found, increment absent time [%d/%d]" % (p.absent_time, absent))
-                if p.absent_time >= absent:
-                    # process missing for >= absent threshold, mark absent
+                p.absent_seconds += interval_seconds
+                debug("    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
+                if p.absent_seconds >= absent_seconds:
+                    # process missing for >= absent_seconds threshold, mark absent
                     debug("    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
@@ -115,9 +115,10 @@ def powernap_loop(processes, absent, action, interval):
             # All processes are absent, take action!
             notify_authorities(action)
             for p in processes:
-                p.absent_time = 0
+                p.absent_seconds = 0
             os.system(action)
-        debug("Done with powernap_loop, sleeping [%d] seconds" % interval)
+        debug("Done with powernap_loop, sleeping [%d] seconds" % interval_seconds)
+        sys.exit(0)
 
 
 # Main program
@@ -127,7 +128,7 @@ if __name__ == '__main__':
     try:
         # Run the main powernap loop
         processes = [Process(p) for p in PROCESSES]
-        powernap_loop(processes, ABSENT, ACTION, INTERVAL)
+        powernap_loop(processes, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS)
     finally:
         # Clean up the lock file
         if os.path.exists(LOCK):
