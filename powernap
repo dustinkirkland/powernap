@@ -26,6 +26,10 @@ for arg in $@; do
 		-f|--foreground)
 			FOREGROUND=1
 		;;
+		*)
+			echo "Invalid argument"
+			exit 1
+		;;
 	esac
 done
 
