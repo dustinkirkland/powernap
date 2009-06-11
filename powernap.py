@@ -43,7 +43,7 @@ try:
 except:
     error("Invalid configuration [%s]" % CONFIG)
 
-class Ballot(object):
+class Process(object):
     def __init__(self, process):
         self.process = process
         self.regex = re.compile(process)
@@ -79,8 +79,8 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 def find_process(ps, p):
-    for x in ps:
-        if p.search(x):
+    for str in ps:
+        if p.search(str):
             return 1
     return 0
 
@@ -88,7 +88,7 @@ def notify_authorities(action):
     # TODO: notify authorities (mail, signals)
     debug("Taking action [%s], email authorities" % action)
 
-def powernap_loop(ballots, absent, action, interval):
+def powernap_loop(processes, absent, action, interval):
     debug("Starting %s, sleeping [%d] seconds" % (PKG, interval))
     while 1:
         time.sleep(interval)
@@ -96,42 +96,39 @@ def powernap_loop(ballots, absent, action, interval):
         debug("Examining process table")
         absent_processes = 0
         ps = commands.getoutput("ps -eo args").splitlines()
-        for ballot in ballots:
-            debug("  Looking for [%s]" % ballot.process)
-            if find_process(ps, ballot.regex):
+        for p in processes:
+            debug("  Looking for [%s]" % p.process)
+            if find_process(ps, p.regex):
                 # process running, so reset absent time
-                ballot.absent_time = 0
-                debug("    Process found, reset absent time [%d/%d]" % (ballot.absent_time, absent))
+                p.absent_time = 0
+                debug("    Process found, reset absent time [%d/%d]" % (p.absent_time, absent))
             else:
                 # process not running, increment absent time
-                ballot.absent_time += interval
-                debug("    Process not found, increment absent time [%d/%d]" % (ballot.absent_time, absent))
-                if ballot.absent_time >= absent:
+                p.absent_time += interval
+                debug("    Process not found, increment absent time [%d/%d]" % (p.absent_time, absent))
+                if p.absent_time >= absent:
                     # process missing for >= absent threshold, mark absent
                     debug("    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
-        if absent_processes == len(ballots):
+        if absent_processes == len(processes):
             # All processes are absent, take action!
             notify_authorities(action)
-            for ballot in ballots:
-                ballot.absent_time = 0
+            for p in processes:
+                p.absent_time = 0
             os.system(action)
         debug("Done with powernap_loop, sleeping [%d] seconds" % interval)
 
-def main():
+
+# Main program
+if __name__ == '__main__':
     # Ensure that only one instance runs
     establish_lock(LOCK)
     try:
         # Run the main powernap loop
-        ballots = [Ballot(process) for process in PROCESSES]
-        powernap_loop(ballots, ABSENT, ACTION, INTERVAL)
+        processes = [Process(p) for p in PROCESSES]
+        powernap_loop(processes, ABSENT, ACTION, INTERVAL)
     finally:
         # Clean up the lock file
         if os.path.exists(LOCK):
             os.remove(LOCK)
-
-######################################################################
-
-if __name__ == '__main__':
-    main()
