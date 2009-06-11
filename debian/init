@@ -1,6 +1,8 @@
 #! /bin/sh -e
 ### BEGIN INIT INFO
 # Provides:          powernap
+# Required-Start:    $all
+# Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      1
 # Short-Description: execute action when processes absent for some time
@@ -19,12 +21,12 @@ test -x $DAEMON || exit 0
 
 case "$1" in
 	start)
-		log_daemon_msg "Starting PowerNap .zZ" "$PKG"
+		log_daemon_msg "Starting $PKG"
 		start_daemon $DAEMON
 		log_end_msg $?
 	;;
 	stop)
-		log_daemon_msg "Stopping PowerNap .zZ" "$PKG"
+		log_daemon_msg "Stopping $PKG"
 		killproc -p $PIDFILE $DAEMON
 		log_end_msg $?
 	;;

@@ -34,6 +34,7 @@ binary-indep: build install
 	dh_installman -i powernap.1
 	dh_installchangelogs -i
 	dh_installdebconf -i
+	dh_installinit -- start 99 2 3 4 5  .
 	dh_compress -i
 	dh_fixperms -i
 	dh_installdeb -i
