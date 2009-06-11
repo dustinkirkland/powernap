@@ -14,6 +14,8 @@ get-orig-source:
 clean:
 	dh_clean
 
+build:
+
 install: build
 	dh_testdir
 	dh_testroot
@@ -36,6 +38,6 @@ binary-indep: build install
 	dh_builddeb -i
 
 binary: binary-indep
-.PHONY: clean binary-indep binary install get-orig-source
+.PHONY: build clean binary-indep binary install get-orig-source
 
 binary-arch:
