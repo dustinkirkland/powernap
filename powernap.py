@@ -30,12 +30,12 @@ PKG = "powernap"
 LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
 
-# CONFIG values should override these
+# CONFIG values should override these (default: monitor no processes)
 global INTERVAL_SECONDS, MONITORED_PROCESSES, ACTION, ABSENT_SECONDS, DEBUG
-INTERVAL_SECONDS = 10
-MONITORED_PROCESSES = [ "^/sbin/init" ]
-ACTION = ""
+MONITORED_PROCESSES = []
 ABSENT_SECONDS = sys.maxint
+ACTION = ""
+INTERVAL_SECONDS = 10
 DEBUG = 0
 # Load configuration file
 try:
@@ -111,14 +111,13 @@ def powernap_loop(processes, absent_seconds, action, interval_seconds):
                     debug("    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
-        if absent_processes == len(processes):
+        if absent_processes > 0 and absent_processes == len(processes):
             # All processes are absent, take action!
             notify_authorities(action)
             for p in processes:
                 p.absent_seconds = 0
             os.system(action)
         debug("Done with powernap_loop, sleeping [%d] seconds" % interval_seconds)
-        sys.exit(0)
 
 
 # Main program
