@@ -101,7 +101,7 @@ def notify_authorities(action):
 def powernap_loop(processes, absent_seconds, action, interval_seconds):
     debug("Starting %s, sleeping [%d] seconds" % (PKG, interval_seconds))
     while 1:
-        #time.sleep(interval_seconds)
+        time.sleep(interval_seconds)
         # Examine process table, compute absent time of each monitored process
         debug("Examining process table")
         absent_processes = 0
