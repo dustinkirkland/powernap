@@ -1,11 +1,11 @@
 .TH powernap 1 "9 Jun 2009" powernap "powernap"
 .SH NAME
-powernap \- configurable daemon that will run at a specified INTERVAL, executing an ACTION when all of a list of monitored PROCESSES are missing from the system process table for a contiguous ABSENT seconds
+powernap \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing an ACTION when all of a list of monitored PROCESSES are missing from the system process table for a contiguous ABSENT_SECONDS.
 
 .SH DESCRIPTION
-powernap will run ACTION when none of a set of PROCESSES have executed for some number of ABSENT seconds.
+powernap will run ACTION when none of a set of PROCESSES have executed for some number of ABSENT_SECONDS.
 
-The powernap daemon will check the process table using "pgrep -f" every INTERVAL seconds.  Note that PROCESSES taking less than INTERVAL seconds to execute may be overlooked by powernap.  Choose your INTERVAL value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
+The powernap daemon will check the process table using "pgrep -f" every INTERVAL_SECONDS.  Note that PROCESSES taking less than INTERVAL_SECONDS to execute may be overlooked by powernap.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
 
 Use "ps -eo args" for sample output for development of your regular expressions, and use "pgrep -f" for testing your regular expressions.
 
@@ -16,7 +16,7 @@ It acts as a sort of "screensaver" for servers, watching the process table for a
 .PD
 
 .SH FILES
-\fI/etc/powernap/config\fP
+\fI/etc/powernap/config\fP, \fI/var/run/powernap.pid\fP
 
 .SH SEE ALSO
 \fBpgrep\fP(1)
