@@ -3,6 +3,8 @@
 
 # This file is Python syntax, and will be sourced by the powernap daemon
 # on start. To enact changes to this configuration, restart the daemon.
+# Example:
+#   /etc/init.d/powernap restart
 
 # The MONITORED_PROCESSES variable should be a Python list of quoted regular
 # expressions.
