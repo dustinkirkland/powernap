@@ -31,9 +31,9 @@ done
 
 if [ "$FOREGROUND" = "1" ]; then
 	# Run in foreground
-	/usr/lib/$PKG/$PKG.py
+	exec /usr/lib/$PKG/$PKG.py
 else
 	# Run in background
 	# TODO: Setup some logging to /var/log/$PKG?
-	/usr/lib/$PKG/$PKG.py >/dev/null &2>1 &
+	exec /usr/lib/$PKG/$PKG.py >/dev/null &2>1 &
 fi
