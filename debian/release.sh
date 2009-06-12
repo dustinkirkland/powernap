@@ -13,13 +13,13 @@ head -n1 debian/changelog | grep "unreleased" || error "This version must be 'un
 ./debian/rules get-orig-source
 bzr bd
 sed -i "s/) unreleased;/-0ubuntu1~ppa1) hardy;/" debian/changelog
-bzr bd -S
+bzr bd --builder "debuild -S -sa" --source
 sed -i "s/ppa1) hardy;/ppa2) intrepid;/" debian/changelog
-bzr bd -S
+bzr bd --builder "debuild -S -sa" --source
 sed -i "s/ppa2) intrepid;/ppa3) jaunty;/" debian/changelog
-bzr bd -S
+bzr bd --builder "debuild -S -sa" --source
 sed -i "s/~ppa3) jaunty;/) karmic;/" debian/changelog
-bzr bd -S
+bzr bd --builder "debuild -S -sa" --source
 minor=`head -n1 debian/changelog | sed "s/^.*($MAJOR.//" | sed "s/-.*$//"`
 bzr tag --delete $MAJOR.$minor || true
 bzr tag $MAJOR.$minor

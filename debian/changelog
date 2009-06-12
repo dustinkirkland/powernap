@@ -2,7 +2,7 @@ powernap (1.1) unreleased; urgency=low
 
   * UNRELEASED
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 11 Jun 2009 17:17:06 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 11 Jun 2009 17:31:09 -0500
 
 powernap (1.0-0ubuntu1) karmic; urgency=low
 
@@ -12,4 +12,4 @@ powernap (1.0-0ubuntu1) karmic; urgency=low
   * config: global configuration file
   * powernap.1: manpage documentation
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 11 Jun 2009 14:12:37 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 11 Jun 2009 17:30:16 -0500
