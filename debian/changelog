@@ -1,4 +1,10 @@
-powernap (1.1) unreleased; urgency=low
+powernap (1.2) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 12 Jun 2009 13:03:04 -0500
+
+powernap (1.1-0ubuntu1) karmic; urgency=low
 
   * debian/copyright: updated for Ubuntu inclusion
 
