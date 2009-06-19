@@ -36,5 +36,5 @@ ACTION = ""
 # The minimum runtime of a MONITORED_PROCESSES should not be less than
 # INTERVAL_SECONDS.
 # Example:
-#   INTERVAL_SECONDS=10
-INTERVAL_SECONDS = 10
+#   INTERVAL_SECONDS=1
+INTERVAL_SECONDS = 1

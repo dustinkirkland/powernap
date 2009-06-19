@@ -23,4 +23,4 @@ Description: run a defined action if not running some particular processes
  .
  For instance, PowerNap can automatically "pm-suspend" a system if no instance
  of "kvm" runs for some contiguous block of "300" seconds, checking the process
- table every "10" seconds.
+ table every "1" second.
