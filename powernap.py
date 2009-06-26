@@ -79,6 +79,7 @@ def establish_lock(lock):
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGQUIT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGUSR1, take_action)
 
 # Clean up lock file on termination signals
 def signal_handler(signal, frame):
@@ -96,6 +97,13 @@ def find_process(ps, p):
 # TODO: notify authorities about action taken
 def notify_authorities(action):
     debug("Taking action [%s], email authorities" % action)
+
+def take_action(processes, action):
+    # All processes are absent, take action!
+    notify_authorities(action)
+    for p in processes:
+        p.absent_seconds = 0
+    os.system(action)
 
 # Main loop, search process table, increment counters, take actions, sleep
 def powernap_loop(processes, absent_seconds, action, interval_seconds):
@@ -123,10 +131,7 @@ def powernap_loop(processes, absent_seconds, action, interval_seconds):
         # Determine if action needs to be taken
         if absent_processes > 0 and absent_processes == len(processes):
             # All processes are absent, take action!
-            notify_authorities(action)
-            for p in processes:
-                p.absent_seconds = 0
-            os.system(action)
+            take_action(processes, action)
         debug("Done with powernap_loop, sleeping [%d] seconds" % interval_seconds)
 
 
