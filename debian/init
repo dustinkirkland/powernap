@@ -34,11 +34,18 @@ case "$1" in
 		$0 stop
 		$0 start
 	;;
+	now)
+		if status_of_proc -p $PIDFILE $DAEMON $PKG; then
+			log_begin_msg "Sending $PKG the 'now' signal"
+			kill -USR1 $(cat $PIDFILE)
+			log_end_msg $?
+		fi
+	;;
 	status)
 		status_of_proc -p $PIDFILE $DAEMON $PKG && exit 0 || exit $?
 	;;
 	*)
-		log_warning_msg "Usage: /etc/init.d/$PKG {start|stop|restart|force-reload|status}"
+		log_warning_msg "Usage: /etc/init.d/$PKG {start|stop|restart|force-reload|now|status}"
 		exit 1
 	;;
 esac
