@@ -1,2 +1,3 @@
 powernap usr/sbin
+powerwake usr/bin
 config etc/powernap
