@@ -1,3 +1,2 @@
 powernap usr/sbin
-powernap.py usr/lib/powernap
 config etc/powernap
