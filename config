@@ -40,7 +40,8 @@ ACTION = ""
 INTERVAL_SECONDS = 1
 
 # The powernap daemon logs errors to /var/log/powernap.err, and some basic
-# information to /var/log/powernap.log.  To increase the verbosity of this
-# logging, set:
+# information to /var/log/powernap.log.  To change the verbosity of this
+# logging, set DEBUG to 0, 1 or 2:
 #    DEBUG = 1
+#    DEBUG = 2
 DEBUG = 0

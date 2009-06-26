@@ -2,7 +2,8 @@ powernap (1.2) unreleased; urgency=low
 
   * config, debian/control, powernap.1, powernap.py: lower the default
     polling period from 10 seconds to 1 second; polling /proc is cheap,
-    and empirical testing has shown a negligible performance impact
+    and empirical testing has shown a negligible performance impact;
+    add a note about DEBUG
   * powernap.py -> powernap:
     - abstract take_action() to a function, add a handler for --now
     - daemonize within the python script
@@ -12,7 +13,7 @@ powernap (1.2) unreleased; urgency=low
   * powernap.1: add log files
   * debian/init: add 'now' action and signal passing
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 26 Jun 2009 14:36:03 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 26 Jun 2009 14:48:07 -0500
 
 powernap (1.1-0ubuntu1) karmic; urgency=low
 

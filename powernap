@@ -40,16 +40,13 @@ ACTION = ""
 INTERVAL_SECONDS = 1
 DEBUG = 0
 
-# Generic error function
-def error(msg):
-    print("ERROR: %s" % msg)
-    sys.exit(1)
-
 # Load configuration file
 try:
     execfile(CONFIG)
 except:
-    error("Invalid configuration [%s]" % CONFIG)
+    # No error function yet
+    print("Invalid configuration [%s]" % CONFIG)
+    sys.exit(1)
 
 # Define Process object to hold regex and absence counter
 class Process(object):
@@ -59,9 +56,16 @@ class Process(object):
         self.absent_seconds = 0
 
 # Generic debug function
-def debug(msg):
-    if DEBUG:
-        print("DEBUG: %s" % msg)
+def debug(level, msg):
+    if DEBUG >= level:
+        lt = time.localtime(time.time())
+        timestamp = "%02d-%02d-%04d %02d:%02d:%02d" % (lt[2], lt[1], lt[0], lt[3], lt[4], lt[5])
+        print("[%s] %s" % (timestamp, msg))
+
+# Generic error function
+def error(msg):
+    debug(0, "ERROR: %s" % msg)
+    sys.exit(1)
 
 # Lock function, using a pidfile in /var/run
 def establish_lock(lock):
@@ -99,7 +103,7 @@ def find_process(ps, p):
 
 # TODO: notify authorities about action taken
 def notify_authorities(action):
-    debug("Taking action [%s], email authorities" % action)
+    debug(0, "Taking action [%s]" % action)
 
 def take_action(action):
     notify_authorities(action)
@@ -110,34 +114,34 @@ def take_action_handler(signal, frame):
 
 # Main loop, search process table, increment counters, take actions, sleep
 def powernap_loop(processes, absent_seconds, action, interval_seconds):
-    debug("Starting %s, sleeping [%d] seconds" % (PKG, interval_seconds))
     while 1:
+        debug(1, "Sleeping [%d] seconds" % interval_seconds)
         time.sleep(interval_seconds)
         # Examine process table, compute absent time of each monitored process
-        debug("Examining process table")
+        debug(1, "Examining process table")
         absent_processes = 0
         ps = commands.getoutput("ps -eo args").splitlines()
         for p in processes:
-            debug("  Looking for [%s]" % p.process)
+            debug(2, "  Looking for [%s]" % p.process)
             if find_process(ps, p.regex):
                 # process running, so reset absent time
                 p.absent_seconds = 0
-                debug("    Process found, reset absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
+                debug(2, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
             else:
                 # process not running, increment absent time
                 p.absent_seconds += interval_seconds
-                debug("    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
+                debug(2, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
                 if p.absent_seconds >= absent_seconds:
                     # process missing for >= absent_seconds threshold, mark absent
-                    debug("    Process absent for >= threshold, so mark absent")
+                    debug(2, "    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
         if absent_processes > 0 and absent_processes == len(processes):
             # All processes are absent, take action!
+            debug(1, "Reseting counters prior to taking action")
             for p in processes:
                 p.absent_seconds = 0
             take_action(action)
-        debug("Done with powernap_loop, sleeping [%d] seconds" % interval_seconds)
 
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
@@ -178,6 +182,7 @@ if __name__ == '__main__':
     try:
         # Run the main powernap loop
         processes = [Process(p) for p in MONITORED_PROCESSES]
+        debug(0, "Starting %s" % PKG)
         powernap_loop(processes, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS)
     finally:
         # Clean up the lock file
