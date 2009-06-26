@@ -38,3 +38,9 @@ ACTION = ""
 # Example:
 #   INTERVAL_SECONDS=1
 INTERVAL_SECONDS = 1
+
+# The powernap daemon logs errors to /var/log/powernap.err, and some basic
+# information to /var/log/powernap.log.  To increase the verbosity of this
+# logging, set:
+#    DEBUG = 1
+DEBUG = 0
