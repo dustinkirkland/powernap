@@ -12,8 +12,9 @@ powernap (1.2) unreleased; urgency=low
     - add signal handling for "now", USR1
   * powernap.1: add log files
   * debian/init: add 'now' action and signal passing
+  * powerwake: initial cut at powerwake utility
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 26 Jun 2009 14:48:07 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 26 Jun 2009 17:14:56 -0500
 
 powernap (1.1-0ubuntu1) karmic; urgency=low
 
