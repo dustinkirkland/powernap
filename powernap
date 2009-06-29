@@ -32,8 +32,8 @@ PKG = "powernap"
 LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
 
-# CONFIG values should override these (default: monitor no processes)
-global INTERVAL_SECONDS, MONITORED_PROCESSES, ACTION, ABSENT_SECONDS, DEBUG
+# CONFIG values can override these
+global MONITORED_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
 MONITORED_PROCESSES = []
 ABSENT_SECONDS = sys.maxint
 ACTION = ""
@@ -45,7 +45,7 @@ DEBUG = 0
 try:
     execfile(CONFIG)
 except:
-    # No error function yet
+    # No error function yet, use a raw print
     print("Invalid configuration [%s]" % CONFIG)
     sys.exit(1)
 
@@ -69,9 +69,9 @@ def error(msg):
     sys.exit(1)
 
 # Lock function, using a pidfile in /var/run
-def establish_lock(lock):
-    if os.path.exists(lock):
-        f = open(lock,'r')
+def establish_lock():
+    if os.path.exists(LOCK):
+        f = open(LOCK,'r')
         pid = f.read()
         f.close()
         error("Another instance is running [%s]" % pid)
@@ -102,68 +102,72 @@ def find_process(ps, p):
             return 1
     return 0
 
-# TODO: notify authorities about action taken
-def notify_authorities(action):
-    debug(0, "Taking action [%s]" % action)
-
+# Send a message to system users, that we're about to take an action,
+# and sleep for a grace period
 def warn_users():
-    msg = "PowerNap will take the following action in [%s] seconds:\n  [%s]\nTo cancel this operation:\n  sudo service powernap stop' | wall" % (GRACE_SECONDS, ACTION)
+    msg = "PowerNap will take the following action in [%s] seconds:\n  [%s]\nTo cancel this operation:\n  sudo service powernap stop" % (GRACE_SECONDS, ACTION)
     commands.getoutput("echo '%s' | wall" % msg)
     time.sleep(GRACE_SECONDS)
 
-def take_action(action):
-    warn_users()
-    notify_authorities(action)
-    os.system(action)
+# TODO: notify authorities about action taken
+def notify_authorities():
+    debug(0, "Taking action [%s]" % ACTION)
 
+# Zero the counters and take the action
+def take_action():
+    warn_users()
+    notify_authorities()
+    debug(1, "Reseting counters prior to taking action")
+    for p in PROCESSES:
+        p.absent_seconds = 0
+    os.system(ACTION)
+
+# Handler for asynchronous external signals
 def take_action_handler(signal, frame):
     take_action(ACTION)
 
 # Main loop, search process table, increment counters, take actions, sleep
-def powernap_loop(processes, absent_seconds, action, interval_seconds):
+def powernap_loop():
     while 1:
-        debug(1, "Sleeping [%d] seconds" % interval_seconds)
-        time.sleep(interval_seconds)
+        debug(1, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
+        time.sleep(INTERVAL_SECONDS)
         # Examine process table, compute absent time of each monitored process
         debug(1, "Examining process table")
         absent_processes = 0
         ps = commands.getoutput("ps -eo args").splitlines()
-        for p in processes:
+        for p in PROCESSES:
             debug(2, "  Looking for [%s]" % p.process)
             if find_process(ps, p.regex):
                 # process running, so reset absent time
                 p.absent_seconds = 0
-                debug(2, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
+                debug(2, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
             else:
                 # process not running, increment absent time
-                p.absent_seconds += interval_seconds
-                debug(2, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, absent_seconds))
-                if p.absent_seconds >= absent_seconds:
+                p.absent_seconds += INTERVAL_SECONDS
+                debug(2, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+                if p.absent_seconds >= ABSENT_SECONDS:
                     # process missing for >= absent_seconds threshold, mark absent
                     debug(2, "    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
-        if absent_processes > 0 and absent_processes == len(processes):
+        if absent_processes > 0 and absent_processes == len(PROCESSES):
             # All processes are absent, take action!
-            debug(1, "Reseting counters prior to taking action")
-            for p in processes:
-                p.absent_seconds = 0
-            take_action(action)
+            take_action()
 
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
 def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
     try:
-        pid = os.fork( )
+        pid = os.fork()
         if pid > 0:
             sys.exit(0)
     except OSError, e:
         sys.stderr.write("fork #1 failed: (%d) %sn" % (e.errno, e.strerror))
         sys.exit(1)
     os.chdir("/")
-    os.setsid( )
+    os.setsid()
     try:
-        pid = os.fork( )
+        pid = os.fork()
         if pid > 0:
             sys.exit(0)
     except OSError, e:
@@ -172,25 +176,25 @@ def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/l
     f = open(LOCK,'w')
     f.write(str(os.getpid()))
     f.close()
-    for f in sys.stdout, sys.stderr: f.flush( )
+    for f in sys.stdout, sys.stderr: f.flush()
     si = file(stdin, 'r')
     so = file(stdout, 'a+')
     se = file(stderr, 'a+', 0)
-    os.dup2(si.fileno( ), sys.stdin.fileno( ))
-    os.dup2(so.fileno( ), sys.stdout.fileno( ))
-    os.dup2(se.fileno( ), sys.stderr.fileno( ))
+    os.dup2(si.fileno(), sys.stdin.fileno())
+    os.dup2(so.fileno(), sys.stdout.fileno())
+    os.dup2(se.fileno(), sys.stderr.fileno())
 
 
 # Main program
 if __name__ == '__main__':
     # Ensure that only one instance runs
-    establish_lock(LOCK)
+    establish_lock()
     daemonize()
     try:
         # Run the main powernap loop
-        processes = [Process(p) for p in MONITORED_PROCESSES]
+        PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
         debug(0, "Starting %s" % PKG)
-        powernap_loop(processes, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS)
+        powernap_loop()
     finally:
         # Clean up the lock file
         if os.path.exists(LOCK):
