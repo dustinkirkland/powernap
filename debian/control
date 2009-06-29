@@ -9,7 +9,7 @@ Vcs-Bzr: http://bazaar.launchpad.net/~kirkland/powernap/trunk
 
 Package: powernap
 Architecture: all
-Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python
+Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python, bsdutils
 Recommends: pm-utils
 Description: run a defined action if not running some particular processes
  PowerNap will run an administrator-specified ACTION when none of a list of
