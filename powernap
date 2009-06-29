@@ -124,7 +124,7 @@ def take_action():
 
 # Handler for asynchronous external signals
 def take_action_handler(signal, frame):
-    take_action(ACTION)
+    take_action()
 
 # Main loop, search process table, increment counters, take actions, sleep
 def powernap_loop():
