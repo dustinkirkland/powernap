@@ -1,8 +1,12 @@
 powernap (1.3) unreleased; urgency=low
 
-  * UNRELEASED
+  * config: add default value statement to each item; add sane defaults;
+    add grace period section
+  * powernap: add a system-wide warning message using 'wall', and a grace
+    seconds interval to cancel the operation of 60 seconds (by default)
+  * debian/control: depend on bsdutils for 'wall' utility
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 26 Jun 2009 17:41:08 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Mon, 29 Jun 2009 10:43:27 -0700
 
 powernap (1.2-0ubuntu1) karmic; urgency=low
 

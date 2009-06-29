@@ -38,6 +38,7 @@ MONITORED_PROCESSES = []
 ABSENT_SECONDS = sys.maxint
 ACTION = ""
 INTERVAL_SECONDS = 1
+GRACE_SECONDS = 60
 DEBUG = 0
 
 # Load configuration file
@@ -105,7 +106,13 @@ def find_process(ps, p):
 def notify_authorities(action):
     debug(0, "Taking action [%s]" % action)
 
+def warn_users():
+    msg = "PowerNap will take the following action in [%s] seconds:\n  [%s]\nTo cancel this operation:\n  sudo service powernap stop' | wall" % (GRACE_SECONDS, ACTION)
+    commands.getoutput("echo '%s' | wall" % msg)
+    time.sleep(GRACE_SECONDS)
+
 def take_action(action):
+    warn_users()
     notify_authorities(action)
     os.system(action)
 
