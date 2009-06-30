@@ -115,7 +115,6 @@ def notify_authorities():
 
 # Zero the counters and take the action
 def take_action():
-    warn_users()
     notify_authorities()
     debug(1, "Reseting counters prior to taking action")
     for p in PROCESSES:
@@ -152,6 +151,7 @@ def powernap_loop():
         # Determine if action needs to be taken
         if absent_processes > 0 and absent_processes == len(PROCESSES):
             # All processes are absent, take action!
+            warn_users()
             take_action()
 
 
