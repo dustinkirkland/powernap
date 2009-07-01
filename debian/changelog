@@ -3,8 +3,10 @@ powernap (1.4) unreleased; urgency=low
   * debian/powerwake.dirs, debian/powerwake.install,
     debian/powerwake.postinst, debian/control: add a separate powerwake
     package
+  * debian/manpages, debian/powerwake.manpages: added manpage debhelper
+    files
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 01 Jul 2009 16:27:30 -0700
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 01 Jul 2009 16:33:54 -0700
 
 powernap (1.3-0ubuntu1) karmic; urgency=low
 
