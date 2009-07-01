@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+PKG="powerwake"
+
+chown -R root:admin /var/cache/$PKG
+chmod -t 3775 /var/cache/$PKG
