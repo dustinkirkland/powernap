@@ -2,6 +2,8 @@
 
 PKG="powerwake"
 
+mkdir -p /var/cache/$PKG
+[ -e /var/cache/$PKG/ethers ] || touch /var/cache/$PKG/ethers
 chown -R root:admin /var/cache/$PKG
 chmod -t 3775 /var/cache/$PKG
 
