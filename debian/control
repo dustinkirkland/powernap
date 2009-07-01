@@ -28,7 +28,7 @@ Description: run a defined action if not running some particular processes
 
 Package: powerwake
 Architecture: all
-Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python, bsdutils
+Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python
 Enhances: powernap
 Description: remotely wake a napping system
  PowerWake is a generic mechanism for remotely waking systems.  It is
