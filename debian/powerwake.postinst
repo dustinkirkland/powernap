@@ -2,9 +2,12 @@
 
 PKG="powerwake"
 
-mkdir -p /var/cache/$PKG
-[ -e /var/cache/$PKG/ethers ] || touch /var/cache/$PKG/ethers
-chown -R root:admin /var/cache/$PKG
-chmod -t 3775 /var/cache/$PKG
+if [ "$1" = configure ] || [ "$1" = reconfigure ]; then
+	getent group admin > /dev/null 2>&1 || addgroup --system --quiet admin
+	mkdir -p /var/cache/$PKG
+	[ -e /var/cache/$PKG/ethers ] || touch /var/cache/$PKG/ethers
+	chown -R root:admin /var/cache/$PKG
+	chmod 3775 /var/cache/$PKG
+fi
 
 #DEBHELPER#
