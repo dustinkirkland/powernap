@@ -1,0 +1,13 @@
+# If the file [ /etc/powernap/action ] is executable, then the
+# /usr/sbin/powernap binary will run it when called.
+#
+# Otherwise, /usr/sbin/powernap will run one of:
+#   [ pm-suspend, pm-hibernate, poweroff ]
+# depending on your hardware's capabilities.  See: pm-is-supported(1).
+#
+# You may:
+#   1) Write your own custom script below and make this file executable
+#   2) Replace this file with an executable script or binary
+#   3) Symlink this file to some other executable script or binary
+#
+# See powernap(1) for more information.

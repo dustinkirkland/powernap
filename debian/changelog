@@ -13,8 +13,9 @@ powernap (1.4) unreleased; urgency=low
     powernap daemon 'powernapd'
   * powernap: new script that will either take a specified action, or
     run one of (pm-suspend, pm-hibernate, poweroff)
+  * action: conffile describing what should go there
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jul 2009 15:20:30 -0700
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jul 2009 15:29:18 -0700
 
 powernap (1.3-0ubuntu1) karmic; urgency=low
 
