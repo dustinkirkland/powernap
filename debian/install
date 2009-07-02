@@ -1,3 +1,4 @@
 powernap usr/sbin
 powernapd usr/sbin
 config etc/powernap
+action etc/powernap
