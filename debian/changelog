@@ -7,8 +7,10 @@ powernap (1.4) unreleased; urgency=low
     package
   * debian/manpages, debian/powerwake.manpages: added manpage debhelper
     files
+  * debian/control: suggest ethtool, which might be necessary to enable
+    wake-on-lan on your ethernet card
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 01 Jul 2009 18:11:45 -0700
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jul 2009 14:28:13 -0700
 
 powernap (1.3-0ubuntu1) karmic; urgency=low
 
