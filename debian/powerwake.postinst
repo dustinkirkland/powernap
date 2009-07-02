@@ -8,6 +8,7 @@ if [ "$1" = configure ] || [ "$1" = reconfigure ]; then
 	[ -e /var/cache/$PKG/ethers ] || touch /var/cache/$PKG/ethers
 	chown -R root:admin /var/cache/$PKG
 	chmod 3775 /var/cache/$PKG
+	chmod 664 /var/cache/$PKG/ethers
 fi
 
 #DEBHELPER#
