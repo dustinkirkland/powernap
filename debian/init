@@ -35,10 +35,13 @@ case "$1" in
 		$0 start
 	;;
 	now)
-		if status_of_proc -p $PIDFILE $DAEMON $PKG >/dev/null 2>&1; then
-			log_begin_msg "Sending $PKG the 'now' signal"
+		if [ -r $PIDFILE ]; then
+			# Note: we do *not* want a log_*_msg here, as it forces
+			echo "Sending $PKG the 'now' signal"
 			kill -USR1 $(cat $PIDFILE)
-			log_end_msg $?
+			exit $?
+		else
+			log_failure_msg "$PKG is not running"
 		fi
 	;;
 	status)
