@@ -22,19 +22,9 @@ MONITORED_PROCESSES = [ "^/sbin/init" ]
 #   ABSENT_SECONDS = 300
 ABSENT_SECONDS = 300
 
-# Quoted shell command(s) to run when all MONITORED_PROCESSES have not executed
-# for ABSENT_SECONDS.
-# The default is to take no action.
-# Examples:
-#   ACTION = "/usr/sbin/pm-suspend"
-#   ACTION = "/usr/sbin/pm-hibernate"
-#   ACTION = "/sbin/poweroff"
-#   ACTION = "echo 'I am wasting electricity' | mail AlGore@example.com"
-ACTION = ""
-
 # Grace period, after ABSENT_SECONDS have elapsed with all of MONITORED_PROCESSES
 # absent from the process table, that the system will allow for an administrator
-# to kill powernapd and thereby cancel ACTION.
+# to kill powernapd and thereby cancel the /usr/sbin/powernap action.
 # The default grace period is 60 seconds.
 # Example:
 #   GRACE_SECONDS = 60

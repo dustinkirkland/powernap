@@ -1,25 +1,33 @@
-.TH powernap 1 "9 Jun 2009" powernap "powernap"
+.TH powernap 1 "2 Jul 2009" powernap "powernap"
 .SH NAME
-powernap \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing an ACTION when all of a list of MONITORED_PROCESSES are missing from the system process table for a contiguous ABSENT_SECONDS.
+powernap - have the system "take a power nap"; this can be a user defined program or script at /etc/powernap/action, or the first supported action among [suspend, hibernate, poweroff]
+
 
 .SH DESCRIPTION
-powernap will run ACTION when none of a set of MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS.
+powernap will run when \fBpowernapd(1)\fP has determined that an action needs to be taken according to its configured parameters.
 
-The powernap daemon will check the process table using "ps -eo args" every INTERVAL_SECONDS.  Note that MONITORED_PROCESSES taking less than INTERVAL_SECONDS to execute may be overlooked by powernap.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
+If the file \fI/etc/powernap/action\fP is executable, then the powernap binary will run it when called.
 
-Use "ps -eo args" for sample output and development your regular expressions.
+Otherwise, /usr/sbin/powernap will run one of:
+  * pm-suspend
+  * pm-hibernate
+  * poweroff
+depending on your hardware's capabilities, as determined by \fBpm-is-supported(1)\fP.
 
-It acts as a sort of "screensaver" for servers, watching the process table for activity rather than the keyboard or mouse.  For instance, PowerNap can automatically "pm-suspend" a system if no instance of "kvm" runs for some contiguous block of "300" seconds, checking the process table every "1" second.
+You may do one of:
+  1) Write your own custom at \fI/etc/powernap/action\fP and make it executable
+  2) Replace \fI/etc/powernap/action\fP with an executable script or binary
+  3) Symlink \fI/etc/powernap/action\fP to some other executable script or binary
 
 .TP
 \fIhttp://launchpad.net/powernap\fP
 .PD
 
 .SH FILES
-\fI/etc/powernap/config\fP, \fI/var/run/powernap.pid\fP, \fI/var/log/powernap.log\fP, \fI/var/log/powernap.err\fP
+\fI/etc/powernap/action\fP, \fI/proc/acpi/sleep\fP
 
 .SH SEE ALSO
-\fBpgrep\fP(1)
+\fBpowernapd\fP(1), \fBpm-is-supported\fP(1)
 
 .SH AUTHOR
 This manpage and the utility was written by Dustin Kirkland <kirkland@canonical.com> for Ubuntu systems (but may be used by others).  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 3 published by the Free Software Foundation.
