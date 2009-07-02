@@ -101,14 +101,14 @@ def write_arp_cache(to_mac):
             f.write("%s %s\n" % (to_mac[h], h))
     f.close()
 
-def get_arp_hash(target):
+def get_arp_hash():
     to_mac = get_arp_cache()
-    to_mac = get_arp_current(to_mac, target, 0)
+    to_mac = get_arp_current(to_mac, "localhost", 0)
     write_arp_cache(to_mac)
     return to_mac
 
 if __name__ == '__main__':
-    to_mac = get_arp_hash(i)
+    to_mac = get_arp_hash()
     # Process command line parameters
     for i in sys.argv[1:]:
         # If parameter matches a system with a static configuration, use it!
