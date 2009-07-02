@@ -8,7 +8,7 @@ powernap (1.4) unreleased; urgency=low
   * debian/manpages, debian/powerwake.manpages: added manpage debhelper
     files
   * debian/control: suggest ethtool, which might be necessary to enable
-    wake-on-lan on your ethernet card
+    wake-on-lan on your ethernet card, powernap depends on pm-utils
   * powernap -> powernapd, debian/init, debian/install: rename the python
     powernap daemon 'powernapd'
   * powernap.1 -> powernapd.1: renamed
@@ -17,7 +17,7 @@ powernap (1.4) unreleased; urgency=low
   * powernap.1: document new script
   * action: conffile describing what should go there
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jul 2009 15:46:25 -0700
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jul 2009 16:10:26 -0700
 
 powernap (1.3-0ubuntu1) karmic; urgency=low
 

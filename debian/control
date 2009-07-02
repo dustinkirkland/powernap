@@ -9,8 +9,7 @@ Vcs-Bzr: http://bazaar.launchpad.net/~kirkland/powernap/trunk
 
 Package: powernap
 Architecture: all
-Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python
-Recommends: pm-utils
+Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python, pm-utils
 Suggests: ethtool
 Enhances: powerwake
 Description: run a defined action if not running some particular processes
