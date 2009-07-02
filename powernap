@@ -34,7 +34,7 @@ fi
 # Use the best available, supported sleep state
 for i in suspend hibernate; do
 	if pm-is-supported --$i; then
-		exec /usr/sbin/$i
+		exec /usr/sbin/pm-$i
 	fi
 done
 
