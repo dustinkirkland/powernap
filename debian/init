@@ -35,7 +35,7 @@ case "$1" in
 		$0 start
 	;;
 	now)
-		if status_of_proc -p $PIDFILE $DAEMON $PKG; then
+		if status_of_proc -p $PIDFILE $DAEMON $PKG >/dev/null; then
 			log_begin_msg "Sending $PKG the 'now' signal"
 			kill -USR1 $(cat $PIDFILE)
 			log_end_msg $?
