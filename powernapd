@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-#    powernap - monitor a system process table; if IDLE amount of time
+#    powernapd - monitor a system process table; if IDLE amount of time
 #               goes by with no MONITORED_PROCESSES running, run ACTION
 #    Copyright (C) 2009 Canonical Ltd.
 #
@@ -126,7 +126,7 @@ def take_action_handler(signal, frame):
     take_action()
 
 # Main loop, search process table, increment counters, take actions, sleep
-def powernap_loop():
+def powernapd_loop():
     while 1:
         debug(1, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
         time.sleep(INTERVAL_SECONDS)
@@ -191,10 +191,10 @@ if __name__ == '__main__':
     establish_lock()
     daemonize()
     try:
-        # Run the main powernap loop
+        # Run the main powernapd loop
         PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
         debug(0, "Starting %s" % PKG)
-        powernap_loop()
+        powernapd_loop()
     finally:
         # Clean up the lock file
         if os.path.exists(LOCK):

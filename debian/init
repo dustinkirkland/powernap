@@ -12,7 +12,7 @@
 
 
 PKG=powernap
-DAEMON=/usr/sbin/$PKG
+DAEMON=/usr/sbin/"$PKG"d
 PIDFILE=/var/run/$PKG.pid
 
 test -x $DAEMON || exit 0

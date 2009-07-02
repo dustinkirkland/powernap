@@ -34,7 +34,7 @@ ACTION = ""
 
 # Grace period, after ABSENT_SECONDS have elapsed with all of MONITORED_PROCESSES
 # absent from the process table, that the system will allow for an administrator
-# to kill powernap and thereby cancel ACTION.
+# to kill powernapd and thereby cancel ACTION.
 # The default grace period is 60 seconds.
 # Example:
 #   GRACE_SECONDS = 60
