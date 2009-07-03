@@ -66,49 +66,50 @@ def is_mac(mac):
 
 # Source the cached, known arp entries
 def get_arp_cache():
-    to_mac = {}
+    host_to_mac = {}
     f = open("/var/cache/%s/ethers" % PKG, 'r')
     for i in f.readlines():
         try:
             (m, h) = i.split()
-            to_mac[h] = m
+            host_to_mac[h] = m
         except:
             pass
     f.close()
-    return to_mac
+    return host_to_mac
 
 # Source the current, working arp table
-def get_arp_current(to_mac, target="localhost", update_arp=0):
+def get_arp_current(host_to_mac, target="localhost", update_arp=0):
     # Load hostnames
     for i in os.popen("/usr/sbin/arp | awk '{print $3 \" \"  $1}'"):
         (m, h) = i.split()
-        to_mac[h] = m
+        host_to_mac[h] = m
     # Load ip addresses
     for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):
         (m, h) = i.split()
-        to_mac[h] = m
+        host_to_mac[h] = m
     # If the target isn't found, ping, and try again
-    if update_arp == 0 and not to_mac.has_key(target):
+    if update_arp == 0 and not host_to_mac.has_key(target):
         commands.getoutput("ping -c 1 %s" % target)
-        return get_arp_current(to_mac, target, 1)
+        return get_arp_current(host_to_mac, target, 1)
     else:
-        return to_mac
+        return host_to_mac
 
-def write_arp_cache(to_mac):
+def write_arp_cache(host_to_mac):
     f = open("/var/cache/%s/ethers" % PKG, 'w')
-    for h in to_mac:
-        if is_mac(to_mac[h]):
-            f.write("%s %s\n" % (to_mac[h], h))
+    for h in host_to_mac:
+        if is_mac(host_to_mac[h]):
+            f.write("%s %s\n" % (host_to_mac[h], h))
     f.close()
 
 def get_arp_hash():
-    to_mac = get_arp_cache()
-    to_mac = get_arp_current(to_mac, "localhost", 0)
-    write_arp_cache(to_mac)
-    return to_mac
+    host_to_mac = get_arp_cache()
+    host_to_mac = get_arp_current(host_to_mac, "localhost", 0)
+    write_arp_cache(host_to_mac)
+    return host_to_mac
 
 if __name__ == '__main__':
-    to_mac = get_arp_hash()
+    # Seed the mac cache
+    host_to_mac = get_arp_hash()
     # Process command line parameters
     for i in sys.argv[1:]:
         # If parameter matches a system with a static configuration, use it!
@@ -119,10 +120,10 @@ if __name__ == '__main__':
                 # this appears to be a mac address, just use it
                 pass
             else:
-                if to_mac.has_key(i):
+                if host_to_mac.has_key(i):
                     # mac found in the hash
                     debug(0, "Trying to wake host [%s]" % i)
-                    m = to_mac[i]
+                    m = host_to_mac[i]
                 else:
                     # cannot autodetect the mac address
                     error("Could not determine the MAC address of [%s]" % i)
