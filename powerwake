@@ -114,6 +114,11 @@ def get_arp_hash():
     write_arp_cache(host_to_mac)
     return host_to_mac
 
+# TODO:
+#   Parameters to add:
+#     --list - list known mac/ip-host combinations
+#     --clear - clear the cache
+
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         error("Please provide one or more MAC addresses, IP addresses, or Hostnames")
