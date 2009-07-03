@@ -27,16 +27,13 @@
 PKG="powernap"
 
 # Use the specified action, if configured
+# Otherwise, use the best available, supported sleep state
 if [ -x "/etc/$PKG/action" ]; then
 	exec /etc/$PKG/action
+elif pm-is-supported --suspend; then
+	exec /usr/sbin/pm-suspend
+elif pm-is-supported --hibernate; then
+	exec /usr/sbin/pm-hibernate
+else
+	exec /sbin/poweroff
 fi
-
-# Use the best available, supported sleep state
-for i in suspend hibernate; do
-	if pm-is-supported --$i; then
-		exec /usr/sbin/pm-$i
-	fi
-done
-
-# Poweroff being the fall back
-exec /sbin/poweroff
