@@ -32,7 +32,7 @@ Depends: ${misc:Depends}, debconf (>= 0.5) | debconf-2.0, python
 Enhances: powernap
 Description: remotely wake a napping system
  PowerWake is a generic mechanism for remotely waking systems.  It is
- intended to support wake-on-lan, impi, and other remote waking mechanisms.
+ intended to support wake-on-lan, ipmi, and other remote waking mechanisms.
  Currently, wake-on-lan is the only supported mechanism.  It also includes
  some handy caching of MAC addresses, such that systems can be awakened by
  hostname or ip address, in addition to MAC address.
