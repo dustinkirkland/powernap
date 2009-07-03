@@ -98,11 +98,13 @@ def write_arp_cache(host_to_mac):
 
 def get_arp_hash():
     host_to_mac = get_arp_cache()
-    host_to_mac = get_arp_current(host_to_mac, "localhost", 0)
+    host_to_mac = get_arp_current(host_to_mac)
     write_arp_cache(host_to_mac)
     return host_to_mac
 
 if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        error("Please provide one or more MAC addresses, IP addresses, or Hostnames")
     # Seed the mac cache
     host_to_mac = get_arp_hash()
     # Process command line parameters
