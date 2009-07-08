@@ -94,11 +94,13 @@ def get_arp_current(host_to_mac):
     # Load hostnames
     for i in os.popen("/usr/sbin/arp | awk '{print $3 \" \"  $1}'"):
         (m, h) = i.split()
-        host_to_mac[h] = m
+        if is_mac(m):
+            host_to_mac[h] = m
     # Load ip addresses
     for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):
         (m, h) = i.split()
-        host_to_mac[h] = m
+        if is_mac(m):
+            host_to_mac[h] = m
     return host_to_mac
 
 def write_arp_cache(host_to_mac):
