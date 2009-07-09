@@ -1,10 +1,10 @@
-.TH powernap 1 "2 Jul 2009" powernap "powernap"
+.TH powernap 8 "2 Jul 2009" powernap "powernap"
 .SH NAME
 powernap - have the system "take a power nap"; this can be a user defined program or script at \fI/etc/powernap/action\fP, or the first supported action among [suspend, hibernate, poweroff]
 
 
 .SH DESCRIPTION
-powernap will run when \fBpowernapd\fP(1) has determined that an action needs to be taken according to its configured parameters.
+powernap will run when \fBpowernapd\fP(8) has determined that an action needs to be taken according to its configured parameters.
 
 If the file \fI/etc/powernap/action\fP is executable, then the powernap binary will run it when called.
 
@@ -27,7 +27,7 @@ You may do one of:
 \fI/etc/powernap/action\fP, \fI/proc/acpi/sleep\fP
 
 .SH SEE ALSO
-\fBpowernapd\fP(1), \fBpm-is-supported\fP(1), \fBethtool\fP(8)
+\fBpowernapd\fP(8), \fBpm-is-supported\fP(1), \fBethtool\fP(8)
 
 .SH AUTHOR
 This manpage and the utility was written by Dustin Kirkland <kirkland@canonical.com> for Ubuntu systems (but may be used by others).  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 3 published by the Free Software Foundation.

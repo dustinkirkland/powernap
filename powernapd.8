@@ -1,9 +1,9 @@
-.TH powernapd 1 "9 Jun 2009" powernap "powernapd"
+.TH powernapd 8 "9 Jun 2009" powernap "powernapd"
 .SH NAME
 powernapd \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing powernap when all of a list of MONITORED_PROCESSES are missing from the system process table for a contiguous ABSENT_SECONDS.
 
 .SH DESCRIPTION
-powernapd will run \fBpowernap\fP(1) when none of a set of MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS.
+powernapd will run \fBpowernap\fP(8) when none of a set of MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS.
 
 powernapd will check the process table using "ps -eo args" every INTERVAL_SECONDS.  Note that MONITORED_PROCESSES taking less than INTERVAL_SECONDS to execute may be overlooked by powernapd.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
 
@@ -19,7 +19,7 @@ It acts as a sort of "screensaver" for servers, watching the process table for a
 \fI/etc/powernap/action\fP, \fI/etc/powernap/config\fP, \fI/var/run/powernap.pid\fP, \fI/var/log/powernap.log\fP, \fI/var/log/powernap.err\fP
 
 .SH SEE ALSO
-\fBpgrep\fP(1)
+\fBpgrep\fP(1), \fBpowernap\fP(8))
 
 .SH AUTHOR
 This manpage and the utility was written by Dustin Kirkland <kirkland@canonical.com> for Ubuntu systems (but may be used by others).  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 3 published by the Free Software Foundation.
