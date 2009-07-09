@@ -1,7 +1,7 @@
 powernap (1.4) unreleased; urgency=low
 
   * powerwake: maintain and use a cache of mac addresses, in
-    /var/cache/powerwake/ethers
+    /var/cache/powerwake/ethers; test is_mac() before adding to arp hash
   * debian/powerwake.dirs, debian/powerwake.install,
     debian/powerwake.postinst, debian/control: add a separate powerwake
     package
@@ -18,8 +18,10 @@ powernap (1.4) unreleased; urgency=low
   * action: conffile describing what should go there
   * debian/init: drop stdout on 'now' status check
   * debian/*: use powernap.* and powerwake.* to remove any ambiguity
+  * powernapd: look for activity on /dev/* consoles during the grace period,
+    such that any activity will cancel the powernap operation
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 03 Jul 2009 16:25:30 -0700
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 08 Jul 2009 19:05:46 -0500
 
 powernap (1.3-0ubuntu1) karmic; urgency=low
 
