@@ -134,6 +134,7 @@ if __name__ == '__main__':
         if method == "--wol":
             if is_mac(i):
                 # this appears to be a mac address, just use it
+                m = i
                 pass
             else:
                 if host_to_mac.has_key(i):
@@ -144,5 +145,8 @@ if __name__ == '__main__':
                     # cannot autodetect the mac address
                     error("Could not determine the MAC address of [%s]" % i)
                     continue
-            wakeonlan(m)
+            if is_mac(m):
+                wakeonlan(m)
+            else:
+                error("Could not wake host [%s]" % m)
     sys.exit(RC)
