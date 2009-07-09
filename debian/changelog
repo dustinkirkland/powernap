@@ -1,4 +1,10 @@
-powernap (1.4) unreleased; urgency=low
+powernap (1.5) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 09 Jul 2009 17:34:22 -0500
+
+powernap (1.4-0ubuntu1) karmic; urgency=low
 
   * powerwake: maintain and use a cache of mac addresses, in
     /var/cache/powerwake/ethers; test is_mac() before adding to arp hash
