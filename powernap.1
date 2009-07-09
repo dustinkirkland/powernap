@@ -1,18 +1,18 @@
 .TH powernap 1 "2 Jul 2009" powernap "powernap"
 .SH NAME
-powernap - have the system "take a power nap"; this can be a user defined program or script at /etc/powernap/action, or the first supported action among [suspend, hibernate, poweroff]
+powernap - have the system "take a power nap"; this can be a user defined program or script at \fI/etc/powernap/action\fP, or the first supported action among [suspend, hibernate, poweroff]
 
 
 .SH DESCRIPTION
-powernap will run when \fBpowernapd(1)\fP has determined that an action needs to be taken according to its configured parameters.
+powernap will run when \fBpowernapd\fP(1) has determined that an action needs to be taken according to its configured parameters.
 
 If the file \fI/etc/powernap/action\fP is executable, then the powernap binary will run it when called.
 
-Otherwise, /usr/sbin/powernap will run one of:
+Otherwise, powernap will run one of:
   * pm-suspend
   * pm-hibernate
   * poweroff
-depending on your hardware's capabilities, as determined by \fBpm-is-supported(1)\fP.
+depending on your hardware's capabilities, as determined by \fBpm-is-supported\fP(1).
 
 You may do one of:
   1) Write your own custom at \fI/etc/powernap/action\fP and make it executable
