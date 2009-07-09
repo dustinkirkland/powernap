@@ -16,7 +16,8 @@
 #   MONITORED_PROCESSES = [ "^/sbin/init" ]
 MONITORED_PROCESSES = [ "^/sbin/init" ]
 
-# Number of seconds that all processes must be absent from the process table.
+# Number of seconds that all processes must be absent from the process table and
+# no keyboard activity on any terminals.
 # The default is an absence period of 5 minutes.
 # Example:
 #   ABSENT_SECONDS = 300
@@ -44,7 +45,7 @@ INTERVAL_SECONDS = 1
 
 # The powernap daemon logs errors to /var/log/powernap.err, and some basic
 # information to /var/log/powernap.log.  To change the verbosity of this
-# logging, set DEBUG to 0, 1 or 2:
+# logging, set DEBUG to 0, 1, 2, or 3:
 # The default debug level is 0.
 #    DEBUG = 1
 #    DEBUG = 2
