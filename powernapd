@@ -132,7 +132,6 @@ def get_interrupts():
         if source == "i8042" or source == "keyboard" or source == "mouse":
             items.pop(0)
             items.pop()
-            print(items)
             for i in items:
                 interrupts += int(i)
     f.close()

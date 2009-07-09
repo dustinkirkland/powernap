@@ -18,10 +18,11 @@ powernap (1.4) unreleased; urgency=low
   * action: conffile describing what should go there
   * debian/init: drop stdout on 'now' status check
   * debian/*: use powernap.* and powerwake.* to remove any ambiguity
-  * powernapd: look for activity on /dev/* consoles during the grace period,
-    such that any activity will cancel the powernap operation
+  * powernapd: look for activity on /dev/* consoles and in /proc/interrupts
+    during the grace period, such that any activity will cancel the
+    powernap operation
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 08 Jul 2009 19:05:46 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 09 Jul 2009 16:44:27 -0500
 
 powernap (1.3-0ubuntu1) karmic; urgency=low
 
