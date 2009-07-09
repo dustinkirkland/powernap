@@ -104,32 +104,56 @@ def find_process(ps, p):
 
 # Check /dev/*, such that we don't powernap the system if someone
 # is actively using a terminal device
-def get_console_absent_seconds():
+def get_console_activity():
     dev = commands.getoutput("ls -t /dev").split('\n')
+    c = 0
+    d = "/dev/null"
+    # Find the most recently touched device
     for d in dev:
       d = "/dev/%s" % d
-      debug(3, "     Examining [%s]" % d)
+      debug(3, "      Examining [%s]" % d)
       if os.path.isdir(d):
           pass
       else:
           t = os.stat(d)
           c = time.time() - t.st_mtime
-          return c, d
+          break
+    i = get_interrupts()
+    return c, d, i
+
+# Read keyboard/mouse from /proc/interrupts
+# Note: only works for ps2 keyboards/mice
+def get_interrupts():
+    interrupts = 0
+    f = open("/proc/interrupts", "r")
+    for line in f.readlines():
+        items = line.split()
+        source = items.pop()
+        if source == "i8042" or source == "keyboard" or source == "mouse":
+            items.pop(0)
+            items.pop()
+            print(items)
+            for i in items:
+                interrupts += int(i)
+    f.close()
+    return interrupts
 
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
 def warn_users():
-    msg = "PowerNap will take the following action in [%s] seconds:\n  [%s]\nTo cancel this operation, press any key in any terminal." % (GRACE_SECONDS, ACTION)
+    msg = "PowerNap will take the following action in [%s] seconds:\n[%s]\nTo cancel this operation, press any key in any terminal." % (GRACE_SECONDS, ACTION)
     commands.getoutput("echo '%s' | wall" % msg)
     t = 0
-    time.sleep(INTERVAL_SECONDS)
+    c, d, last_i = get_console_activity()
     while t < GRACE_SECONDS:
+        time.sleep(INTERVAL_SECONDS)
         t += INTERVAL_SECONDS
-        c, d = get_console_absent_seconds()
-        if c < INTERVAL_SECONDS:
-            msg = "PowerNap detected activity on [%s], canceling action [%s]" % (d, ACTION)
+        c, d, i = get_console_activity()
+        if c < INTERVAL_SECONDS or i != last_i:
+            msg = "PowerNap detected activity on [%s].\nCanceling action [%s]." % (d, ACTION)
             commands.getoutput("echo '%s' | wall" % msg)
             return 1
+        last_i = i
     return 0
 
 # TODO: notify authorities about action taken
@@ -150,6 +174,7 @@ def take_action_handler(signal, frame):
 
 # Main loop, search process table, increment counters, take actions, sleep
 def powernapd_loop():
+    last_i = 0
     while 1:
         debug(1, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
         time.sleep(INTERVAL_SECONDS)
@@ -174,13 +199,14 @@ def powernapd_loop():
         # Determine if action needs to be taken
         if absent_processes > 0 and absent_processes == len(PROCESSES):
             debug(2, "    Checking for console or terminal activity")
-            c, d = get_console_absent_seconds()
-            if c > ABSENT_SECONDS:
-                debug(2, "    Console/terminal last touched [%d] seconds ago on [%s]" % (c, d))
+            c, d, i = get_console_activity()
+            if c > ABSENT_SECONDS and i == last_i:
+                last_i = i
                 # All processes are absent, take action!
                 if warn_users() == 0:
                     take_action()
             else:
+                last_i = i
                 debug(2, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
 
 
