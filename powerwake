@@ -79,14 +79,15 @@ def is_mac(mac):
 # Source the cached, known arp entries
 def get_arp_cache():
     host_to_mac = {}
-    f = open("/var/cache/%s/ethers" % PKG, 'r')
-    for i in f.readlines():
-        try:
-            (m, h) = i.split()
-            host_to_mac[h] = m
-        except:
-            pass
-    f.close()
+    for file in ["/var/cache/%s/ethers" % PKG, "/etc/ethers"]:
+        f = open(file, 'r')
+        for i in f.readlines():
+            try:
+                (m, h) = i.split()
+                host_to_mac[h] = m
+            except:
+                pass
+        f.close()
     return host_to_mac
 
 # Source the current, working arp table
