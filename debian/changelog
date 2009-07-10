@@ -1,8 +1,9 @@
 powernap (1.5) unreleased; urgency=low
 
   * powerwake: handle more gracefully the lack of an /etc/ethers file
+  * powernapd: fix timestamp
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 10 Jul 2009 16:40:12 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 10 Jul 2009 17:37:54 -0500
 
 powernap (1.4-0ubuntu1) karmic; urgency=low
 
