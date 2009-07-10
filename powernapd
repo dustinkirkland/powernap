@@ -60,7 +60,7 @@ class Process(object):
 def debug(level, msg):
     if DEBUG >= level:
         lt = time.localtime(time.time())
-        timestamp = "%02d-%02d-%04d %02d:%02d:%02d" % (lt[2], lt[1], lt[0], lt[3], lt[4], lt[5])
+        timestamp = "%04d-%02d-%02d %02d:%02d:%02d" % (lt[0], lt[1], lt[2], lt[3], lt[4], lt[5])
         print("[%s] %s" % (timestamp, msg))
 
 # Generic error function
