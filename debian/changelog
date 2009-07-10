@@ -1,8 +1,8 @@
 powernap (1.5) unreleased; urgency=low
 
-  * UNRELEASED
+  * powerwake: handle more gracefully the lack of an /etc/ethers file
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 09 Jul 2009 17:34:22 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 10 Jul 2009 16:40:12 -0500
 
 powernap (1.4-0ubuntu1) karmic; urgency=low
 
