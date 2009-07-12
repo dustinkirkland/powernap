@@ -1,4 +1,10 @@
-powernap (1.5) unreleased; urgency=low
+powernap (1.6) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Sun, 12 Jul 2009 14:51:21 -0500
+
+powernap (1.5-0ubuntu1) karmic; urgency=low
 
   * powerwake: handle more gracefully the lack of an /etc/ethers file
   * powernapd: fix timestamp
