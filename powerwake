@@ -25,11 +25,15 @@ import re
 import socket
 import struct
 import sys
+import getopt
 
 global DEBUG, PKG, RC
 DEBUG = 0
 PKG = "powerwake"
 RC = 0
+short_opts = 'hb:m:'
+long_opts = ['help', 'broadcast=', 'method=']
+usage_string = "USAGE: powerwake [-b|--broadcast IPbroadcast] [-m|--method method] targetmac|targetip"
 
 # Generic debug function
 def debug(level, msg):
@@ -64,9 +68,16 @@ def wakeonlan(mac):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.sendto(send_data, ('<broadcast>', 7))
+        sock.sendto(send_data, (broadcast, 7))
     except:
         error("Network is unreachable")
+
+def is_ip(ip):
+    r1 = re.compile('^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+    if r1.match(ip):
+        return 1
+    else:
+        return 0
 
 def is_mac(mac):
     r1 = re.compile('^[0-9a-fA-F]{12}$')
@@ -124,16 +135,46 @@ def get_arp_hash():
 #     --clear - clear the cache
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
+    # set up defaults
+    broadcast = '<broadcast>'
+    method = 'wol'
+
+    # parse getopt options
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+    except:
+        print(usage_string)
+        exit(1)
+
+    for name, value in opts:
+        if name in ('-b', '--broadcast'):
+            if is_ip(value):
+                broadcast = value
+            else:
+                error("Value passed to " + name + " is not a valid broadcast address [%s]" % value)
+                print(usage_string)
+                exit(1)
+
+        elif name in ('-m', '--method'):
+            method = value
+        elif name in ('-h', '--help'):
+            print(usage_string)
+            exit(0)
+
+    # if args is less than one, we don't have a host to wake up
+    if len(args) < 1:
         error("Please provide one or more MAC addresses, IP addresses, or Hostnames")
+        print(usage_string)
+        exit(1)
+
     # Seed the mac cache
     host_to_mac = get_arp_hash()
+
     # Process command line parameters
-    for i in sys.argv[1:]:
+    for i in args:
         # If parameter matches a system with a static configuration, use it!
         # ^^^ Not yet implemented, default to wake-on-lan method for now
-        method = "--wol"
-        if method == "--wol":
+        if method == "wol":
             if is_mac(i):
                 # this appears to be a mac address, just use it
                 m = i
@@ -151,4 +192,7 @@ if __name__ == '__main__':
                 wakeonlan(m)
             else:
                 error("Could not wake host [%s]" % m)
+        else:
+            error("Unsupported method [%s]" % method)
+            RC=1
     sys.exit(RC)
