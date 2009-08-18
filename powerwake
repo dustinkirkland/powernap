@@ -33,7 +33,7 @@ PKG = "powerwake"
 RC = 0
 short_opts = 'hb:m:'
 long_opts = ['help', 'broadcast=', 'method=']
-usage_string = "USAGE: powerwake [-b|--broadcast IPbroadcast] [-m|--method method] targetmac|targetip"
+usage_string = "Usage:\n  powerwake [-b|--broadcast BROADCAST_IP] [-m|--method METHOD] TARGET_MAC|TARGET_IP|TARGET_HOST"
 
 # Generic debug function
 def debug(level, msg):
