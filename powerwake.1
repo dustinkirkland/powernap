@@ -2,6 +2,20 @@
 .SH NAME
 powerwake \- smart utilty for remotely waking sleeping systems
 
+.SH SYNOPSIS
+.BI "powerwake [\-b|\-\-broadcast BROADCAST_IP] [\-m|\-\-method METHOD] TARGET_MAC|TARGET_IP|TARGET_HOST"
+
+.SH OPTIONS
+.TP
+.B \-b|\-\-broadcast BROADCAST_IP
+Optional parameter specifying the broadcast ip.  If unspecified, the default is 255.255.255.255.
+.TP
+.B \-m|\-\-method METHOD
+Currently, 'wol' is the only supported method.
+.TP
+.B TARGET_MAC|TARGET_IP|TARGET_HOST
+The target system to powerwake may be identified by MAC address, or by an IP/hostname cached in (the current \fBarp\fP(8) table, \fI/etc/ethers\fP, \fI/var/cache/powerwake/ethers\fP).
+
 .SH DESCRIPTION
 The powerwake utility compliments the powernap(8) daemon.  Administrators can run the powernap utility on remote hosts, allowing them to sleep when un-utilitized.  To awake the remote system, use powerwake.
 
