@@ -1,8 +1,9 @@
 powernap (1.6) unreleased; urgency=low
 
-  * UNRELEASED
+  [ Dan Nurmi ]
+  * powerwake: add support for a broadcast argument, add getopt support
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Sun, 12 Jul 2009 14:51:21 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 16:46:05 -0500
 
 powernap (1.5-0ubuntu1) karmic; urgency=low
 
