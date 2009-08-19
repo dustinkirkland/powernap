@@ -25,6 +25,10 @@ short_opts = 'h:p:g:'
 long_opts = ['hosts=', 'guests-per-host=', 'guests=']
 usage_string = "Usage:\n  powernap_calculator [-h|--hosts NUM] [-p|--guests-per-host NUM] [-g|--guests NUM]"
 
+if len(sys.argv) < 7:
+  print(usage_string)
+  exit(1)
+
 # parse getopt options
 try:
   opts, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
