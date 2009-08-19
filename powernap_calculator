@@ -85,7 +85,7 @@ for num in range(upper_limit):
   if num % 100000 == 0:
     print("\b\b\b\b\b%.0f%% " % (100*num/upper_limit))
 
-print("\nIn a cloud with [%d] hosts, which can handle [%d] guests-per-host, currently running [%d] guests,\nyou may expect the following power savings:\n" % (hosts, guests_per_host, guests))
+print("\nIn a cloud with [%d] hosts, which can handle [%d] guests-per-host, currently running [%d] guests,\nyou may expect the following:\n" % (hosts, guests_per_host, guests))
 
 expected_savings = 0
 #print zeros
