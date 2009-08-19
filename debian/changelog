@@ -1,4 +1,10 @@
-powernap (1.6) unreleased; urgency=low
+powernap (1.7) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 19 Aug 2009 00:19:13 -0500
+
+powernap (1.6-0ubuntu1) karmic; urgency=low
 
   [ Dan Nurmi ]
   * powerwake: add support for a broadcast argument, add getopt support
