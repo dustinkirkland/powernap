@@ -12,7 +12,7 @@ powernap (1.6) unreleased; urgency=low
   * powernapd: overhaul powernap's logging using python's built-in logging
     functionality
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 19:06:35 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 19:09:58 -0500
 
 powernap (1.5-0ubuntu1) karmic; urgency=low
 

@@ -1,4 +1,5 @@
 powernap usr/sbin
 powernapd usr/sbin
+powernap_calculator usr/bin
 config etc/powernap
 action etc/powernap
