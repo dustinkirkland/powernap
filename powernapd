@@ -20,6 +20,7 @@
 
 # Imports
 import commands
+import logging, logging.handlers
 import os
 import re
 import signal
@@ -31,6 +32,9 @@ global PKG, LOCK, CONFIG
 PKG = "powernap"
 LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
+LOG = "/var/log/%s.log" % PKG
+
+logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.DEBUG,)
 
 # CONFIG values can override these
 global MONITORED_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
@@ -58,14 +62,12 @@ class Process(object):
 
 # Generic debug function
 def debug(level, msg):
-    if DEBUG >= level:
-        lt = time.localtime(time.time())
-        timestamp = "%04d-%02d-%02d %02d:%02d:%02d" % (lt[0], lt[1], lt[2], lt[3], lt[4], lt[5])
-        print("[%s] %s" % (timestamp, msg))
+    if level >= (logging.ERROR - 10*DEBUG):
+        logging.log(level, msg)
 
 # Generic error function
 def error(msg):
-    debug(0, "ERROR: %s" % msg)
+    debug(logging.ERROR, msg)
     sys.exit(1)
 
 # Lock function, using a pidfile in /var/run
@@ -93,6 +95,7 @@ def establish_lock():
 def signal_handler(signal, frame):
     if os.path.exists(LOCK):
         os.remove(LOCK)
+    debug(logging.INFO, "Stopping %s" % PKG)
     sys.exit(1)
 
 # Search process list for regex, return on first match
@@ -111,7 +114,7 @@ def get_console_activity():
     # Find the most recently touched device
     for d in dev:
       d = "/dev/%s" % d
-      debug(3, "      Examining [%s]" % d)
+      debug(logging.DEBUG, "      Examining [%s]" % d)
       if os.path.isdir(d):
           pass
       else:
@@ -140,8 +143,10 @@ def get_interrupts():
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
 def warn_users():
-    msg = "PowerNap will take the following action in [%s] seconds:\n[%s]\nTo cancel this operation, press any key in any terminal." % (GRACE_SECONDS, ACTION)
-    commands.getoutput("echo '%s' | wall" % msg)
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (GRACE_SECONDS, ACTION)
+    msg2 = "To cancel this operation, press any key in any terminal"
+    debug(logging.WARNING, msg1)
+    commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
     t = 0
     c, d, last_i = get_console_activity()
     while t < GRACE_SECONDS:
@@ -149,7 +154,8 @@ def warn_users():
         t += INTERVAL_SECONDS
         c, d, i = get_console_activity()
         if c < INTERVAL_SECONDS or i != last_i:
-            msg = "PowerNap detected activity on [%s].\nCanceling action [%s]." % (d, ACTION)
+            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, ACTION)
+            debug(logging.WARNING, msg)
             commands.getoutput("echo '%s' | wall" % msg)
             return 1
         last_i = i
@@ -157,12 +163,12 @@ def warn_users():
 
 # TODO: notify authorities about action taken
 def notify_authorities():
-    debug(0, "Taking action [%s]" % ACTION)
+    debug(logging.WARNING, "Taking action [%s]" % ACTION)
 
 # Zero the counters and take the action
 def take_action():
     notify_authorities()
-    debug(1, "Reseting counters prior to taking action")
+    debug(logging.DEBUG, "Reseting counters prior to taking action")
     for p in PROCESSES:
         p.absent_seconds = 0
     os.system(ACTION)
@@ -175,29 +181,29 @@ def take_action_handler(signal, frame):
 def powernapd_loop():
     last_i = 0
     while 1:
-        debug(1, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
+        debug(logging.DEBUG, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
         time.sleep(INTERVAL_SECONDS)
         # Examine process table, compute absent time of each monitored process
-        debug(1, "Examining process table")
+        debug(logging.DEBUG, "Examining process table")
         absent_processes = 0
         ps = commands.getoutput("ps -eo args").splitlines()
         for p in PROCESSES:
-            debug(2, "  Looking for [%s]" % p.process)
+            debug(logging.DEBUG, "  Looking for [%s]" % p.process)
             if find_process(ps, p.regex):
                 # process running, so reset absent time
                 p.absent_seconds = 0
-                debug(2, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+                debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
             else:
                 # process not running, increment absent time
                 p.absent_seconds += INTERVAL_SECONDS
-                debug(2, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+                debug(logging.DEBUG, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
                 if p.absent_seconds >= ABSENT_SECONDS:
                     # process missing for >= absent_seconds threshold, mark absent
-                    debug(2, "    Process absent for >= threshold, so mark absent")
+                    debug(logging.DEBUG, "    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
         # Determine if action needs to be taken
         if absent_processes > 0 and absent_processes == len(PROCESSES):
-            debug(2, "    Checking for console or terminal activity")
+            debug(logging.DEBUG, "    Checking for console or terminal activity")
             c, d, i = get_console_activity()
             if c > ABSENT_SECONDS and i == last_i:
                 last_i = i
@@ -206,7 +212,7 @@ def powernapd_loop():
                     take_action()
             else:
                 last_i = i
-                debug(2, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
+                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
 
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
@@ -247,7 +253,7 @@ if __name__ == '__main__':
     try:
         # Run the main powernapd loop
         PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
-        debug(0, "Starting %s" % PKG)
+        debug(logging.INFO, "Starting %s" % PKG)
         powernapd_loop()
     finally:
         # Clean up the lock file

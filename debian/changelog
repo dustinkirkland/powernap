@@ -9,8 +9,10 @@ powernap (1.6) unreleased; urgency=low
     the expected power savings usings powernap in a cloud environment;
     manpage documentation added
   * debian/powernap.logrotate: rotate the powernap log
+  * powernapd: overhaul powernap's logging using python's built-in logging
+    functionality
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 19:03:35 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 19:06:35 -0500
 
 powernap (1.5-0ubuntu1) karmic; urgency=low
 
