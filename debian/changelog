@@ -8,8 +8,9 @@ powernap (1.6) unreleased; urgency=low
   * powernap_calculator, powernap_calculator.1: new script to help determine
     the expected power savings usings powernap in a cloud environment;
     manpage documentation added
+  * debian/powernap.logrotate: rotate the powernap log
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 17:13:10 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 Aug 2009 19:03:35 -0500
 
 powernap (1.5-0ubuntu1) karmic; urgency=low
 

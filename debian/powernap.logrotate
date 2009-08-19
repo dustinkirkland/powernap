@@ -1,0 +1,7 @@
+/var/log/powernap.log {
+        rotate 5
+        daily
+        compress
+        copytruncate
+        missingok
+}
