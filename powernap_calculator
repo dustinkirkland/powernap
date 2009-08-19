@@ -66,24 +66,20 @@ def count_zeros(list):
       count += 1
   return count
 
-def sum_range(list, index):
-  sum = 0
-  for i in range(index, len(list)):
-    sum += list[i]
-  return sum
-
 print("Calculating...\n     ")
 upper_limit = (guests_per_host+1)**hosts
 zeros = [0]*(hosts + 1)
 total = 0
-for num in range(upper_limit):
+num = 0
+while num < upper_limit:
   list = vm_allocations(num, guests_per_host+1, hosts, guests)
   if list != -1:
     c = count_zeros(list)
     zeros[c] += 1
     total += 1
   if num % 100000 == 0:
-    print("\b\b\b\b\b%.0f%% " % (100*num/upper_limit))
+    print("\b\b\b\b\b\b\b\b\b\b%.3f%% " % (100.*num/upper_limit))
+  num += 1
 
 print("\nIn a cloud with [%d] hosts, which can handle [%d] guests-per-host, currently running [%d] guests,\nyou may expect the following:\n" % (hosts, guests_per_host, guests))
 
