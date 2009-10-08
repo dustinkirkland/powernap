@@ -1,6 +1,8 @@
 powernap (1.7) unreleased; urgency=low
 
-  * UNRELEASED
+  * debian/powernap.init: enable WoL at boot on interface(s) that support
+    wake-on-lan, to ensure that a powernapping system can be awoken
+    later, LP: #445950
 
  -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 19 Aug 2009 00:19:13 -0500
 

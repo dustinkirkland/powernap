@@ -22,6 +22,12 @@ test -x $DAEMON || exit 0
 case "$1" in
 	start)
 		log_daemon_msg "Starting $PKG"
+		# Enable Wake-on-LAN on valid interface(s)
+		for i in $(/sbin/ifconfig | grep "encap:Ethernet" | awk '{print $1}'); do
+			if /usr/sbin/ethtool $i | grep -qs "Supports Wake-on: g"; then
+				/usr/sbin/ethtool -s $i wol g
+			fi
+                done
 		start_daemon $DAEMON
 		log_end_msg $?
 	;;
