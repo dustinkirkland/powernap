@@ -1,4 +1,10 @@
-powernap (1.7) unreleased; urgency=low
+powernap (1.8) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 07 Oct 2009 21:10:48 -0500
+
+powernap (1.7-0ubuntu1) karmic; urgency=low
 
   * debian/powernap.init: enable WoL at boot on interface(s) that support
     wake-on-lan, to ensure that a powernapping system can be awoken
