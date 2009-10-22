@@ -117,11 +117,12 @@ def get_arp_current(host_to_mac):
     return host_to_mac
 
 def write_arp_cache(host_to_mac):
-    f = open("/var/cache/%s/ethers" % PKG, 'w')
-    for h in host_to_mac:
-        if is_mac(host_to_mac[h]):
-            f.write("%s %s\n" % (host_to_mac[h], h))
-    f.close()
+    if os.access("/var/cache/%s/ethers" % PKG, os.W_OK):
+        f = open("/var/cache/%s/ethers" % PKG, 'w')
+        for h in host_to_mac:
+            if is_mac(host_to_mac[h]):
+                f.write("%s %s\n" % (host_to_mac[h], h))
+        f.close()
 
 def get_arp_hash():
     host_to_mac = get_arp_cache()

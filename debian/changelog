@@ -1,6 +1,6 @@
 powernap (1.8) unreleased; urgency=low
 
-  * UNRELEASED
+  * powerwake: test ethers file for writability, LP: #458163
 
  -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 07 Oct 2009 21:10:48 -0500
 
