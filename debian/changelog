@@ -7,6 +7,8 @@ powernap (1.8) unreleased; urgency=low
   * powernap-now, debian/install:
     - add a powernap-now utility, for sending the 'now'
     signal to the daemon
+  * debian/powernap.manpages, powernap-now.8:
+    - add powernap-now manpages
   * debian/powernap.init, debian/powernap.upstart, debian/rules:
     - upstart-ify powernap
 
