@@ -29,8 +29,8 @@ binary-indep: build install
 	dh_installman -i
 	dh_installchangelogs -i
 	dh_installdebconf -i
-	dh_installinit -s --noscripts
 	dh_installlogrotate --package=${PKG} --name=${PKG}
+	dh_installinit --noscripts --error-handler=true
 	dh_compress -i
 	dh_fixperms -i
 	dh_installdeb -i
