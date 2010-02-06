@@ -1,6 +1,9 @@
 powernap (1.8) unreleased; urgency=low
 
-  * powerwake: test ethers file for writability, LP: #458163
+  * powerwake:
+    - test ethers file for writability, LP: #458163
+    - since non-priv users cannot write to globally cached ethers, support
+      local user eth caches
   * powernap-now, debian/install:
     - add a powernap-now utility, for sending the 'now'
     signal to the daemon
