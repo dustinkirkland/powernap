@@ -120,7 +120,7 @@ def get_arp_current(host_to_mac):
 def write_arp_cache(host_to_mac):
     for file in ["/var/cache/%s/ethers" % PKG, "%s/.cache/ethers" % HOME]:
         if os.access(file, os.W_OK):
-            f = open(file % PKG, 'w')
+            f = open(file, 'w')
             for h in host_to_mac:
                 if is_mac(host_to_mac[h]):
                     f.write("%s %s\n" % (host_to_mac[h], h))
