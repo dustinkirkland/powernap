@@ -1,6 +1,9 @@
 powernap (1.9) unreleased; urgency=low
 
-  * UNRELEASED
+  * debian/powernap.upstart: fix LP: #531950
+    - fix ethtool regex
+    - allow for admin customized ethtool script, when powernap's
+      is incorrect or undesired
 
  -- Dustin Kirkland <kirkland@ubuntu.com>  Sat, 06 Feb 2010 22:34:43 -0600
 
