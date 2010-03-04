@@ -1,11 +1,11 @@
-powernap (1.9) unreleased; urgency=low
+powernap (1.9-0ubuntu1) lucid; urgency=low
 
   * debian/powernap.upstart: fix LP: #531950
     - fix ethtool regex
     - allow for admin customized ethtool script, when powernap's
       is incorrect or undesired
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Sat, 06 Feb 2010 22:34:43 -0600
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 04 Mar 2010 11:04:49 -0600
 
 powernap (1.8-0ubuntu1) lucid; urgency=low
 
