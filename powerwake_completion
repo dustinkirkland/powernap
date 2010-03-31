@@ -3,7 +3,7 @@
 have powerwake &&
 _powerwake()
 {
-    local cur prev options files target
+    local cur prev options files targets
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
