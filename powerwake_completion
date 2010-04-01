@@ -13,6 +13,9 @@ _powerwake()
 
     case "${prev}" in
         -@(b|-broadcast))
+            COMPREPLY=( $( compgen -W "$( LANG=C ifconfig 2>/dev/null | \
+                awk '/Bcast:/ {print $3}' | awk -F ":" '{print $2}' )" \
+                -- ${cur} ) )
             return 0
             ;;
         -@(m|-method))
