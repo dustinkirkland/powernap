@@ -9,14 +9,14 @@ _powerwake()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     options="-b --broadcast -m --method"
     files="/etc/ethers /var/cache/powerwake/ethers"
-    targets="$( cat ${files} 2>/dev/null | awk '{ print $2 }' )"
+    targets="$( cat ${files} 2>/dev/null | awk '{print $2}' )"
 
     case "${prev}" in
         -@(b|-broadcast))
             return 0
             ;;
         -@(m|-method))
-            COMPREPLY=( $(compgen -W "wol" -- ${cur}) )
+            COMPREPLY=( $( compgen -W "wol" -- ${cur} ) )
             return 0
             ;;
         *)
@@ -24,10 +24,10 @@ _powerwake()
     esac
 
     if [[ ${cur} == -* ]] ; then
-        COMPREPLY=( $(compgen -W "${options}" -- ${cur}) )
+        COMPREPLY=( $( compgen -W "${options}" -- ${cur} ) )
         return 0
     else
-        COMPREPLY=( $(compgen -W "${targets}" -- ${cur}) );
+        COMPREPLY=( $( compgen -W "${targets}" -- ${cur} ) );
         return 0
     fi
 }
