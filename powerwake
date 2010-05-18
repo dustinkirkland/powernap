@@ -118,6 +118,10 @@ def get_arp_current(host_to_mac):
     return host_to_mac
 
 def write_arp_cache(host_to_mac):
+    if not os.path.exists("%s/.cache/" % HOME):
+        os.makedirs("%s/.cache/" % HOME)
+    f = open("%s/.cache/ethers" % HOME, 'a')
+    f.close()
     for file in ["/var/cache/%s/ethers" % PKG, "%s/.cache/ethers" % HOME]:
         if os.access(file, os.W_OK):
             f = open(file, 'w')

@@ -4,6 +4,10 @@ powernap (1.10) unreleased; urgency=low
   * debian/powerwake.install, powerwake_completion: add bash completion
     for powerwake, LP: #551073
 
+  [ Dustin Kirkland ]
+  * powerwake: create the ~/.cache/ethers file, if it does not already
+    exist, LP: #582381
+
  -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 04 Mar 2010 11:04:54 -0600
 
 powernap (1.9-0ubuntu1) lucid; urgency=low
