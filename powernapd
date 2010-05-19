@@ -48,8 +48,8 @@ CONFIG   = {
   'monitor_procs'     : [],
   'monitor_io_procs'  : [],
 }
-RUNNING     = True
-PROCESSES   = []
+RUNNING  = True
+MONITORS = []
 
 # Config signal handler
 def sig_handler_config ( sig, frame ):
@@ -122,6 +122,12 @@ def load_config ():
     if opts.daemon    != None: CONFIG['daemon']    = opts.daemon
     if opts.procs:             CONFIG['monitor_procs']     = opts.procs
     if opts.io_procs:          CONFIG['monitor_io_procs']  = opts.io_procs
+
+    # Configure monitors
+    #   TODO: might be good to make this more flexible
+    MONITORS.append(InputMonitor())
+    for p in CONFIG['monitor_io_procs']:  MONITORS.append(IOMonitor(p))
+    for p in CONFIG['monitor_procs']   :  MONITORS.append(ProcessMonitor(p))
 
 # ###########################################################################
 # Logging
@@ -244,202 +250,277 @@ def take_action_handler(signal, frame):
 
 # ###########################################################################
 # Monitors
+#   monitors are the key element in this system, they monitor particular
+#   aspects of the system to determine if activity is present that should
+#   stop the machine from going into suspend
+#
+#   The implementation is not as python like as it could be, its assumed
+#   that all Monitor extend from the Monitor class which provides the basic
+#   "stubbed" interface
+#
+#   Most monitors don't run seperate threads, however some do and therefore
+#   the start/stop methods are added (could also be used to reset counts
+#   etc...)
 # ###########################################################################
 
-# Define Process object to hold regex and absence counter
-class Process(object):
-    def __init__(self, process, io=False):
-        self.process = process
-        self.regex = re.compile(process)
-        self.absent_seconds = 0
-        self.check_io = io
-        self.pid_table = {}
-    def __repr__(self):
-        return self.process + " (IOmonitor: %s)"%self.check_io
+# Generic monitor (doesn't really do much)
+#   Note: as this is python there it's not required that anything extend from
+#         this. It's merely here for conveinience and to serve as a guide as
+#         to the required API that should be provided by Monitor objects
+class Monitor ( object ):
+    def __init__ ( self, name ):
+        self.name = name
+        debug(logging.DEBUG, "Creating monitor %s" % name)
+    def __repr__ ( self ):
+        return self.name
 
-# Search process list for regex, if requested run a check for IO activity
-def find_process(ps, p):
-    pids = []
-    found = False
+    # Reset monitor
+    def reset ( self ): pass
 
-    for str in ps:
-        proc = str.strip().partition(' ') # Extract the pid of a process
-        if p.regex.search(proc[2]):
-            if not p.check_io:
-                return 1 # Not interested in IO. Return on first match.
+    # Start the monitor
+    def start ( self ): pass
+
+    # Stop the monitor
+    def stop  ( self ): pass
+
+    # Check if monitored resource is active
+    def active ( self ): return False
+
+# Monitor /dev/input
+class InputMonitor ( Monitor, threading.Thread ):
+    def __init__ ( self ):
+        threading.Thread.__init__(self)
+        Monitor.__init__(self, "console")
+        self.event   = False
+
+    def reset ( self ): self.event = False
+
+    def start ( self ): threading.Thread.start(self)
+
+    def active ( self ):
+        ret = self.event
+        self.event = False
+        return ret
+
+    # Monitor /dev/input
+    #   Note: it is assumed that /dev/input is completely static!
+    #         i.e. if someone plugs a hot-pluggable input device (such as a 
+    #              USB keyboard/mouse) this will not be detected (unless
+    #              present when this process starts
+    #   TODO: would be better to fix this, I've done it before so not too 
+    #         difficult
+    def run ( self ):
+        global RUNNING
+        import select
+
+        # Get all events
+        poll = select.poll()
+        fps  = []
+        for f in os.listdir('/dev/input'):
+            path = os.path.join('/dev/input', f)
+            if not os.path.isdir(path):
+                fp   = open(path)
+                fps.append(fp)
+                poll.register(fp, select.POLLIN)
+                debug(logging.DEBUG, '%s - adding input device %s' % (self, path))
+
+        # Poll for events
+        while RUNNING:
+            res = poll.poll(1000)
+            if ( res ):
+               for fd, e in res:
+                   if e & select.POLLIN:
+                       self.event = True
+                       os.read(fd, 32768) # Read what is there!
+
+        # Close the files
+        for fp in fps: fp.close()
+      
+# Process monitor
+#   monitors static processes (i.e. presence in /proc is enough)
+class ProcessMonitor ( Monitor ):
+    def __init__ ( self, regex, name = None ):
+        if not name: name = "proc:%s" % regex
+        Monitor.__init__(self, name)
+        self.regex = re.compile(regex)
+        self.pids  = []
+
+    def reset ( self ): self.pids = []
+
+    def active ( self ):
+      self.pids = find_pids(self.regex)
+      return len(self.pids) > 0
+
+# IO monitor
+#   monitor IO activity on a process (i.e. presence alone is not enough)
+class IOMonitor ( ProcessMonitor ):
+    def __init__ ( self, regex, name = None ):
+        if not name: name = "ioproc:%s" % regex
+        ProcessMonitor.__init__(self, regex, name)
+        self.io_counts = {}
+
+    def reset ( self ):
+        ProcessMonitor.reset(self)
+        self.io_counts = {}
+
+    def active ( self ):
+        ret = False
+        
+        # Get new PID list from parent
+        ProcessMonitor.active(self)
+
+        # Get IO counts for all PIDs
+        io_counts = {}
+        for pid in self.pids:
+            io_counts[pid] = {}
+            try:
+                fp = open('/proc/%d/io' % pid)
+                for l in fp.readlines():
+                    pts = l.split(':')
+                    io_counts[pid][pts[0].strip()] = int(pts[1].strip())
+                fp.close()
+            except: pass # its possible the proc will die in here!
+
+        # Update counts
+        for pid in self.pids:
+
+            # New process (assume activity)
+            if pid not in self.io_counts:
+               ret = True
+               debug(logging.DEBUG, '    %s - adding new PID %d to list' % (self, pid))
+
+            # Existing: check for change
             else:
-                pids.append(proc[0])
-                if check_process_io(proc[0], p):
-                    found = True
-    if p.check_io:
-        # Remove dead processes from the pid table
-        if p.pid_table.keys() != pids:
-            for pid in set(p.pid_table.keys()).difference(set(pids)):
-                del p.pid_table[pid]
-        # At least one pid had some IO activity
-        if found:
-            return 1
-    return 0
+                tmp = False
+                for f in self.io_counts[pid]:
+                    if self.io_counts[pid][f] != io_counts[pid][f]: tmp = True
+                if ( tmp ): debug(logging.DEBUG, '    %s - PID %d has IO activity' % (self, pid))
+                ret = tmp
 
-# Check the IO activity of a process. The current r/w counts are stored for
-# comparison on next runs.
-def check_process_io(pid, p):
-    debug(logging.DEBUG-5, "    Process found pid=%s, checking for IO activity" % pid)
-    io = open("/proc/%s/io" % pid).read().splitlines()
-    # IO counts
-    rchar = 0
-    wchar = 0
-    read_bytes = 0
-    write_bytes = 0
+            # Update count
+            self.io_counts[pid] = io_counts[pid]
 
-    # Read the IO counts
-    for line in io:
-        cols = line.split()
-        if cols[0] == "rchar:":
-            rchar = int(cols[1])
-        if cols[0] == "wchar:":
-            wchar = int(cols[1])
-        if cols[0] == "read_bytes:":
-            read_bytes = int(cols[1])
-        if cols[0] == "write_bytes:":
-            write_bytes = int(cols[1])
-    debug(logging.DEBUG-5, "      Current:  rchar=%s; wchar=%s; rbytes=%s; wbytes=%s" % (rchar, wchar, read_bytes, write_bytes))
+        # Remove old
+        rem = []
+        for pid in self.io_counts:
+            if pid not in self.pids:
+                rem.append(pid)
+        for pid in rem:
+            debug(logging.DEBUG, '    %s - PID %d no longer exists' % (self, pid))
+            self.io_counts.pop(pid)
 
-    # Compare current IO counts with stored values
-    if pid not in p.pid_table:
-        debug(logging.DEBUG-5, "      New pid added to the pid table")
-        p.pid_table[pid] = [rchar, wchar, read_bytes, write_bytes]
-        return True
-    else:
-        debug(logging.DEBUG-5, "      Previous: rchar=%s; wchar=%s; rbytes=%s; wbytes=%s" % (p.pid_table[pid][0], p.pid_table[pid][1], p.pid_table[pid][2], p.pid_table[pid][3]))
-        if p.pid_table[pid][0] == rchar and \
-                p.pid_table[pid][1] == wchar and \
-                p.pid_table[pid][2] == read_bytes and \
-                p.pid_table[pid][3] == write_bytes:
-            return False
-        else:
-            p.pid_table[pid] = [rchar, wchar, read_bytes, write_bytes]
-            return True
+        return ret
 
-# Check /dev/*, such that we don't powernap the system if someone
-# is actively using a terminal device
-def get_console_activity():
-    dev = commands.getoutput("ls -t /dev").split('\n')
-    c = 0
-    d = "/dev/null"
-    # Find the most recently touched device
-    for d in dev:
-      d = "/dev/%s" % d
-      debug(logging.DEBUG, "      Examining [%s]" % d)
-      if os.path.isdir(d):
-          pass
-      else:
-          t = os.stat(d)
-          c = time.time() - t.st_mtime
-          break
-    i = get_interrupts()
-    return c, d, i
+# Find list of PIDs that match a given regex (cmdline)
+#   Note: I prefer using the /proc filesystem to ps output, less parsing is required!
+def find_pids ( regex ):
+    ret = []
+  
+    for d in os.listdir('/proc'):
+        try:
+            path = '/proc/%s/cmdline' % d
+            if os.path.isfile(path):
+                fp      = open(path)
+                cmdline = fp.read()
+                fp.close()
+                if regex.search(cmdline):
+                    ret.append(int(d))
+        except: pass
 
-# Read keyboard/mouse from /proc/interrupts
-# Note: only works for ps2 keyboards/mice
-def get_interrupts():
-    interrupts = 0
-    f = open("/proc/interrupts", "r")
-    for line in f.readlines():
-        items = line.split()
-        source = items.pop()
-        if source == "i8042" or source == "keyboard" or source == "mouse":
-            items.pop(0)
-            items.pop()
-            for i in items:
-                interrupts += int(i)
-    f.close()
-    return interrupts
+    return ret
 
 # ###########################################################################
 # Main 
 # ###########################################################################
 
-# Main loop, search process table, increment counters, take actions, sleep
+# Search process table, increment counters, take actions, sleep
 def powernapd_loop():
-    global CONFIG, PROCESSES
-    last_a = time.time(), last_i = 0
+    global RUNNING, CONFIG
+    last_a = time.time()
     warned = False
-    while 1:
+
+    # Until told to stop
+    while RUNNING:
+
+        # Sleep (get accurate period?)
         debug(logging.DEBUG, "Sleeping [%d] seconds" % CONFIG['interval'])
         time.sleep(CONFIG['interval'])
-        # Examine process table, compute absent time of each monitored process
-        debug(logging.DEBUG, "Examining process table")
-        active_processes = 0
-        ps = commands.getoutput("ps -eo pid,args").splitlines()
 
-        # Check console
-        c, d, i = get_console_activity()
-        if c < CONFIG['absent'] or i != last_i:
-           active_processes += 1
-        last_i = i
-
-        # Check others
-        for p in PROCESSES:
-            debug(logging.DEBUG, "  Looking for [%s]" % p.process)
-            if find_process(ps, p):
-                # process running, so reset absent time
-                p.absent_seconds = 0
-                debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, CONFIG['absent']))
-                active_processes += 1
+        # Check for each monitor
+        active = 0
+        for m in MONITORS:
+            if m.active():
+                debug(logging.DEBUG, '  %-30s is active' % m)
+                active += 1
             else:
-                # process not running, increment absent time
-                p.absent_seconds += CONFIG['interval']
-                debug(logging.DEBUG, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, CONFIG['absent']))
-                if p.absent_seconds >= CONFIG['absent']:
-                    # process missing for >= absent_seconds threshold, mark absent
-                    debug(logging.DEBUG, "    Process absent for >= threshold, so mark absent")
+                debug(logging.DEBUG, '  %-30s is inactive' % m)
 
-        # Determine if action needs to be taken
-        if active_processes > 0:
-            debug(logging.DEBUG, "    Checking for console or terminal activity")
+        # Something is active
+        if ( active > 0 ):
+            debug(logging.DEBUG, "Active monitors detected [count = %d]" % active)
             last_a = time.time()
 
-            # Inform users of cancellation
+            # Inform sysem users suspend terminated
             if warned:
                 alert_user_cancelled()
                 warned = False
-
+          
         # Absent
         else:
             now    = time.time()
             absent = now - last_a
             debug(logging.DEBUG, "No active monitors detected [absent = %d/%d]" % (absent, CONFIG['absent']))
 
-            # Time is up (take action)
-            if ( absert >= CONFIG['absent'] ):
+            # Time is up (powerdown)
+            if ( absent >= CONFIG['absent'] ):
                 take_action()
 
-                # Reset (TODO: is this appropriate if we're not actually asleep?)
+                # Wakeup (reset)
                 warned = False
                 last_a = time.time()
-                for p in PROCESSES:
-                    p.absent_seconds = 0
-                    p.pid_table = {}
+                for m in MONITORS: m.reset()
+
+                # Log sleep period
+                asleep = last_a - now
+                days   = int(asleep / 86400)
+                asleep = asleep % 86400
+                hrs    = int(asleep / 3600)
+                asleep = asleep % 3600
+                mins   = int(asleep / 60)
+                secs   = asleep % 60
+                debug(logging.INFO, "System resumed after being asleep for %02d days %02d hrs %02d min %02d sec"
+                      % (days, hrs, mins, secs))
 
             # Grace period
-            elif CONFIG['absent'] - absent) <= CONFIG['grace']:
+            elif ( (CONFIG['absent'] - absent) <= CONFIG['grace'] ):
                 if ( not warned ):
                     alert_user_warning()
                     warned = True
 
 # Main program
 if __name__ == '__main__':
+
     # Ensure that only one instance runs
     daemonize()
     setup_signal_handlers()
     create_pid()
+  
+    # Debug
+    debug(logging.INFO, "Starting monitors: %s" % MONITORS)
+
+    # Start
     try:
-        # Run the main powernapd loop
-        PROCESSES = [Process(p) for p in CONFIG['monitor_procs']]
-        PROCESSES.extend([Process(p, True) for p in CONFIG['monitor_io_procs']])
-        debug(logging.INFO, "Starting %s" % PKG)
-        debug(logging.DEBUG, "Monitored processes %s" % PROCESSES)
+        for m in MONITORS: m.start()
+
+        # Enter the main loop
         powernapd_loop()
+
+    # Oh dear!
+    except Exception, e:
+        debug(logging.ERROR, "Unexpected exception [e=%s]" % e)
+
+    # Shut it all down
     finally:
-        pass
+        for m in MONITORS: m.stop()
+        debug(logging.INFO, "Powernap Daemon terminating")
+        sys.exit(0)
