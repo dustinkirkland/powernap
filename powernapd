@@ -39,16 +39,15 @@ import threading
 PKG      = 'powernap'
 CONFIG   = {
   'log'               : '/var/log/%s.log' % PKG,
-  'lock'              : '/var/run/%s.pid' % PKG,
+  'pid'               : '/var/run/%s.pid' % PKG,
   'interval'          : 1.0,
   'absent'            : sys.maxint,
   'grace'             : 60.0,
   'debug'             : 0,
   'daemon'            : True,
   'action'            : '/usr/sbin/powernap',
-  'monitor_procs'     : [],
-  'monitor_io_procs'  : [],
-  'monitor_udp_ports' : [ 9 ],
+  'monitors'          : [],
+  'plugin_dir'        : './plugins',
 }
 RUNNING  = True
 MONITORS = []
@@ -72,6 +71,9 @@ def load_config ():
     optp.add_option("-l", "--log", dest="log",
                     default=None,
                     help="Specify an alternative log file")
+    optp.add_option("--pid", dest="pid",
+                    default=None,
+                    help="Specify an alternative PID file")
     optp.add_option("-i", "--interval", dest="interval",
                     default=None, type='float',
                     help="Specify interval period in seconds")
@@ -88,15 +90,9 @@ def load_config ():
                     default=None,
                     action='store_false',
                     help="Do not run as a daemon process")
-    optp.add_option('--udp', dest='udp_ports',
-                    default=[], action='append', type='int',
-                    help='Specify a UDP port receive wakeup messages on')
-    optp.add_option('--proc', dest='procs',
+    optp.add_option('--monitor', dest='monitors',
                     default=[], action='append',
-                    help='Specify a static process to monitor (regexp)')
-    optp.add_option('--ioproc', dest='io_procs',
-                    default=[], action='append',
-                    help='Specify an IO based process to monitor (regexp)')
+                    help='Specify monitor class to load')
 
     # Parse command line
     (opts,args) = optp.parse_args()
@@ -117,21 +113,13 @@ def load_config ():
 
     # Update from command line
     if opts.log       != None: CONFIG['log']       = opts.log
+    if opts.pid       != None: CONFIG['pid']       = opts.pid
     if opts.debug     != None: CONFIG['debug']     = opts.debug
     if opts.interval  != None: CONFIG['interval']  = opts.interval
     if opts.absent    != None: CONFIG['absent']    = opts.absent
     if opts.grace     != None: CONFIG['grace']     = opts.grace
     if opts.daemon    != None: CONFIG['daemon']    = opts.daemon
-    if opts.procs:             CONFIG['monitor_procs']     = opts.procs
-    if opts.io_procs:          CONFIG['monitor_io_procs']  = opts.io_procs
-    if opts.udp_ports:         CONFIG['monitor_udp_ports'] = opts.udp_ports
-
-    # Configure monitors
-    #   TODO: might be good to make this more flexible
-    MONITORS.append(InputMonitor())
-    for p in CONFIG['monitor_io_procs']:  MONITORS.append(IOMonitor(p))
-    for p in CONFIG['monitor_procs']   :  MONITORS.append(ProcessMonitor(p))
-    for p in CONFIG['monitor_udp_ports']: MONITORS.append(RemoteMonitor(p))
+    if opts.monitors:          CONFIG['monitors']  = opts.monitors
 
 # ###########################################################################
 # Logging
@@ -195,7 +183,7 @@ def create_pid ():
     import fcntl
     f = None
     try:
-        f = open(CONFIG['lock'], 'w')
+        f = open(CONFIG['pid'], 'w')
     except:
         error("Administrative privileges are required to run %s" % PKG);
    
@@ -256,7 +244,7 @@ def take_action():
     os.system(CONFIG['action'])
 
 # Handler for asynchronous external signals
-def sig_hander_take_action ( sig, frame ):
+def sig_handler_take_action ( sig, frame ):
     if ( sig == signal.SIGUSR1 ): take_action()
 
 # ###########################################################################
@@ -274,14 +262,38 @@ def sig_hander_take_action ( sig, frame ):
 #   etc...)
 # ###########################################################################
 
+# Generate monitors
+#   TODO: this load system is crap, files must be ordered to work
+#         but its just to prove basic concept
+def create_monitors ( monitor_config ):
+    ret = []
+
+    # Source all plugins
+    for f in os.listdir(CONFIG['plugin_dir']):
+        p = os.path.join(CONFIG['plugin_dir'], f)
+        if os.path.isfile(p):
+            try:
+                execfile(p, globals())
+            except Exception, e:
+                print 'ERROR: eval %s [e=%s]' % (p, str(e))
+
+    # Process each
+    for m in monitor_config:
+        pts     = m.split('=', 2)
+        monitor = globals()[pts[0]](eval(pts[1]))
+        ret.append(monitor)
+
+    return ret
+
 # Generic monitor (doesn't really do much)
 #   Note: as this is python there it's not required that anything extend from
 #         this. It's merely here for conveinience and to serve as a guide as
 #         to the required API that should be provided by Monitor objects
 class Monitor ( object ):
-    def __init__ ( self, name ):
-        self.name = name
-        debug(logging.DEBUG, "Creating monitor %s" % name)
+    def __init__ ( self, config ):
+        if not config.has_key('name'): config['name'] = 'unknown'
+        self.name = config['name']
+        debug(logging.DEBUG, "Creating monitor %s" % self.name)
     def __repr__ ( self ):
         return self.name
 
@@ -297,174 +309,6 @@ class Monitor ( object ):
     # Check if monitored resource is active
     def active ( self ): return False
 
-# Monitor /dev/input
-class InputMonitor ( Monitor, threading.Thread ):
-    def __init__ ( self ):
-        threading.Thread.__init__(self)
-        Monitor.__init__(self, "console")
-        self.event   = False
-
-    def reset ( self ): self.event = False
-
-    def start ( self ): threading.Thread.start(self)
-
-    def active ( self ):
-        ret = self.event
-        self.event = False
-        return ret
-
-    # Monitor /dev/input
-    #   Note: it is assumed that /dev/input is completely static!
-    #         i.e. if someone plugs a hot-pluggable input device (such as a 
-    #              USB keyboard/mouse) this will not be detected (unless
-    #              present when this process starts
-    #   TODO: would be better to fix this, I've done it before so not too 
-    #         difficult
-    def run ( self ):
-        global RUNNING
-        import select
-
-        # Get all events
-        poll = select.poll()
-        fps  = []
-        for f in os.listdir('/dev/input'):
-            path = os.path.join('/dev/input', f)
-            if not os.path.isdir(path):
-                fp   = open(path)
-                fps.append(fp)
-                poll.register(fp, select.POLLIN)
-                debug(logging.DEBUG, '%s - adding input device %s' % (self, path))
-
-        # Poll for events
-        while RUNNING:
-            res = poll.poll(1000)
-            if ( res ):
-               for fd, e in res:
-                   if e & select.POLLIN:
-                       self.event = True
-                       os.read(fd, 32768) # Read what is there!
-
-        # Close the files
-        for fp in fps: fp.close()
-      
-# Process monitor
-#   monitors static processes (i.e. presence in /proc is enough)
-class ProcessMonitor ( Monitor ):
-    def __init__ ( self, regex, name = None ):
-        if not name: name = "proc:%s" % regex
-        Monitor.__init__(self, name)
-        self.regex = re.compile(regex)
-        self.pids  = []
-
-    def reset ( self ): self.pids = []
-
-    def active ( self ):
-      self.pids = find_pids(self.regex)
-      return len(self.pids) > 0
-
-# IO monitor
-#   monitor IO activity on a process (i.e. presence alone is not enough)
-class IOMonitor ( ProcessMonitor ):
-    def __init__ ( self, regex, name = None ):
-        if not name: name = "ioproc:%s" % regex
-        ProcessMonitor.__init__(self, regex, name)
-        self.io_counts = {}
-
-    def reset ( self ):
-        ProcessMonitor.reset(self)
-        self.io_counts = {}
-
-    def active ( self ):
-        ret = False
-        
-        # Get new PID list from parent
-        ProcessMonitor.active(self)
-
-        # Get IO counts for all PIDs
-        io_counts = {}
-        for pid in self.pids:
-            io_counts[pid] = {}
-            try:
-                fp = open('/proc/%d/io' % pid)
-                for l in fp.readlines():
-                    pts = l.split(':')
-                    io_counts[pid][pts[0].strip()] = int(pts[1].strip())
-                fp.close()
-            except: pass # its possible the proc will die in here!
-
-        # Update counts
-        for pid in self.pids:
-
-            # New process (assume activity)
-            if pid not in self.io_counts:
-               ret = True
-               debug(logging.DEBUG, '    %s - adding new PID %d to list' % (self, pid))
-
-            # Existing: check for change
-            else:
-                tmp = False
-                for f in self.io_counts[pid]:
-                    if self.io_counts[pid][f] != io_counts[pid][f]: tmp = True
-                if ( tmp ): debug(logging.DEBUG, '    %s - PID %d has IO activity' % (self, pid))
-                ret = tmp
-
-            # Update count
-            self.io_counts[pid] = io_counts[pid]
-
-        # Remove old
-        rem = []
-        for pid in self.io_counts:
-            if pid not in self.pids:
-                rem.append(pid)
-        for pid in rem:
-            debug(logging.DEBUG, '    %s - PID %d no longer exists' % (self, pid))
-            self.io_counts.pop(pid)
-
-        return ret
-
-# Monitor UDP messages
-class RemoteMonitor ( Monitor, threading.Thread ):
-    def __init__ ( self, port = 9 ):
-        threading.Thread.__init__(self)
-        Monitor.__init__(self, "remote")
-        self.data    = False
-        self.port    = port
-
-    def reset ( self ): self.data = False
-
-    def start ( self ): threading.Thread.start(self)
-
-    def active ( self ):
-        ret = self.data
-        self.data = False
-        return ret
-
-    # Open port and wait for data (any data will trigger the monitor)
-    def run ( self ):
-        global RUNNING
-        import socket
-
-        # Create socket
-        sock   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        listen = False
-
-        while RUNNING:
-            if not listen:
-                try:
-                    debug(logging.DEBUG, '%s - configure socket' % self)
-                    sock.bind(('', self.port))
-                    sock.settimeout(1.0)
-                    listen = True
-                except Exception, e:
-                    debug(logging.ERROR, '%s - failed to config socket [e=%s]' % (self, str(e)))
-                    time.sleep(1.0)
-            else:
-                try:
-                    # Wait for data
-                    sock.recvfrom(1024)
-                    debug(logging.DEBUG, '%s - data packet received' % self)
-                    self.data = True
-                except: pass # timeout
 
 # Find list of PIDs that match a given regex (cmdline)
 #   Note: I prefer using the /proc filesystem to ps output, less parsing is required!
@@ -555,11 +399,12 @@ def powernapd_loop():
 # Main program
 if __name__ == '__main__':
 
-    # Initial setup
+    # Configure everything
+    load_config()
     logging.basicConfig(filename=CONFIG['log'], level=logging.NOTSET,
                         format='%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d_%H:%M:%S')
-    load_config()
+    MONITORS = create_monitors(CONFIG['monitors'])
 
     # Process setup
     create_pid()
