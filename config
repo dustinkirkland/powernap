@@ -16,8 +16,18 @@
 #   MONITORED_PROCESSES = [ "^/sbin/init" ]
 MONITORED_PROCESSES = [ "^/sbin/init" ]
 
-# Number of seconds that all processes must be absent from the process table and
-# no keyboard activity on any terminals.
+# The MONITORED_IO_PROCESSES variable should be a Python list of quoted regular
+# expressions.
+# Each item in this list will be compared against the output of "ps -eo args".
+# If found the contents of /proc/[pid]/io will be compared with stored values
+# from previous pass. If no IO activity is detected the absent counter is
+# increased.
+# Examples:
+#   MONITORED_IO_PROCESSES = [ "nfsd", "smbd", "lighttpd" ]
+MONITORED_IO_PROCESSES = [ ]
+
+# Number of seconds that all processes must be absent from the process table or
+# without IO activity and no keyboard activity on any terminals.
 # The default is an absence period of 5 minutes.
 # Example:
 #   ABSENT_SECONDS = 300
@@ -45,7 +55,7 @@ INTERVAL_SECONDS = 1
 
 # The powernap daemon logs errors to /var/log/powernap.err, and some basic
 # information to /var/log/powernap.log.  To change the verbosity of this
-# logging, set DEBUG to 0, 1, 2, or 3:
+# logging, set DEBUG to 0, 1, 2, 3 or 4:
 # The default debug level is 0.
 #    DEBUG = 1
 #    DEBUG = 2

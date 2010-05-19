@@ -34,11 +34,12 @@ LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
 LOG = "/var/log/%s.log" % PKG
 
-logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.DEBUG,)
+logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.NOTSET,)
 
 # CONFIG values can override these
-global MONITORED_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
+global MONITORED_PROCESSES, MONITORED_IO_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
 MONITORED_PROCESSES = []
+MONITORED_IO_PROCESSES = []
 ABSENT_SECONDS = sys.maxint
 ACTION = "/usr/sbin/powernap"
 INTERVAL_SECONDS = 1
@@ -55,10 +56,14 @@ except:
 
 # Define Process object to hold regex and absence counter
 class Process(object):
-    def __init__(self, process):
+    def __init__(self, process, io=False):
         self.process = process
         self.regex = re.compile(process)
         self.absent_seconds = 0
+        self.check_io = io
+        self.pid_table = {}
+    def __repr__(self):
+        return self.process + " (IOmonitor: %s)"%self.check_io
 
 # Generic debug function
 def debug(level, msg):
@@ -98,12 +103,69 @@ def signal_handler(signal, frame):
     debug(logging.INFO, "Stopping %s" % PKG)
     sys.exit(1)
 
-# Search process list for regex, return on first match
+# Search process list for regex, if requested run a check for IO activity
 def find_process(ps, p):
+    pids = []
+    found = False
+
     for str in ps:
-        if p.search(str):
+        proc = str.strip().partition(' ') # Extract the pid of a process
+        if p.regex.search(proc[2]):
+            if not p.check_io:
+                return 1 # Not interested in IO. Return on first match.
+            else:
+                pids.append(proc[0])
+                if check_process_io(proc[0], p):
+                    found = True
+    if p.check_io:
+        # Remove dead processes from the pid table
+        if p.pid_table.keys() != pids:
+            for pid in set(p.pid_table.keys()).difference(set(pids)):
+                del p.pid_table[pid]
+        # At least one pid had some IO activity
+        if found:
             return 1
     return 0
+
+# Check the IO activity of a process. The current r/w counts are stored for
+# comparison on next runs.
+def check_process_io(pid, p):
+    debug(logging.DEBUG-5, "    Process found pid=%s, checking for IO activity" % pid)
+    io = open("/proc/%s/io" % pid).read().splitlines()
+    # IO counts
+    rchar = 0
+    wchar = 0
+    read_bytes = 0
+    write_bytes = 0
+
+    # Read the IO counts
+    for line in io:
+        cols = line.split()
+        if cols[0] == "rchar:":
+            rchar = int(cols[1])
+        if cols[0] == "wchar:":
+            wchar = int(cols[1])
+        if cols[0] == "read_bytes:":
+            read_bytes = int(cols[1])
+        if cols[0] == "write_bytes:":
+            write_bytes = int(cols[1])
+    debug(logging.DEBUG-5, "      Current:  rchar=%s; wchar=%s; rbytes=%s; wbytes=%s" % (rchar, wchar, read_bytes, write_bytes))
+
+    # Compare current IO counts with stored values
+    if pid not in p.pid_table:
+        debug(logging.DEBUG-5, "      New pid added to the pid table")
+        p.pid_table[pid] = [rchar, wchar, read_bytes, write_bytes]
+        return True
+    else:
+        debug(logging.DEBUG-5, "      Previous: rchar=%s; wchar=%s; rbytes=%s; wbytes=%s" % (p.pid_table[pid][0], p.pid_table[pid][1], p.pid_table[pid][2], p.pid_table[pid][3]))
+        if p.pid_table[pid][0] == rchar and \
+                p.pid_table[pid][1] == wchar and \
+                p.pid_table[pid][2] == read_bytes and \
+                p.pid_table[pid][3] == write_bytes:
+            return False
+        else:
+            p.pid_table[pid] = [rchar, wchar, read_bytes, write_bytes]
+            return True
 
 # Check /dev/*, such that we don't powernap the system if someone
 # is actively using a terminal device
@@ -171,6 +233,7 @@ def take_action():
     debug(logging.DEBUG, "Reseting counters prior to taking action")
     for p in PROCESSES:
         p.absent_seconds = 0
+        p.pid_table = {}
     os.system(ACTION)
 
 # Handler for asynchronous external signals
@@ -186,10 +249,10 @@ def powernapd_loop():
         # Examine process table, compute absent time of each monitored process
         debug(logging.DEBUG, "Examining process table")
         absent_processes = 0
-        ps = commands.getoutput("ps -eo args").splitlines()
+        ps = commands.getoutput("ps -eo pid,args").splitlines()
         for p in PROCESSES:
             debug(logging.DEBUG, "  Looking for [%s]" % p.process)
-            if find_process(ps, p.regex):
+            if find_process(ps, p):
                 # process running, so reset absent time
                 p.absent_seconds = 0
                 debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
@@ -253,7 +316,9 @@ if __name__ == '__main__':
     try:
         # Run the main powernapd loop
         PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
+        PROCESSES.extend([Process(p, True) for p in MONITORED_IO_PROCESSES])
         debug(logging.INFO, "Starting %s" % PKG)
+        debug(logging.DEBUG, "Monitored processes %s" % PROCESSES)
         powernapd_loop()
     finally:
         # Clean up the lock file
