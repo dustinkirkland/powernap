@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#
 #    powernapd - monitor a system process table; if IDLE amount of time
 #               goes by with no MONITORED_PROCESSES running, run ACTION
 #    Copyright (C) 2009 Canonical Ltd.
@@ -335,11 +334,37 @@ def find_pids ( regex ):
 # Search process table, increment counters, take actions, sleep
 def powernapd_loop():
     global RUNNING, CONFIG
-    last_a = time.time()
-    warned = False
+    last_time = time.time()
+    warned    = False
 
     # Until told to stop
     while RUNNING:
+
+      # Wait
+      debug('sleeping for %d seconds' % CONFIG['interval'])
+      time.sleep(CONFIG['interval'])
+
+      # Get period
+      now       = time.time()
+      delta     = now - last_time
+      last_time = now
+
+      # 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         # Sleep (get accurate period?)
         debug(logging.DEBUG, "Sleeping [%d] seconds" % CONFIG['interval'])
@@ -431,3 +456,9 @@ if __name__ == '__main__':
         for m in MONITORS: m.stop()
         debug(logging.INFO, "Powernap Daemon terminating")
         sys.exit(0)
+
+# ###########################################################################
+# Editor directives
+# ###########################################################################
+
+# vim:sts=4:ts=4:sw=4:et
