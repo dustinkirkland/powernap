@@ -83,6 +83,8 @@ def error(msg):
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
 def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
+
+    # First fork
     try:
         pid = os.fork()
         if pid > 0:
@@ -90,8 +92,12 @@ def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/l
     except OSError, e:
         sys.stderr.write("fork #1 failed: (%d) %sn" % (e.errno, e.strerror))
         sys.exit(1)
+
+    # Setup environment
     os.chdir("/")
     os.setsid()
+
+    # Second fork
     try:
         pid = os.fork()
         if pid > 0:
@@ -99,9 +105,8 @@ def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/l
     except OSError, e:
         sys.stderr.write("fork #2 failed: (%d) %sn" % (e.errno, e.strerror))
         sys.exit(1)
-    f = open(LOCK,'w')
-    f.write(str(os.getpid()))
-    f.close()
+
+    # File handles
     for f in sys.stdout, sys.stderr: f.flush()
     si = file(stdin, 'r')
     so = file(stdout, 'a+')
@@ -110,32 +115,31 @@ def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/l
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
 
-
-# Lock function, using a pidfile in /var/run
-def establish_lock():
-    if os.path.exists(LOCK):
-        f = open(LOCK,'r')
-        pid = f.read()
-        f.close()
-        error("Another instance is running [%s]" % pid)
-    else:
-        try:
-            f = open(LOCK,'w')
-        except:
-            error("Administrative privileges are required to run %s" % PKG);
+# Create PID file (locked)
+def create_pid ():
+    import fcntl
+    f = None
+    try:
+        f = open(LOCK, 'w')
+    except:
+        error("Administrative privileges are required to run %s" % PKG);
+   
+    try:
+        fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
         f.write(str(os.getpid()))
-        f.close()
-        # Set signal handlers
-        signal.signal(signal.SIGHUP, signal_handler)
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGQUIT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
-        signal.signal(signal.SIGUSR1, take_action_handler)
+    except:
+        error("Another instance is running [%s]" % f.read())
+
+# Setup signal handlers
+def setup_signal_handlers ():
+    signal.signal(signal.SIGHUP, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGQUIT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGUSR1, take_action_handler)
 
 # Clean up lock file on termination signals
 def signal_handler(signal, frame):
-    if os.path.exists(LOCK):
-        os.remove(LOCK)
     debug(logging.INFO, "Stopping %s" % PKG)
     sys.exit(1)
 
@@ -339,8 +343,9 @@ def powernapd_loop():
 # Main program
 if __name__ == '__main__':
     # Ensure that only one instance runs
-    establish_lock()
     daemonize()
+    setup_signal_handlers()
+    create_pid()
     try:
         # Run the main powernapd loop
         PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
