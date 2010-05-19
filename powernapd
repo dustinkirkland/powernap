@@ -35,41 +35,104 @@ import time
 # Configuration
 # #########################################################################
 
-# Define globals
-global PKG, LOCK, CONFIG
-PKG = "powernap"
-LOCK = "/var/run/%s.pid" % PKG
-CONFIG = "/etc/%s/config" % PKG
-LOG = "/var/log/%s.log" % PKG
+PKG      = 'powernap'
+CONFIG   = {
+  'log'               : '/var/log/%s.log' % PKG,
+  'lock'              : '/var/run/%s.pid' % PKG,
+  'interval'          : 1.0,
+  'absent'            : sys.maxint,
+  'grace'             : 60.0,
+  'debug'             : 0,
+  'daemon'            : True,
+  'action'            : '/usr/sbin/powernap',
+  'monitor_procs'     : [],
+  'monitor_io_procs'  : [],
+}
+RUNNING     = True
+PROCESSES   = []
 
-global MONITORED_PROCESSES, MONITORED_IO_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
-MONITORED_PROCESSES = []
-MONITORED_IO_PROCESSES = []
-ABSENT_SECONDS = sys.maxint
-ACTION = "/usr/sbin/powernap"
-INTERVAL_SECONDS = 1
-GRACE_SECONDS = 60
-DEBUG = 0
+# Config signal handler
+def sig_handler_config ( sig, frame ):
+    if ( sig == signal.SIGHUP ):
+        debug(logging.DEBUG, 'TODO: do we need config reload support?')
 
-# Load configuration file
-try:
-    execfile(CONFIG)
-except:
-    # No error function yet, use a raw print
-    print("Invalid configuration [%s]" % CONFIG)
-    sys.exit(1)
+# Load configuration
+def load_config ():
+    global PKG, CONFIG
+    from optparse import OptionParser
+    from ConfigParser import ConfigParser
 
-# CONFIG values can override these
+    # Build options
+    optp = OptionParser()
+    optp.add_option("-c", "--config", dest="config",
+                    default=None,
+                    help="Specify an alternative configuration file")
+    optp.add_option("-l", "--log", dest="log",
+                    default=None,
+                    help="Specify an alternative log file")
+    optp.add_option("-i", "--interval", dest="interval",
+                    default=None, type='float',
+                    help="Specify interval period in seconds")
+    optp.add_option("-a", "--absent", dest="absent",
+                    default=None, type='float',
+                    help="Specify global absent period in seconds")
+    optp.add_option("-g", "--grace", dest="grace",
+                    default=None, type='float',
+                    help="Specify global grace period in seconds")
+    optp.add_option("-d", "--debug", dest="debug",
+                    default=None, type='int',
+                    help="Specify level of debug logging")
+    optp.add_option("--nodaemon", dest="daemon",
+                    default=None,
+                    action='store_false',
+                    help="Do not run as a daemon process")
+    optp.add_option('--udp', dest='udp_ports',
+                    default=[], action='append', type='int',
+                    help='Specify a UDP port receive wakeup messages on')
+    optp.add_option('--proc', dest='procs',
+                    default=[], action='append',
+                    help='Specify a static process to monitor (regexp)')
+    optp.add_option('--ioproc', dest='io_procs',
+                    default=[], action='append',
+                    help='Specify an IO based process to monitor (regexp)')
+
+    # Parse command line
+    (opts,args) = optp.parse_args()
+
+    # Get config file path
+    conf_path   = '/etc/%s/config' % PKG
+    if ( opts.config ): conf_path = opts.config
+
+    # Load config file
+    cfgp = ConfigParser()
+    if ( os.path.isfile(conf_path) ): cfgp.read([conf_path])
+
+    # Update from config file
+    if cfgp.has_section('global'):
+      for k, v in cfgp.items('global'):
+        CONFIG[k] = eval(v)
+        # TODO: how safe is this?
+
+    # Update from command line
+    if opts.log       != None: CONFIG['log']       = opts.log
+    if opts.debug     != None: CONFIG['debug']     = opts.debug
+    if opts.interval  != None: CONFIG['interval']  = opts.interval
+    if opts.absent    != None: CONFIG['absent']    = opts.absent
+    if opts.grace     != None: CONFIG['grace']     = opts.grace
+    if opts.daemon    != None: CONFIG['daemon']    = opts.daemon
+    if opts.procs:             CONFIG['monitor_procs']     = opts.procs
+    if opts.io_procs:          CONFIG['monitor_io_procs']  = opts.io_procs
 
 # ###########################################################################
 # Logging
 # ###########################################################################
 
-logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.NOTSET,)
+logging.basicConfig(filename=CONFIG['log'], format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.NOTSET,)
 
 # Generic debug function
 def debug(level, msg):
-    if level >= (logging.ERROR - 10*DEBUG):
+    global CONFIG
+    if level >= (logging.ERROR - 10*CONFIG['debug']):
         logging.log(level, msg)
 
 # Generic error function
@@ -117,10 +180,11 @@ def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/l
 
 # Create PID file (locked)
 def create_pid ():
+    global CONFIG
     import fcntl
     f = None
     try:
-        f = open(LOCK, 'w')
+        f = open(CONFIG['lock'], 'w')
     except:
         error("Administrative privileges are required to run %s" % PKG);
    
@@ -150,18 +214,18 @@ def signal_handler(signal, frame):
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
 def warn_users():
-    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (GRACE_SECONDS, ACTION)
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (CONFIG['grace'], CONFIG['action'])
     msg2 = "To cancel this operation, press any key in any terminal"
     debug(logging.WARNING, msg1)
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
     t = 0
     c, d, last_i = get_console_activity()
-    while t < GRACE_SECONDS:
-        time.sleep(INTERVAL_SECONDS)
-        t += INTERVAL_SECONDS
+    while t < CONFIG['grace']:
+        time.sleep(CONFIG['interval'])
+        t += CONFIG['interval']
         c, d, i = get_console_activity()
-        if c < INTERVAL_SECONDS or i != last_i:
-            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, ACTION)
+        if c < CONFIG['interval'] or i != last_i:
+            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, CONFIG['action'])
             debug(logging.WARNING, msg)
             commands.getoutput("echo '%s' | wall" % msg)
             return 1
@@ -170,20 +234,22 @@ def warn_users():
 
 # TODO: notify authorities about action taken
 def notify_authorities():
-    debug(logging.WARNING, "Taking action [%s]" % ACTION)
+    global CONFIG
+    debug(logging.WARNING, "Taking action [%s]" % CONFIG['action'])
 
 # Zero the counters and take the action
 def take_action():
+    global CONFIG, PROCESSES
     notify_authorities()
     debug(logging.DEBUG, "Reseting counters prior to taking action")
     for p in PROCESSES:
         p.absent_seconds = 0
         p.pid_table = {}
-    os.system(ACTION)
+    os.system(CONFIG['action'])
 
 # Handler for asynchronous external signals
 def take_action_handler(signal, frame):
-    take_action()
+    if ( sig == signal.SIGUSR1 ): take_action()
 
 # ###########################################################################
 # Monitors
@@ -305,10 +371,11 @@ def get_interrupts():
 
 # Main loop, search process table, increment counters, take actions, sleep
 def powernapd_loop():
+    global CONFIG, PROCESSES
     last_i = 0
     while 1:
-        debug(logging.DEBUG, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
-        time.sleep(INTERVAL_SECONDS)
+        debug(logging.DEBUG, "Sleeping [%d] seconds" % CONFIG['interval'])
+        time.sleep(CONFIG['interval'])
         # Examine process table, compute absent time of each monitored process
         debug(logging.DEBUG, "Examining process table")
         absent_processes = 0
@@ -318,12 +385,12 @@ def powernapd_loop():
             if find_process(ps, p):
                 # process running, so reset absent time
                 p.absent_seconds = 0
-                debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+                debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, CONFIG['absent']))
             else:
                 # process not running, increment absent time
-                p.absent_seconds += INTERVAL_SECONDS
-                debug(logging.DEBUG, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
-                if p.absent_seconds >= ABSENT_SECONDS:
+                p.absent_seconds += CONFIG['interval']
+                debug(logging.DEBUG, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, CONFIG['absent']))
+                if p.absent_seconds >= CONFIG['absent']:
                     # process missing for >= absent_seconds threshold, mark absent
                     debug(logging.DEBUG, "    Process absent for >= threshold, so mark absent")
                     absent_processes += 1
@@ -331,14 +398,14 @@ def powernapd_loop():
         if absent_processes > 0 and absent_processes == len(PROCESSES):
             debug(logging.DEBUG, "    Checking for console or terminal activity")
             c, d, i = get_console_activity()
-            if c > ABSENT_SECONDS and i == last_i:
+            if c > CONFIG['absent'] and i == last_i:
                 last_i = i
                 # All processes are absent, take action!
                 if warn_users() == 0:
                     take_action()
             else:
                 last_i = i
-                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
+                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, CONFIG['absent']))
 
 # Main program
 if __name__ == '__main__':
@@ -348,12 +415,10 @@ if __name__ == '__main__':
     create_pid()
     try:
         # Run the main powernapd loop
-        PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
-        PROCESSES.extend([Process(p, True) for p in MONITORED_IO_PROCESSES])
+        PROCESSES = [Process(p) for p in CONFIG['monitor_procs']]
+        PROCESSES.extend([Process(p, True) for p in CONFIG['monitor_io_procs']])
         debug(logging.INFO, "Starting %s" % PKG)
         debug(logging.DEBUG, "Monitored processes %s" % PROCESSES)
         powernapd_loop()
     finally:
-        # Clean up the lock file
-        if os.path.exists(LOCK):
-            os.remove(LOCK)
+        pass
