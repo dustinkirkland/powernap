@@ -5,6 +5,7 @@
 #    Copyright (C) 2009 Canonical Ltd.
 #
 #    Authors: Dustin Kirkland <kirkland@canonical.com>
+#             Adam Sutton <dev@adamsutton.me.uk>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,7 +19,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# #########################################################################
 # Imports
+# #########################################################################
+
 import commands
 import logging, logging.handlers
 import os
@@ -27,6 +31,10 @@ import signal
 import sys
 import time
 
+# #########################################################################
+# Configuration
+# #########################################################################
+
 # Define globals
 global PKG, LOCK, CONFIG
 PKG = "powernap"
@@ -34,9 +42,6 @@ LOCK = "/var/run/%s.pid" % PKG
 CONFIG = "/etc/%s/config" % PKG
 LOG = "/var/log/%s.log" % PKG
 
-logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.NOTSET,)
-
-# CONFIG values can override these
 global MONITORED_PROCESSES, MONITORED_IO_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
 MONITORED_PROCESSES = []
 MONITORED_IO_PROCESSES = []
@@ -54,16 +59,13 @@ except:
     print("Invalid configuration [%s]" % CONFIG)
     sys.exit(1)
 
-# Define Process object to hold regex and absence counter
-class Process(object):
-    def __init__(self, process, io=False):
-        self.process = process
-        self.regex = re.compile(process)
-        self.absent_seconds = 0
-        self.check_io = io
-        self.pid_table = {}
-    def __repr__(self):
-        return self.process + " (IOmonitor: %s)"%self.check_io
+# CONFIG values can override these
+
+# ###########################################################################
+# Logging
+# ###########################################################################
+
+logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.NOTSET,)
 
 # Generic debug function
 def debug(level, msg):
@@ -74,6 +76,10 @@ def debug(level, msg):
 def error(msg):
     debug(logging.ERROR, msg)
     sys.exit(1)
+
+# ###########################################################################
+# Daemon Setup
+# ###########################################################################
 
 # Lock function, using a pidfile in /var/run
 def establish_lock():
@@ -102,6 +108,63 @@ def signal_handler(signal, frame):
         os.remove(LOCK)
     debug(logging.INFO, "Stopping %s" % PKG)
     sys.exit(1)
+
+# ###########################################################################
+# Action Handling / Alerts
+# ###########################################################################
+
+# Send a message to system users, that we're about to take an action,
+# and sleep for a grace period
+def warn_users():
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (GRACE_SECONDS, ACTION)
+    msg2 = "To cancel this operation, press any key in any terminal"
+    debug(logging.WARNING, msg1)
+    commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
+    t = 0
+    c, d, last_i = get_console_activity()
+    while t < GRACE_SECONDS:
+        time.sleep(INTERVAL_SECONDS)
+        t += INTERVAL_SECONDS
+        c, d, i = get_console_activity()
+        if c < INTERVAL_SECONDS or i != last_i:
+            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, ACTION)
+            debug(logging.WARNING, msg)
+            commands.getoutput("echo '%s' | wall" % msg)
+            return 1
+        last_i = i
+    return 0
+
+# TODO: notify authorities about action taken
+def notify_authorities():
+    debug(logging.WARNING, "Taking action [%s]" % ACTION)
+
+# Zero the counters and take the action
+def take_action():
+    notify_authorities()
+    debug(logging.DEBUG, "Reseting counters prior to taking action")
+    for p in PROCESSES:
+        p.absent_seconds = 0
+        p.pid_table = {}
+    os.system(ACTION)
+
+# Handler for asynchronous external signals
+def take_action_handler(signal, frame):
+    take_action()
+
+# ###########################################################################
+# Monitors
+# ###########################################################################
+
+# Define Process object to hold regex and absence counter
+class Process(object):
+    def __init__(self, process, io=False):
+        self.process = process
+        self.regex = re.compile(process)
+        self.absent_seconds = 0
+        self.check_io = io
+        self.pid_table = {}
+    def __repr__(self):
+        return self.process + " (IOmonitor: %s)"%self.check_io
 
 # Search process list for regex, if requested run a check for IO activity
 def find_process(ps, p):
@@ -202,43 +265,9 @@ def get_interrupts():
     f.close()
     return interrupts
 
-# Send a message to system users, that we're about to take an action,
-# and sleep for a grace period
-def warn_users():
-    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (GRACE_SECONDS, ACTION)
-    msg2 = "To cancel this operation, press any key in any terminal"
-    debug(logging.WARNING, msg1)
-    commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
-    t = 0
-    c, d, last_i = get_console_activity()
-    while t < GRACE_SECONDS:
-        time.sleep(INTERVAL_SECONDS)
-        t += INTERVAL_SECONDS
-        c, d, i = get_console_activity()
-        if c < INTERVAL_SECONDS or i != last_i:
-            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, ACTION)
-            debug(logging.WARNING, msg)
-            commands.getoutput("echo '%s' | wall" % msg)
-            return 1
-        last_i = i
-    return 0
-
-# TODO: notify authorities about action taken
-def notify_authorities():
-    debug(logging.WARNING, "Taking action [%s]" % ACTION)
-
-# Zero the counters and take the action
-def take_action():
-    notify_authorities()
-    debug(logging.DEBUG, "Reseting counters prior to taking action")
-    for p in PROCESSES:
-        p.absent_seconds = 0
-        p.pid_table = {}
-    os.system(ACTION)
-
-# Handler for asynchronous external signals
-def take_action_handler(signal, frame):
-    take_action()
+# ###########################################################################
+# Main 
+# ###########################################################################
 
 # Main loop, search process table, increment counters, take actions, sleep
 def powernapd_loop():
