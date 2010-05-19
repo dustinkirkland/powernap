@@ -1,42 +1,56 @@
+#    powernapd plugin - Monitors a UDP socket for data
 #
-# TODO: add header
+#    Copyright (C) 2009 Canonical Ltd.
 #
+#    Authors: Dustin Kirkland <kirkland@canonical.com>
+#             Adam Sutton <dev@adamsutton.me.uk>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Monitor UDP messages
+# Monitor plugin
+#   listen for data on a UDP socket (typically WOL packets)
 class RemoteMonitor ( Monitor, threading.Thread ):
+
+    # Initialise
     def __init__ ( self, config ):
-        if not config.has_key('port'):
-          raise Exception('port not defined')
-        if not config.has_key('name'):
-          config['name'] = 'remote:%d' % config['port']
         threading.Thread.__init__(self)
         Monitor.__init__(self, config)
-        self.data    = False
-        self.port    = config['port']
+        self._port    = config['port']  
+        self._running = False
+        if not config.has_key('name'):
+            self._name = 'remote(%d)' % self._port
 
-    def reset ( self ): self.data = False
+    # Start thread
+    def start ( self ):
+      self._running = True
+      threading.Thread.start(self)
 
-    def start ( self ): threading.Thread.start(self)
-
-    def active ( self ):
-        ret = self.data
-        self.data = False
-        return ret
+    # Stop thread
+    def stop ( self ): self._running = False
 
     # Open port and wait for data (any data will trigger the monitor)
     def run ( self ):
-        global RUNNING
         import socket
 
         # Create socket
         sock   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         listen = False
 
-        while RUNNING:
+        while self._running:
             if not listen:
                 try:
                     debug('%s - configure socket' % self)
-                    sock.bind(('', self.port))
+                    sock.bind(('', self._port))
                     sock.settimeout(1.0)
                     listen = True
                 except Exception, e:
@@ -47,5 +61,11 @@ class RemoteMonitor ( Monitor, threading.Thread ):
                     # Wait for data
                     sock.recvfrom(1024)
                     debug('%s - data packet received' % self)
-                    self.data = True
+                    self.reset()
                 except: pass # timeout
+
+# ###########################################################################
+# Editor directives
+# ###########################################################################
+
+# vim:sts=4:ts=4:sw=4:et

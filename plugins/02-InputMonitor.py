@@ -1,35 +1,48 @@
+#    powernapd plugin - Monitors /dev/input for user activity
 #
-# TODO: add header
+#    Copyright (C) 2009 Canonical Ltd.
 #
+#    Authors: Dustin Kirkland <kirkland@canonical.com>
+#             Adam Sutton <dev@adamsutton.me.uk>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Monitor /dev/input
+# Monitor plugin
+#   Monitors devices in /dev/input for activity
 class InputMonitor ( Monitor, threading.Thread ):
 
     # Initialise
     def __init__ ( self, config ):
-        if not config.has_key('name'): config['name'] = 'console'
         threading.Thread.__init__(self)
         Monitor.__init__(self, config)
-        self.event   = False
+        self._running = False
+        if not config.has_key('name'): self._name = '/dev/input'
 
-    def reset ( self ): self.event = False
+    # Start the thread
+    def start ( self ):
+        self._running = True
+        threading.Thread.start(self)
 
-    def start ( self ): threading.Thread.start(self)
-
-    def active ( self ):
-        ret = self.event
-        self.event = False
-        return ret
+    # Stop thread
+    def stop ( self ): self._running = False
 
     # Monitor /dev/input
-    #   Note: it is assumed that /dev/input is completely static!
+    #   Note: it is assumed that /dev/input is static once powernapd starts
     #         i.e. if someone plugs a hot-pluggable input device (such as a 
     #              USB keyboard/mouse) this will not be detected (unless
     #              present when this process starts
-    #   TODO: would be better to fix this, I've done it before so not too 
-    #         difficult
+    #   TODO: remove the requirement for static /dev/input
     def run ( self ):
-        global RUNNING
         import select
 
         # Get all events
@@ -44,13 +57,19 @@ class InputMonitor ( Monitor, threading.Thread ):
                 debug('%s - adding input device %s' % (self, path))
 
         # Poll for events
-        while RUNNING:
+        while self._running:
             res = poll.poll(1000)
             if ( res ):
-               for fd, e in res:
-                   if e & select.POLLIN:
-                       self.event = True
-                       os.read(fd, 32768) # Read what is there!
+                for fd, e in res:
+                    if e & select.POLLIN:
+                        os.read(fd, 32768) # Read what is there!
+                        self.reset()
 
         # Close the files
         for fp in fps: fp.close()
+
+# ###########################################################################
+# Editor directives
+# ###########################################################################
+
+# vim:sts=4:ts=4:sw=4:et

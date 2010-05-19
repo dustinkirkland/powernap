@@ -245,7 +245,7 @@ def create_monitors ( monitor_config ):
     # Source all plugins
     for f in os.listdir(CONFIG['plugin_dir']):
         p = os.path.join(CONFIG['plugin_dir'], f)
-        if os.path.isfile(p):
+        if os.path.isfile(p) and f.endswith('.py'):
             try:
                 execfile(p, globals())
             except Exception, e:
@@ -260,32 +260,48 @@ def create_monitors ( monitor_config ):
     return ret
 
 # Generic monitor (doesn't really do much)
-#   Note: as this is python there it's not required that anything extend from
-#         this. It's merely here for conveinience and to serve as a guide as
-#         to the required API that should be provided by Monitor objects
+#   Note: it is not required that you subclass this, merely that you
+#         provide a matching API (all functions are optional) 
 class Monitor ( object ):
+
+    # Initialise the object
     def __init__ ( self, config ):
-        if not config.has_key('name'): config['name'] = 'unknown'
-        self.name = config['name']
-        debug("Creating monitor %s" % self.name)
-    def __repr__ ( self ):
-        return self.name
+        self._name     = self.__repr__()
+        self._activity = 0
+        self._grace    = 0
+        self._period   = 60
+        if ( config.has_key('name')   ): self._name   = config['name']
+        if ( config.has_key('grace')  ): self._grace  = config['grace']
+        if ( config.has_key('period') ): self._period = config['period']
+        self.reset()
 
-    # Reset monitor
-    def reset ( self ): pass
+    # String representation for debug
+    def __str__  ( self ): return self._name
 
-    # Start the monitor
-    def start ( self ): pass
-
-    # Stop the monitor
-    def stop  ( self ): pass
+    # Reset monitor (usually after resume)
+    def reset  ( self ): self._activity = time.time()
 
     # Check if monitored resource is active
-    def active ( self ): return False
+    def active ( self):
+        ret      = False
+        inactive = time.time() - self._activity
+        if ( inactive < self._period ):
+            debug('%s - inactive for %0.2f secs' % (str(self), inactive))
+            ret = True
+        return ret
 
+    # Get preferred grace period
+    def grace  ( self ): return self._grace
+
+    # Start the monitor
+    def start  ( self ): pass
+
+    # Stop the monitor
+    def stop   ( self ): pass
 
 # Find list of PIDs that match a given regex (cmdline)
-#   Note: I prefer using the /proc filesystem to ps output, less parsing is required!
+#   Note: I prefer using the /proc filesystem to ps output
+#         as less parsing is required!
 def find_pids ( regex ):
     ret = []
   
@@ -332,12 +348,12 @@ def action_exit_sleep ( period ):
         os.system(CONFIG['action_exit_sleep'])
 
 # Enter grace period
-def action_enter_grace ():
+def action_enter_grace ( period ):
     global CONFIG
     info('grace period entered')
 
     # Alert user
-    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (CONFIG['grace'], CONFIG['action'])
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (period, CONFIG['action'])
     msg2 = "To cancel this operation, press any key in any terminal"
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
 
@@ -398,7 +414,7 @@ def powernapd_loop ():
         debug('checking activity')
         active = 0
         for m in MONITORS:
-            if m.active():
+            if hasattr(m, 'active') and m.active():
                 debug('  %-30s is active' % m)
                 active += 1
             else:
@@ -424,11 +440,12 @@ def powernapd_loop ():
 
         # Enter grace period
         elif state == STATE_ACTIVE:
-            action_enter_grace()
 
             # Set the period
             grace = CONFIG['grace']
-            for m in MONITORS: grace = max(grace, m.grace())
+            for m in MONITORS:
+                if hasattr(m, 'grace'): grace = max(grace, m.grace())
+            action_enter_grace(grace)
 
             # Change state
             state = STATE_GRACE
@@ -475,7 +492,8 @@ if __name__ == '__main__':
     try:
 
         # Init monitors
-        for m in MONITORS: m.start()
+        for m in MONITORS:
+            if hasattr(m, 'start'): m.start()
 
         # Enter state machine
         powernapd_loop()
@@ -487,7 +505,8 @@ if __name__ == '__main__':
     # Shut it all down
     finally:
         RUNNING = False
-        for m in MONITORS: m.stop()
+        for m in MONITORS:
+            if hasattr(m, 'stop'): m.stop()
         info('terminating')
         sys.exit(0)
 
