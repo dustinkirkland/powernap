@@ -299,25 +299,6 @@ class Monitor ( object ):
     # Stop the monitor
     def stop   ( self ): pass
 
-# Find list of PIDs that match a given regex (cmdline)
-#   Note: I prefer using the /proc filesystem to ps output
-#         as less parsing is required!
-def find_pids ( regex ):
-    ret = []
-  
-    for d in os.listdir('/proc'):
-        try:
-            path = '/proc/%s/cmdline' % d
-            if os.path.isfile(path):
-                fp      = open(path)
-                cmdline = fp.read()
-                fp.close()
-                if regex.search(cmdline):
-                    ret.append(int(d))
-        except: pass
-
-    return ret
-
 # ###########################################################################
 # Actions
 # ###########################################################################
