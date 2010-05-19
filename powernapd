@@ -81,6 +81,36 @@ def error(msg):
 # Daemon Setup
 # ###########################################################################
 
+# "Forking a Daemon Process on Unix" from The Python Cookbook
+def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
+    try:
+        pid = os.fork()
+        if pid > 0:
+            sys.exit(0)
+    except OSError, e:
+        sys.stderr.write("fork #1 failed: (%d) %sn" % (e.errno, e.strerror))
+        sys.exit(1)
+    os.chdir("/")
+    os.setsid()
+    try:
+        pid = os.fork()
+        if pid > 0:
+            sys.exit(0)
+    except OSError, e:
+        sys.stderr.write("fork #2 failed: (%d) %sn" % (e.errno, e.strerror))
+        sys.exit(1)
+    f = open(LOCK,'w')
+    f.write(str(os.getpid()))
+    f.close()
+    for f in sys.stdout, sys.stderr: f.flush()
+    si = file(stdin, 'r')
+    so = file(stdout, 'a+')
+    se = file(stderr, 'a+', 0)
+    os.dup2(si.fileno(), sys.stdin.fileno())
+    os.dup2(so.fileno(), sys.stdout.fileno())
+    os.dup2(se.fileno(), sys.stderr.fileno())
+
+
 # Lock function, using a pidfile in /var/run
 def establish_lock():
     if os.path.exists(LOCK):
@@ -305,37 +335,6 @@ def powernapd_loop():
             else:
                 last_i = i
                 debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
-
-
-# "Forking a Daemon Process on Unix" from The Python Cookbook
-def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
-    try:
-        pid = os.fork()
-        if pid > 0:
-            sys.exit(0)
-    except OSError, e:
-        sys.stderr.write("fork #1 failed: (%d) %sn" % (e.errno, e.strerror))
-        sys.exit(1)
-    os.chdir("/")
-    os.setsid()
-    try:
-        pid = os.fork()
-        if pid > 0:
-            sys.exit(0)
-    except OSError, e:
-        sys.stderr.write("fork #2 failed: (%d) %sn" % (e.errno, e.strerror))
-        sys.exit(1)
-    f = open(LOCK,'w')
-    f.write(str(os.getpid()))
-    f.close()
-    for f in sys.stdout, sys.stderr: f.flush()
-    si = file(stdin, 'r')
-    so = file(stdout, 'a+')
-    se = file(stderr, 'a+', 0)
-    os.dup2(si.fileno(), sys.stdin.fileno())
-    os.dup2(so.fileno(), sys.stdout.fileno())
-    os.dup2(se.fileno(), sys.stderr.fileno())
-
 
 # Main program
 if __name__ == '__main__':
