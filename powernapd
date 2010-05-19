@@ -213,24 +213,19 @@ def signal_handler(signal, frame):
 
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
-def warn_users():
+def alert_warn_users ():
+    global CONFIG
     msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (CONFIG['grace'], CONFIG['action'])
     msg2 = "To cancel this operation, press any key in any terminal"
     debug(logging.WARNING, msg1)
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
-    t = 0
-    c, d, last_i = get_console_activity()
-    while t < CONFIG['grace']:
-        time.sleep(CONFIG['interval'])
-        t += CONFIG['interval']
-        c, d, i = get_console_activity()
-        if c < CONFIG['interval'] or i != last_i:
-            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, CONFIG['action'])
-            debug(logging.WARNING, msg)
-            commands.getoutput("echo '%s' | wall" % msg)
-            return 1
-        last_i = i
-    return 0
+
+# Inform the user suspend has been cancelled
+def alert_user_cancelled ():
+    global CONFIG
+    msg = "PowerNap detected activity. Canceling action [%s]" % CONFIG['action']
+    debug(logging.WARNING, msg)
+    commands.getoutput("echo '%s' | wall" % msg)
 
 # TODO: notify authorities about action taken
 def notify_authorities():
@@ -241,10 +236,6 @@ def notify_authorities():
 def take_action():
     global CONFIG, PROCESSES
     notify_authorities()
-    debug(logging.DEBUG, "Reseting counters prior to taking action")
-    for p in PROCESSES:
-        p.absent_seconds = 0
-        p.pid_table = {}
     os.system(CONFIG['action'])
 
 # Handler for asynchronous external signals
@@ -372,20 +363,30 @@ def get_interrupts():
 # Main loop, search process table, increment counters, take actions, sleep
 def powernapd_loop():
     global CONFIG, PROCESSES
-    last_i = 0
+    last_a = time.time(), last_i = 0
+    warned = False
     while 1:
         debug(logging.DEBUG, "Sleeping [%d] seconds" % CONFIG['interval'])
         time.sleep(CONFIG['interval'])
         # Examine process table, compute absent time of each monitored process
         debug(logging.DEBUG, "Examining process table")
-        absent_processes = 0
+        active_processes = 0
         ps = commands.getoutput("ps -eo pid,args").splitlines()
+
+        # Check console
+        c, d, i = get_console_activity()
+        if c < CONFIG['absent'] or i != last_i:
+           active_processes += 1
+        last_i = i
+
+        # Check others
         for p in PROCESSES:
             debug(logging.DEBUG, "  Looking for [%s]" % p.process)
             if find_process(ps, p):
                 # process running, so reset absent time
                 p.absent_seconds = 0
                 debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, CONFIG['absent']))
+                active_processes += 1
             else:
                 # process not running, increment absent time
                 p.absent_seconds += CONFIG['interval']
@@ -393,19 +394,39 @@ def powernapd_loop():
                 if p.absent_seconds >= CONFIG['absent']:
                     # process missing for >= absent_seconds threshold, mark absent
                     debug(logging.DEBUG, "    Process absent for >= threshold, so mark absent")
-                    absent_processes += 1
+
         # Determine if action needs to be taken
-        if absent_processes > 0 and absent_processes == len(PROCESSES):
+        if active_processes > 0:
             debug(logging.DEBUG, "    Checking for console or terminal activity")
-            c, d, i = get_console_activity()
-            if c > CONFIG['absent'] and i == last_i:
-                last_i = i
-                # All processes are absent, take action!
-                if warn_users() == 0:
-                    take_action()
-            else:
-                last_i = i
-                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, CONFIG['absent']))
+            last_a = time.time()
+
+            # Inform users of cancellation
+            if warned:
+                alert_user_cancelled()
+                warned = False
+
+        # Absent
+        else:
+            now    = time.time()
+            absent = now - last_a
+            debug(logging.DEBUG, "No active monitors detected [absent = %d/%d]" % (absent, CONFIG['absent']))
+
+            # Time is up (take action)
+            if ( absert >= CONFIG['absent'] ):
+                take_action()
+
+                # Reset (TODO: is this appropriate if we're not actually asleep?)
+                warned = False
+                last_a = time.time()
+                for p in PROCESSES:
+                    p.absent_seconds = 0
+                    p.pid_table = {}
+
+            # Grace period
+            elif CONFIG['absent'] - absent) <= CONFIG['grace']:
+                if ( not warned ):
+                    alert_user_warning()
+                    warned = True
 
 # Main program
 if __name__ == '__main__':
