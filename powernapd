@@ -251,12 +251,12 @@ def notify_authorities():
 
 # Zero the counters and take the action
 def take_action():
-    global CONFIG, PROCESSES
+    global CONFIG
     notify_authorities()
     os.system(CONFIG['action'])
 
 # Handler for asynchronous external signals
-def sig_hander_take_action ( signal, frame ):
+def sig_hander_take_action ( sig, frame ):
     if ( sig == signal.SIGUSR1 ): take_action()
 
 # ###########################################################################
