@@ -47,8 +47,8 @@ CONFIG   = {
   'daemon'            : True,
   'action'            : '/usr/sbin/powernap',
   'monitor_procs'     : [],
-  'monitor_udp_ports' : [ 9 ],
   'monitor_io_procs'  : [],
+  'monitor_udp_ports' : [ 9 ],
 }
 RUNNING  = True
 MONITORS = []
@@ -123,8 +123,8 @@ def load_config ():
     if opts.grace     != None: CONFIG['grace']     = opts.grace
     if opts.daemon    != None: CONFIG['daemon']    = opts.daemon
     if opts.procs:             CONFIG['monitor_procs']     = opts.procs
-    if opts.udp_ports:         CONFIG['monitor_udp_ports'] = opts.udp_ports
     if opts.io_procs:          CONFIG['monitor_io_procs']  = opts.io_procs
+    if opts.udp_ports:         CONFIG['monitor_udp_ports'] = opts.udp_ports
 
     # Configure monitors
     #   TODO: might be good to make this more flexible
@@ -137,12 +137,13 @@ def load_config ():
 # Logging
 # ###########################################################################
 
-logging.basicConfig(filename=CONFIG['log'], format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.NOTSET,)
-
 # Generic debug function
 def debug(level, msg):
+    import datetime
     global CONFIG
     if level >= (logging.ERROR - 10*CONFIG['debug']):
+        if not CONFIG['daemon']:
+            print '%s: %s' % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
         logging.log(level, msg)
 
 # Generic error function
@@ -206,16 +207,22 @@ def create_pid ():
 
 # Setup signal handlers
 def setup_signal_handlers ():
-    signal.signal(signal.SIGHUP, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGQUIT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGUSR1, take_action_handler)
+    signal.signal(signal.SIGHUP,  sig_handler_config)
+    signal.signal(signal.SIGINT,  sig_handler_exit)
+    signal.signal(signal.SIGQUIT, sig_handler_exit)
+    signal.signal(signal.SIGTERM, sig_handler_exit)
+    signal.signal(signal.SIGUSR1, sig_handler_take_action)
 
 # Clean up lock file on termination signals
-def signal_handler(signal, frame):
-    debug(logging.INFO, "Stopping %s" % PKG)
-    sys.exit(1)
+def sig_handler_exit ( sig, frame ):
+    # Force shutdown!
+    if ( sig == signal.SIGTERM ):
+      debug(logging.INFO, "Forcing shutdown")
+      sys.exit(1)
+    else:
+      global RUNNING
+      debug(logging.INFO, "Requesting shutdown")
+      RUNNING = False
 
 # ###########################################################################
 # Action Handling / Alerts
@@ -223,7 +230,7 @@ def signal_handler(signal, frame):
 
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
-def alert_warn_users ():
+def alert_user_warning ():
     global CONFIG
     msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (CONFIG['grace'], CONFIG['action'])
     msg2 = "To cancel this operation, press any key in any terminal"
@@ -249,7 +256,7 @@ def take_action():
     os.system(CONFIG['action'])
 
 # Handler for asynchronous external signals
-def take_action_handler(signal, frame):
+def sig_hander_take_action ( signal, frame ):
     if ( sig == signal.SIGUSR1 ): take_action()
 
 # ###########################################################################
@@ -548,11 +555,17 @@ def powernapd_loop():
 # Main program
 if __name__ == '__main__':
 
-    # Ensure that only one instance runs
-    daemonize()
-    setup_signal_handlers()
+    # Initial setup
+    logging.basicConfig(filename=CONFIG['log'], level=logging.NOTSET,
+                        format='%(asctime)s %(levelname)-8s %(message)s',
+                        datefmt='%Y-%m-%d_%H:%M:%S')
+    load_config()
+
+    # Process setup
     create_pid()
-  
+    setup_signal_handlers()
+    if CONFIG['daemon']: daemonize()
+
     # Debug
     debug(logging.INFO, "Starting monitors: %s" % MONITORS)
 
@@ -569,6 +582,7 @@ if __name__ == '__main__':
 
     # Shut it all down
     finally:
+        RUNNING = False
         for m in MONITORS: m.stop()
         debug(logging.INFO, "Powernap Daemon terminating")
         sys.exit(0)
