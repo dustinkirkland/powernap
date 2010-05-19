@@ -41,7 +41,7 @@ class InputMonitor ( Monitor, threading.Thread ):
                 fp   = open(path)
                 fps.append(fp)
                 poll.register(fp, select.POLLIN)
-                debug(logging.DEBUG, '%s - adding input device %s' % (self, path))
+                debug('%s - adding input device %s' % (self, path))
 
         # Poll for events
         while RUNNING:

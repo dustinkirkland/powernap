@@ -40,14 +40,14 @@ class IOMonitor ( ProcessMonitor ):
             # New process (assume activity)
             if pid not in self.io_counts:
                ret = True
-               debug(logging.DEBUG, '    %s - adding new PID %d to list' % (self, pid))
+               debug('    %s - adding new PID %d to list' % (self, pid))
 
             # Existing: check for change
             else:
                 tmp = False
                 for f in self.io_counts[pid]:
                     if self.io_counts[pid][f] != io_counts[pid][f]: tmp = True
-                if ( tmp ): debug(logging.DEBUG, '    %s - PID %d has IO activity' % (self, pid))
+                if ( tmp ): debug('    %s - PID %d has IO activity' % (self, pid))
                 ret = tmp
 
             # Update count
@@ -59,7 +59,7 @@ class IOMonitor ( ProcessMonitor ):
             if pid not in self.pids:
                 rem.append(pid)
         for pid in rem:
-            debug(logging.DEBUG, '    %s - PID %d no longer exists' % (self, pid))
+            debug('    %s - PID %d no longer exists' % (self, pid))
             self.io_counts.pop(pid)
 
         return ret

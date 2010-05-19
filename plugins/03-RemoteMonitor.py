@@ -35,17 +35,17 @@ class RemoteMonitor ( Monitor, threading.Thread ):
         while RUNNING:
             if not listen:
                 try:
-                    debug(logging.DEBUG, '%s - configure socket' % self)
+                    debug('%s - configure socket' % self)
                     sock.bind(('', self.port))
                     sock.settimeout(1.0)
                     listen = True
                 except Exception, e:
-                    debug(logging.ERROR, '%s - failed to config socket [e=%s]' % (self, str(e)))
+                    error('%s - failed to config socket [e=%s]' % (self, str(e)))
                     time.sleep(1.0)
             else:
                 try:
                     # Wait for data
                     sock.recvfrom(1024)
-                    debug(logging.DEBUG, '%s - data packet received' % self)
+                    debug('%s - data packet received' % self)
                     self.data = True
                 except: pass # timeout
