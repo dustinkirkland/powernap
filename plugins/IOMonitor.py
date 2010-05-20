@@ -17,6 +17,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from logging import error, debug, info, warn
+from Monitor import Monitor
+from ProcessMonitor import ProcessMonitor, find_pids
+
 # Monitor plugin
 #   looks for processes that have IO activity. Useful for some server
 #   processes that are always present in the process list even when idle

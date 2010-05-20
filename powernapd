@@ -57,7 +57,7 @@ MONITORS = []
 # Config signal handler
 def sig_handler_config ( sig, frame ):
     if ( sig == signal.SIGHUP ):
-        debug('TODO: do we need config reload support?')
+        warn('configuration reloading not supported, restart daemon')
 
 # Load configuration
 def load_config ():
@@ -115,10 +115,12 @@ def load_config ():
     if ( os.path.isfile(conf_path) ): cfgp.read([conf_path])
 
     # Update from config file
+    #   Note: although there are security risks using eval() we're running
+    #         it on what should be a controlled file, to which a limited
+    #         number of people (sysadmins) have access
     if cfgp.has_section('global'):
       for k, v in cfgp.items('global'):
         CONFIG[k] = eval(v)
-        # TODO: how safe is this?
 
     # Update from command line
     if opts.log         != None: CONFIG['log']         = opts.log
@@ -153,7 +155,7 @@ def init_logging ():
                         format='%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d_%H:%M:%S')
 
-# Generic error function
+# Bomb out after reporting message
 def critical ( msg ):
     logging.critical(msg)
     sys.exit(1)
@@ -163,7 +165,8 @@ def critical ( msg ):
 # ###########################################################################
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
-def init_daemon (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
+def init_daemon ():
+    global CONFIG
 
     # First fork
     try:
@@ -188,10 +191,12 @@ def init_daemon (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var
         sys.exit(1)
 
     # File handles
+    #   Note: although we redirect stdout/stderr to the log file, most
+    #         output will be sent there directly (via logging)
     for f in sys.stdout, sys.stderr: f.flush()
-    si = file(stdin, 'r')
-    so = file(stdout, 'a+')
-    se = file(stderr, 'a+', 0)
+    si = file('/dev/null', 'r')
+    so = file(CONFIG['log'], 'a+')
+    se = file(CONFIG['log'], 'a+', 0)
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
@@ -234,81 +239,35 @@ def sig_handler_exit ( sig, frame ):
 
 # ###########################################################################
 # Monitors
-#   monitors are the key element in this system, they monitor particular
-#   aspects of the system to determine if activity is present that should
-#   stop the machine from going into suspend
-#
-#   The implementation is not as python like as it could be, its assumed
-#   that all Monitor extend from the Monitor class which provides the basic
-#   "stubbed" interface
-#
-#   Most monitors don't run seperate threads, however some do and therefore
-#   the start/stop methods are added (could also be used to reset counts
-#   etc...)
 # ###########################################################################
 
 # Generate monitors
-#   TODO: this load system is crap, files must be ordered to work
-#         but its just to prove basic concept
+#   Note: I really don't like this and if someone has a better way of
+#         doing this feel free to change it!
 def create_monitors ( monitor_config ):
-    ret = []
+    ret  = []
+    mods = {}
+
+    # Add plugin dir to path
+    sys.path.insert(0, CONFIG['plugin_dir'])
 
     # Source all plugins
     for f in os.listdir(CONFIG['plugin_dir']):
         p = os.path.join(CONFIG['plugin_dir'], f)
         if os.path.isfile(p) and f.endswith('.py'):
+            n = f.replace('.py', '')
             try:
-                execfile(p, globals())
+                m = __import__(n, globals(), locals(), [n], -1)
+                globals()[n] = getattr(m, n)
             except Exception, e:
-                print 'ERROR: eval %s [e=%s]' % (p, str(e))
+                error('failed to import plugin %s [e=%s]' % (n, str(e)))
 
     # Process each
     for m in monitor_config:
-        pts     = m.split('=', 2)
-        monitor = globals()[pts[0]](eval(pts[1]))
+        monitor = eval(m)
         ret.append(monitor)
 
     return ret
-
-# Generic monitor (doesn't really do much)
-#   Note: it is not required that you subclass this, merely that you
-#         provide a matching API (all functions are optional) 
-class Monitor ( object ):
-
-    # Initialise the object
-    def __init__ ( self, config ):
-        self._name     = self.__repr__()
-        self._activity = 0
-        self._grace    = 0
-        self._period   = 60
-        if ( config.has_key('name')   ): self._name   = config['name']
-        if ( config.has_key('grace')  ): self._grace  = config['grace']
-        if ( config.has_key('period') ): self._period = config['period']
-        self.reset()
-
-    # String representation for debug
-    def __str__  ( self ): return self._name
-
-    # Reset monitor (usually after resume)
-    def reset  ( self ): self._activity = time.time()
-
-    # Check if monitored resource is active
-    def active ( self):
-        ret      = False
-        inactive = time.time() - self._activity
-        if ( inactive < self._period ):
-            debug('%s - inactive for %0.2f secs' % (str(self), inactive))
-            ret = True
-        return ret
-
-    # Get preferred grace period
-    def grace  ( self ): return self._grace
-
-    # Start the monitor
-    def start  ( self ): pass
-
-    # Stop the monitor
-    def stop   ( self ): pass
 
 # ###########################################################################
 # Actions
@@ -371,7 +330,7 @@ def action_exit_grace ():
         os.system(CONFIG['action_exit_grace'])
 
 # Handle external request to sleep
-#   TODO: will not work well with state machine if we don't suspend!
+#   TODO: this should probably set the state?
 def sig_handler_take_action ( sig, frame ):
     if ( sig == signal.SIGUSR1 ): action_enter_sleep()
 
@@ -457,7 +416,7 @@ def powernapd_loop ():
 
                 # Perform action
                 action_enter_sleep()
-                # TODO: would be nice if we could detect a proper suspend/resume
+                # TODO: would be nice if we could auto detect a suspend/resume
 
                 # Reset counter (action caused a true suspend)
                 if CONFIG['sleep_reset']:

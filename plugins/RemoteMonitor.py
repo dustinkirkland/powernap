@@ -17,6 +17,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import threading
+from logging import error, debug, info, warn
+from Monitor import Monitor
+
 # Monitor plugin
 #   listen for data on a UDP socket (typically WOL packets)
 class RemoteMonitor ( Monitor, threading.Thread ):

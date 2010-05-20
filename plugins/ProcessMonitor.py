@@ -17,6 +17,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
+from logging import error, debug, info, warn
+from Monitor import Monitor
+
 # Find list of PIDs that match a given regex (cmdline)
 def find_pids ( regex ):
     ret = []
