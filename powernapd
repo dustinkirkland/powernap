@@ -47,7 +47,7 @@ CONFIG   = {
     'sleep_grace'       : 120.0,
     'debug'             : 0,
     'daemon'            : True,
-    'action'            : '/usr/sbin/powernap',
+    'action'            : '/bin/true',
     'monitors'          : [],
     'plugin_dir'        : './plugins',
 }
@@ -121,14 +121,16 @@ def load_config ():
         # TODO: how safe is this?
 
     # Update from command line
-    if opts.log       != None: CONFIG['log']       = opts.log
-    if opts.pid       != None: CONFIG['pid']       = opts.pid
-    if opts.debug     != None: CONFIG['debug']     = opts.debug
-    if opts.interval  != None: CONFIG['interval']  = opts.interval
-    if opts.absent    != None: CONFIG['absent']    = opts.absent
-    if opts.grace     != None: CONFIG['grace']     = opts.grace
-    if opts.daemon    != None: CONFIG['daemon']    = opts.daemon
-    if opts.monitors:          CONFIG['monitors']  = opts.monitors
+    if opts.log         != None: CONFIG['log']         = opts.log
+    if opts.pid         != None: CONFIG['pid']         = opts.pid
+    if opts.debug       != None: CONFIG['debug']       = opts.debug
+    if opts.interval    != None: CONFIG['interval']    = opts.interval
+    if opts.absent      != None: CONFIG['absent']      = opts.absent
+    if opts.grace       != None: CONFIG['grace']       = opts.grace
+    if opts.sleep_grace != None: CONFIG['sleep_grace'] = opts.sleep_grace
+    if opts.sleep_reset != None: CONFIG['sleep_reset'] = opts.sleep_reset
+    if opts.daemon      != None: CONFIG['daemon']      = opts.daemon
+    if opts.monitors:            CONFIG['monitors']    = opts.monitors
 
 # ###########################################################################
 # Logging
@@ -319,6 +321,7 @@ def action_enter_sleep ():
 
     # Perform action
     if CONFIG.has_key('action_enter_sleep'):
+        info('performing action %s' % CONFIG['action_enter_sleep'])
         os.system(CONFIG['action_enter_sleep'])
 
 # Exit sleep (woken up)
@@ -326,7 +329,7 @@ def action_exit_sleep ( period ):
     global CONFIG
     days   = int(period / 86400)
     period = period % 86400
-    hrs    = int(asleep / 3600)
+    hrs    = int(period / 3600)
     period = period % 3600
     mins   = int(period / 60)
     secs   = period % 60
@@ -335,6 +338,7 @@ def action_exit_sleep ( period ):
 
     # Perform action
     if CONFIG.has_key('action_exit_sleep'):
+        info('performing action %s' % CONFIG['action_exit_sleep'])
         os.system(CONFIG['action_exit_sleep'])
 
 # Enter grace period
@@ -349,6 +353,7 @@ def action_enter_grace ( period ):
 
     # Perform action
     if CONFIG.has_key('action_enter_grace'):
+        info('performing action %s' % CONFIG['action_enter_grace'])
         os.system(CONFIG['action_enter_grace'])
 
 # Cancel grace period
@@ -362,6 +367,7 @@ def action_exit_grace ():
 
     # Perform action
     if CONFIG.has_key('action_exit_grace'):
+        info('performing action %s' % CONFIG['action_exit_grace'])
         os.system(CONFIG['action_exit_grace'])
 
 # Handle external request to sleep
