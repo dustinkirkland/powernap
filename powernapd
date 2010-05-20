@@ -38,16 +38,18 @@ import threading
 
 PKG      = 'powernap'
 CONFIG   = {
-  'log'               : '/var/log/%s.log' % PKG,
-  'pid'               : '/var/run/%s.pid' % PKG,
-  'interval'          : 1.0,
-  'absent'            : sys.maxint,
-  'grace'             : 60.0,
-  'debug'             : 0,
-  'daemon'            : True,
-  'action'            : '/usr/sbin/powernap',
-  'monitors'          : [],
-  'plugin_dir'        : './plugins',
+    'log'               : '/var/log/%s.log' % PKG,
+    'pid'               : '/var/run/%s.pid' % PKG,
+    'interval'          : 1.0,
+    'absent'            : sys.maxint,
+    'grace'             : 60.0,
+    'sleep_reset'       : False,
+    'sleep_grace'       : 120.0,
+    'debug'             : 0,
+    'daemon'            : True,
+    'action'            : '/usr/sbin/powernap',
+    'monitors'          : [],
+    'plugin_dir'        : './plugins',
 }
 RUNNING  = True
 MONITORS = []
@@ -83,6 +85,13 @@ def load_config ():
     optp.add_option("-g", "--grace", dest="grace",
                     default=None, type='float',
                     help="Specify global grace period in seconds")
+    optp.add_option('-s', '--sleepgrace', dest='sleep_grace',
+                    default=None, type='float',
+                    help='Specify grace period when entering sleep (not used if sleep_reset is set)')
+    optp.add_option('-r', '--reset', dest='sleep_reset',
+                    default=None,
+                    action='store_true',
+                    help='Reset timers when entering sleep (DO NOT set if action does not perform true suspend)')
     optp.add_option("-d", "--debug", dest="debug",
                     default=None, type='int',
                     help="Specify level of debug logging")
@@ -377,6 +386,7 @@ def powernapd_loop ():
     last_time = time.time()
     state     = STATE_ACTIVE
     grace     = 0
+    sleep     = 0
 
     # Until told to stop
     while RUNNING:
@@ -407,7 +417,7 @@ def powernapd_loop ():
 
             # Woken up
             if state == STATE_SLEEP:
-                action_exit_sleep()
+                action_exit_sleep(now - sleep)
         
             # Exit grace
             elif state == STATE_GRACE:
@@ -437,18 +447,46 @@ def powernapd_loop ():
 
             # Sleep
             if grace <= 0:
-                action_enter_sleep()
-                state = STATE_SLEEP
+                sleep = time.time()
 
-                # TODO: need to detect where we've actually gone to sleep
-                #       and woken up!
+                # Perform action
+                action_enter_sleep()
+                # TODO: would be nice if we could detect a proper suspend/resume
+
+                # Reset counter (action caused a true suspend)
+                if CONFIG['sleep_reset']:
+                    for m in MONITORS:
+                        if hasattr(m, 'reset'): m.reset()
+
+                # Set grace period and wait
+                else:
+                    grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
+                    for m in MONITORS:
+                          if hasattr(m, 'grace'): grace = max(grace, m.grace())
+
+                # Change state
+                state = STATE_SLEEP
     
             else:
                 debug('grace period remaining %0.2f sec' % grace)
 
         # Sleeping
         elif state == STATE_SLEEP:
-            pass
+            grace -= period
+
+            # Continually re-assert
+            if grace <= 0:
+                # Note: we don't check sleep_reset as we wouldn't be here
+                #       if it was set
+
+                # Perform action
+                action_enter_sleep()
+
+                # Set period (same as grace) so we continually reassert
+                grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
+                for m in MONITORS:
+                      if hasattr(m, 'grace'): grace = max(grace, m.grace())
+            
 
 # ###########################################################################
 # Main 
