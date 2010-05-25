@@ -38,18 +38,20 @@ import threading
 
 PKG      = 'powernap'
 CONFIG   = {
-    'log'               : '/var/log/%s.log' % PKG,
-    'pid'               : '/var/run/%s.pid' % PKG,
-    'interval'          : 1.0,
-    'absent'            : sys.maxint,
-    'grace'             : 60.0,
-    'sleep_reset'       : False,
-    'sleep_grace'       : 120.0,
-    'debug'             : 0,
-    'daemon'            : True,
-    'action'            : '/bin/true',
-    'monitors'          : [],
-    'plugin_dir'        : './plugins',
+    'log'                : '/var/log/%s.log' % PKG,
+    'pid'                : '/var/run/%s.pid' % PKG,
+    'debug'              : 0,
+    'daemon'             : True,
+    'interval'           : 1.0,
+    'grace'              : 60.0,
+    'sleep_reset'        : False,
+    'sleep_grace'        : 120.0,
+    'plugin_dir'         : './plugins',
+    'monitors'           : [],
+    'action_enter_sleep' : '/bin/true',#usr/sbin/powernap',
+    'action_exit_sleep'  : None,
+    'action_enter_grace' : None,
+    'action_exit_grace'  : None,
 }
 RUNNING  = True
 MONITORS = []
@@ -79,9 +81,6 @@ def load_config ():
     optp.add_option("-i", "--interval", dest="interval",
                     default=None, type='float',
                     help="Specify interval period in seconds")
-    optp.add_option("-a", "--absent", dest="absent",
-                    default=None, type='float',
-                    help="Specify global absent period in seconds")
     optp.add_option("-g", "--grace", dest="grace",
                     default=None, type='float',
                     help="Specify global grace period in seconds")
@@ -127,7 +126,6 @@ def load_config ():
     if opts.pid         != None: CONFIG['pid']         = opts.pid
     if opts.debug       != None: CONFIG['debug']       = opts.debug
     if opts.interval    != None: CONFIG['interval']    = opts.interval
-    if opts.absent      != None: CONFIG['absent']      = opts.absent
     if opts.grace       != None: CONFIG['grace']       = opts.grace
     if opts.sleep_grace != None: CONFIG['sleep_grace'] = opts.sleep_grace
     if opts.sleep_reset != None: CONFIG['sleep_reset'] = opts.sleep_reset
@@ -264,6 +262,7 @@ def create_monitors ( monitor_config ):
 
     # Process each
     for m in monitor_config:
+        debug('loading monitor: %s' % m)
         monitor = eval(m)
         ret.append(monitor)
 

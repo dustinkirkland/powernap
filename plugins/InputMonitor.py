@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
+import os, threading
 from logging import error, debug, info, warn
 from Monitor import Monitor
 
@@ -51,12 +51,12 @@ class InputMonitor ( Monitor, threading.Thread ):
 
         # Get all events
         poll = select.poll()
-        fps  = []
+        fps  = {}
         for f in os.listdir('/dev/input'):
             path = os.path.join('/dev/input', f)
             if not os.path.isdir(path):
-                fp   = open(path)
-                fps.append(fp)
+                fp = open(path)
+                fps[fp.fileno()] = fp
                 poll.register(fp, select.POLLIN)
                 debug('%s - adding input device %s' % (self, path))
 
@@ -66,11 +66,12 @@ class InputMonitor ( Monitor, threading.Thread ):
             if ( res ):
                 for fd, e in res:
                     if e & select.POLLIN:
+                        debug('%s - input on %s' % (self, fps[fd].name)) 
                         os.read(fd, 32768) # Read what is there!
                         self.reset()
 
         # Close the files
-        for fp in fps: fp.close()
+        for fd in fps: fps[fd].close()
 
 # ###########################################################################
 # Editor directives

@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
+import os, re
 from logging import error, debug, info, warn
 from Monitor import Monitor
 
@@ -53,7 +53,10 @@ class ProcessMonitor ( Monitor ):
 
     # Check for PIDs
     def active ( self ):
-        if ( find_pids(self.regex) ): self.reset()
+        pids = find_pids(self._regex)
+        if pids:
+            debug('%s - found pids %s' % (self, str(pids)))
+            self.reset()
         return Monitor.active(self)
 
 # ###########################################################################

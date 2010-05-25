@@ -1,62 +1,89 @@
 # This is the configuration file for PowerNap.
 # See powernap(1) for more information.
 
-# This file is Python syntax, and will be sourced by the powernap daemon
-# on start. To enact changes to this configuration, restart the daemon.
+# This file uses the standard python ConfigParser, although the configuration
+# options are treated as python expressions
+#
+# To enact changes to this configuration, restart the daemon.
 # Example:
 #   /etc/init.d/powernap restart
 
-# The MONITORED_PROCESSES variable should be a Python list of quoted regular
-# expressions.
-# Each item in this list will be compared against the output of "ps -eo args".
-# The default is to monitor /sbin/init, which should always be running.
-# Examples:
-#   MONITORED_PROCESSES = [ "kvm ", "sshd: .*\[priv\]$" ]
-#   MONITORED_PROCESSES = [ "mplayer ", "xine ", "vlc " ]
-#   MONITORED_PROCESSES = [ "^/sbin/init" ]
-MONITORED_PROCESSES = [ "^/sbin/init" ]
+# All options are global but this must be here for parser to work
+[global]
 
-# The MONITORED_IO_PROCESSES variable should be a Python list of quoted regular
-# expressions.
-# Each item in this list will be compared against the output of "ps -eo args".
-# If found the contents of /proc/[pid]/io will be compared with stored values
-# from previous pass. If no IO activity is detected the absent counter is
-# increased.
-# Examples:
-#   MONITORED_IO_PROCESSES = [ "nfsd", "smbd", "lighttpd" ]
-MONITORED_IO_PROCESSES = [ ]
+# Define Log file location
+#log = '/var/log/powernap.log'
 
-# Number of seconds that all processes must be absent from the process table or
-# without IO activity and no keyboard activity on any terminals.
-# The default is an absence period of 5 minutes.
+# Define PID file location
+#pid = '/var/run/powernap.pid'
+
+# Determine whether to run as a daemon, generally this should only be
+# changed (to False) for debugging purposes
+daemon = False
+
+# Specify the level of debugging to enable. This can have the following
+# values:
+#   0 = Critical errors only
+#   1 = Standard errors (plus 0)
+#   2 = General warnings (plus 1)
+#   3 = General information (plus 2)
+#   4 = Full debug (plus 3)
+debug = 4
+
+# Define the primary loop interval at which the system runs, some monitors
+# may run in their own threads and therefore may be more responsive. However
+# for standard monitors this defines the timing granularity of these.
+#
+# Higher values will reduce system load at the expense of possibly missing
+# a short lived instance of a process. Shorter values will be more likely
+# to spot short lived processes, but will increase system load.
+interval = 1.0
+
+# Define the global duration between the detection of no activity (based
+# on the monitors), at which point a warning will be output, and the performing
+# of the enter_sleep action
+# 
+# This values represents a "minimum" value, monitors are free to specify their
+# own grace periods and the maximum value will be used.
+grace = 60.0
+
+# Specify that upon exiting the sleep state the monitors should all be reset,
+# i.e. it would be like restarting powernapd. This only makes sense if the
+# 'enter_sleep' action results in a genuine halting of the main processor
+# (i.e. the one powernapd runs on). If this is not the case and this value is
+# set the system will never enter the sleep state.
+#
+# Note: it is still not necessary to set this even if enter_sleep does suspend
+#       activity. In this case the sleep_grace period will be used to control
+#       when to re-enter sleep. This is the default an preferred mode of 
+#       operation.
+sleep_reset = False
+
+# Specify the period following an exit from (strictly an entry into) the sleep
+# state before it is re-asserted. This can be useful in situations where the
+# enter_sleep action merely reduces power consumption but powernapd is still
+# running. Or following a suspend can be useful if the resume was due to a
+# spurious signal.
+#
+# As with the grace setting this represents a minimum value, with the maximum
+# of this, grace and the monitor specific values being the true value.
+sleep_grace = 120.0
+
+# Define the directory containing the plugins
+#   TODO: allow multiple directories
+plugin_dir = './plugins'
+
+# Specify the list of monitors, the syntax for this option is an array of
+# Monitor constructor calls, with the single parameter being a dictionary
+# of configuration items
+# 
 # Example:
-#   ABSENT_SECONDS = 300
-ABSENT_SECONDS = 300
+#   TODO
+  # Monitor /dev/input (typically for console input)
+  # Monitor UDP packets on port 9 (typically for WOL packets)
+  # Monitor static processes
+  # Monitor IO processes
+monitors = [ "InputMonitor({})", "RemoteMonitor({'port':9})", "ProcessMonitor({'regex':'sftp-server', 'name':'sftp'})", "ProcessMonitor({'regex':'sshd: .*\[priv\]', 'name':'sshd'})", "IOMonitor({'regex':'nfsd'})", "IOMonitor({'regex':'smbd'})" ]
 
-# Grace period, after ABSENT_SECONDS have elapsed with all of MONITORED_PROCESSES
-# absent from the process table, that the system will allow for an administrator
-# to kill powernapd and thereby cancel the /usr/sbin/powernap action.
-# The default grace period is 60 seconds.
-# Example:
-#   GRACE_SECONDS = 60
-GRACE_SECONDS = 60
-
-# The powernap daemon will wake every INTERVAL_SECONDS and check the process
-# table for matching processes.  Lower values of INTERVAL_SECONDS will provide
-# more detailed process monitoring but will consume more system resources.
-# Higher values of INTERVAL_SECONDS will consume less system resources, but
-# might miss processes that execute for less than INTERVAL_SECONDS.
-# The minimum runtime of a MONITORED_PROCESSES should not be less than
-# INTERVAL_SECONDS.
-# The default interval is 1 second.
-# Example:
-#   INTERVAL_SECONDS = 1
-INTERVAL_SECONDS = 1
-
-# The powernap daemon logs errors to /var/log/powernap.err, and some basic
-# information to /var/log/powernap.log.  To change the verbosity of this
-# logging, set DEBUG to 0, 1, 2, 3 or 4:
-# The default debug level is 0.
-#    DEBUG = 1
-#    DEBUG = 2
-DEBUG = 0
+# Define the action to be taken when entering sleep
+action_enter_sleep = '/bin/true'
