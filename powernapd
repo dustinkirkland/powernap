@@ -303,9 +303,12 @@ def action_exit_sleep ( period ):
 def action_enter_grace ( period ):
     global CONFIG
     info('grace period entered')
+    action = 'None'
+    if CONFIG.has_key('action_enter_sleep'):
+	action = CONFIG['action_enter_sleep']
 
     # Alert user
-    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (period, CONFIG['action'])
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (period, action)
     msg2 = "To cancel this operation, press any key in any terminal"
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
 

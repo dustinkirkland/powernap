@@ -19,7 +19,7 @@
 
 # Determine whether to run as a daemon, generally this should only be
 # changed (to False) for debugging purposes
-daemon = False
+#daemon = False
 
 # Specify the level of debugging to enable. This can have the following
 # values:
@@ -71,7 +71,7 @@ sleep_grace = 120.0
 
 # Define the directory containing the plugins
 #   TODO: allow multiple directories
-plugin_dir = './plugins'
+plugin_dir = '/etc/powernap/plugins'
 
 # Specify the list of monitors, the syntax for this option is an array of
 # Monitor constructor calls, with the single parameter being a dictionary
@@ -86,4 +86,4 @@ plugin_dir = './plugins'
 monitors = [ "InputMonitor({})", "RemoteMonitor({'port':9})", "ProcessMonitor({'regex':'sftp-server', 'name':'sftp'})", "ProcessMonitor({'regex':'sshd: .*\[priv\]', 'name':'sshd'})", "IOMonitor({'regex':'nfsd'})", "IOMonitor({'regex':'smbd'})" ]
 
 # Define the action to be taken when entering sleep
-action_enter_sleep = '/bin/true'
+action_enter_sleep = '/usr/sbin/powernap'
