@@ -33,6 +33,10 @@ try:
     # Interval
     elif l.startswith('interval'):
       lines.append('interval = %0.2f' % INTERVAL_SECONDS)
+
+    # Absent
+    elif l.startswith('absent'):
+      lines.append('absent = %0.2f' % ABSENT_SECONDS)
  
     # Grace
     elif l.startswith('grace'):
@@ -50,9 +54,9 @@ try:
 
     # Monitors
     elif l.startswith('monitors'):
-      monitors = "monitors = [ \"InputMonitor({'absent':%0.2f})\"" % ABSENT_SECONDS
+      monitors = "monitors = [ \"InputMonitor()\""
       for m in MONITORED_PROCESSES:
-        monitors += ", \"ProcessMonitor({'absent':%0.2f,'regex':'%s'})\"" % (ABSENT_SECONDS, m)
+        monitors += ", \"ProcessMonitor({'regex':'%s'})\"" % m
       monitors += " ]"
       lines.append(monitors)
 

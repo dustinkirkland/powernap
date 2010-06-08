@@ -30,10 +30,10 @@ class Monitor ( object ):
         self._name     = self.__repr__()
         self._activity = 0
         self._grace    = 0
-        self._period   = 60
+        self._period   = 60.0
         if ( config.has_key('name')   ): self._name   = config['name']
         if ( config.has_key('grace')  ): self._grace  = config['grace']
-        if ( config.has_key('period') ): self._period = config['period']
+        if ( config.has_key('absent') ): self._period = config['absent']
         self.reset()
 
     # String representation for debug

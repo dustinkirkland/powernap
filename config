@@ -28,7 +28,7 @@
 #   2 = General warnings (plus 1)
 #   3 = General information (plus 2)
 #   4 = Full debug (plus 3)
-debug = 4
+debug = 2
 
 # Define the primary loop interval at which the system runs, some monitors
 # may run in their own threads and therefore may be more responsive. However
@@ -38,6 +38,10 @@ debug = 4
 # a short lived instance of a process. Shorter values will be more likely
 # to spot short lived processes, but will increase system load.
 interval = 1.0
+
+# Global absence period after which monitors will report inactivity. This
+# can be overridden for each monitor individually
+absent = 60.0
 
 # Define the global duration between the detection of no activity (based
 # on the monitors), at which point a warning will be output, and the performing
@@ -73,6 +77,9 @@ sleep_grace = 120.0
 #   TODO: allow multiple directories
 plugin_dir = '/etc/powernap/plugins'
 
+# Define the action to be taken when entering sleep
+action_enter_sleep = '/usr/sbin/powernap'
+
 # Specify the list of monitors, the syntax for this option is an array of
 # Monitor constructor calls, with the single parameter being a dictionary
 # of configuration items
@@ -83,7 +90,23 @@ plugin_dir = '/etc/powernap/plugins'
   # Monitor UDP packets on port 9 (typically for WOL packets)
   # Monitor static processes
   # Monitor IO processes
-monitors = [ "InputMonitor({})", "RemoteMonitor({'port':9})", "ProcessMonitor({'regex':'sftp-server', 'name':'sftp'})", "ProcessMonitor({'regex':'sshd: .*\[priv\]', 'name':'sshd'})", "IOMonitor({'regex':'nfsd'})", "IOMonitor({'regex':'smbd'})" ]
+#
+# Each monitor is specified in its own section, with the following format
+# monitor:NAME:CLASS
 
-# Define the action to be taken when entering sleep
-action_enter_sleep = '/usr/sbin/powernap'
+[monitor:input:InputMonitor]
+
+[monitor:udp9:RemoteMonitor]
+port = 9
+
+[monitor:sftp:ProcessMonitor]
+regex = 'sftp-server'
+
+[monitor:sshd:ProcessMonitor]
+regex = 'sshd: .*\[priv\]'
+
+[monitor:nfsd:IOMonitor]
+regex = 'nfsd'
+
+[monitor:smbd:IOMonitor]
+regex = 'smbd'

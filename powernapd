@@ -42,6 +42,7 @@ CONFIG   = {
     'pid'                : '/var/run/%s.pid' % PKG,
     'debug'              : 0,
     'daemon'             : True,
+    'absent'             : 60.0,
     'interval'           : 1.0,
     'grace'              : 60.0,
     'sleep_reset'        : False,
@@ -81,6 +82,9 @@ def load_config ():
     optp.add_option("-i", "--interval", dest="interval",
                     default=None, type='float',
                     help="Specify interval period in seconds")
+    optp.add_option("-a", "--absent", dest="absent",
+                    default=None, type='float',
+                    help="Specify global absent period in seconds")
     optp.add_option("-g", "--grace", dest="grace",
                     default=None, type='float',
                     help="Specify global grace period in seconds")
@@ -98,9 +102,6 @@ def load_config ():
                     default=None,
                     action='store_false',
                     help="Do not run as a daemon process")
-    optp.add_option('--monitor', dest='monitors',
-                    default=[], action='append',
-                    help='Specify monitor class to load')
 
     # Parse command line
     (opts,args) = optp.parse_args()
@@ -125,12 +126,23 @@ def load_config ():
     if opts.log         != None: CONFIG['log']         = opts.log
     if opts.pid         != None: CONFIG['pid']         = opts.pid
     if opts.debug       != None: CONFIG['debug']       = opts.debug
+    if opts.absent      != None: CONFIG['absent']      = opts.absent
     if opts.interval    != None: CONFIG['interval']    = opts.interval
     if opts.grace       != None: CONFIG['grace']       = opts.grace
     if opts.sleep_grace != None: CONFIG['sleep_grace'] = opts.sleep_grace
     if opts.sleep_reset != None: CONFIG['sleep_reset'] = opts.sleep_reset
     if opts.daemon      != None: CONFIG['daemon']      = opts.daemon
-    if opts.monitors:            CONFIG['monitors']    = opts.monitors
+
+    # Load monitors
+    CONFIG['monitors'] = []
+    for sect in cfgp.sections():
+        if sect.startswith('monitor:'):
+            pts = sect.split(':')
+            config = { 'name' : pts[1], 'absent' : CONFIG['absent'] }
+            for (key,val) in cfgp.items(sect):
+              config[key] = eval(val)
+            monitor = { 'class' : pts[2], 'config' : config }
+            CONFIG['monitors'].append(monitor)
 
 # ###########################################################################
 # Logging
@@ -262,8 +274,9 @@ def create_monitors ( monitor_config ):
 
     # Process each
     for m in monitor_config:
-        debug('loading monitor: %s' % m)
-        monitor = eval(m)
+        cons = '%s(%s)' % (m['class'], m['config'])
+        debug('loading monitor: %s' % cons)
+        monitor = eval(cons)
         ret.append(monitor)
 
     return ret
@@ -278,9 +291,12 @@ def action_enter_sleep ():
     info('entering sleep')
 
     # Perform action
-    if CONFIG.has_key('action_enter_sleep'):
+    if CONFIG.get('action_enter_sleep') is not None:
         info('performing action %s' % CONFIG['action_enter_sleep'])
-        os.system(CONFIG['action_enter_sleep'])
+        try:
+            os.system(CONFIG['action_enter_sleep'])
+	except Exception, e:
+            error('failed to run action_enter_sleep [e=%s]' % e)
 
 # Exit sleep (woken up)
 def action_exit_sleep ( period ):
@@ -295,17 +311,20 @@ def action_exit_sleep ( period ):
           % (days, hrs, mins, secs))
 
     # Perform action
-    if CONFIG.has_key('action_exit_sleep'):
+    if CONFIG.get('action_exit_sleep') is not None:
         info('performing action %s' % CONFIG['action_exit_sleep'])
-        os.system(CONFIG['action_exit_sleep'])
+        try:
+            os.system(CONFIG['action_exit_sleep'])
+        except Exception, e:
+            error('failed to run action_exit_sleep [e=%s]' % e)
 
 # Enter grace period
 def action_enter_grace ( period ):
     global CONFIG
     info('grace period entered')
     action = 'None'
-    if CONFIG.has_key('action_enter_sleep'):
-	action = CONFIG['action_enter_sleep']
+    if CONFIG.get('action_enter_sleep') is not None:
+	    action = CONFIG['action_enter_sleep']
 
     # Alert user
     msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (period, action)
@@ -313,9 +332,12 @@ def action_enter_grace ( period ):
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
 
     # Perform action
-    if CONFIG.has_key('action_enter_grace'):
+    if CONFIG.get('action_enter_grace') is not None:
         info('performing action %s' % CONFIG['action_enter_grace'])
-        os.system(CONFIG['action_enter_grace'])
+        try:
+            os.system(CONFIG['action_enter_grace'])
+        except Exception, e:
+            error('failed to run action_enter_grace [e=%s]' % e)
 
 # Cancel grace period
 def action_exit_grace ():
@@ -327,9 +349,12 @@ def action_exit_grace ():
     commands.getoutput("echo '%s' | wall" % msg)
 
     # Perform action
-    if CONFIG.has_key('action_exit_grace'):
+    if CONFIG.get('action_exit_grace') is not None:
         info('performing action %s' % CONFIG['action_exit_grace'])
-        os.system(CONFIG['action_exit_grace'])
+        try:
+            os.system(CONFIG['action_exit_grace'])
+        except Exception, e:
+            error('failed to run action_exit_grace [e=%s]' % e)
 
 # Handle external request to sleep
 #   TODO: this should probably set the state?
