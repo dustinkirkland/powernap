@@ -49,7 +49,7 @@ CONFIG   = {
     'sleep_grace'        : 120.0,
     'plugin_dir'         : './plugins',
     'monitors'           : [],
-    'action_enter_sleep' : '/bin/true',#usr/sbin/powernap',
+    'action_enter_sleep' : '/usr/sbin/powernap',
     'action_exit_sleep'  : None,
     'action_enter_grace' : None,
     'action_exit_grace'  : None,
@@ -119,8 +119,8 @@ def load_config ():
     #         it on what should be a controlled file, to which a limited
     #         number of people (sysadmins) have access
     if cfgp.has_section('global'):
-      for k, v in cfgp.items('global'):
-        CONFIG[k] = eval(v)
+        for k, v in cfgp.items('global'):
+            CONFIG[k] = eval(v)
 
     # Update from command line
     if opts.log         != None: CONFIG['log']         = opts.log
@@ -140,7 +140,7 @@ def load_config ():
             pts = sect.split(':')
             config = { 'name' : pts[1], 'absent' : CONFIG['absent'] }
             for (key,val) in cfgp.items(sect):
-              config[key] = eval(val)
+                config[key] = eval(val)
             monitor = { 'class' : pts[2], 'config' : config }
             CONFIG['monitors'].append(monitor)
 
@@ -239,12 +239,12 @@ def init_signal_handlers ():
 def sig_handler_exit ( sig, frame ):
     # Force shutdown!
     if ( sig == signal.SIGTERM ):
-      info('forcing shutdown')
-      sys.exit(1)
+        info('forcing shutdown')
+        sys.exit(1)
     else:
-      global RUNNING
-      info('requesting shutdown')
-      RUNNING = False
+        global RUNNING
+        info('requesting shutdown')
+        RUNNING = False
 
 
 # ###########################################################################
@@ -291,11 +291,11 @@ def action_enter_sleep ():
     info('entering sleep')
 
     # Perform action
-    if CONFIG.get('action_enter_sleep') is not None:
+    if CONFIG['action_enter_sleep']:
         info('performing action %s' % CONFIG['action_enter_sleep'])
         try:
             os.system(CONFIG['action_enter_sleep'])
-	except Exception, e:
+        except Exception, e:
             error('failed to run action_enter_sleep [e=%s]' % e)
 
 # Exit sleep (woken up)
@@ -311,7 +311,7 @@ def action_exit_sleep ( period ):
           % (days, hrs, mins, secs))
 
     # Perform action
-    if CONFIG.get('action_exit_sleep') is not None:
+    if CONFIG['action_exit_sleep']:
         info('performing action %s' % CONFIG['action_exit_sleep'])
         try:
             os.system(CONFIG['action_exit_sleep'])
@@ -323,8 +323,8 @@ def action_enter_grace ( period ):
     global CONFIG
     info('grace period entered')
     action = 'None'
-    if CONFIG.get('action_enter_sleep') is not None:
-	    action = CONFIG['action_enter_sleep']
+    if CONFIG['action_enter_sleep']:
+        action = CONFIG['action_enter_sleep']
 
     # Alert user
     msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (period, action)
@@ -332,7 +332,7 @@ def action_enter_grace ( period ):
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
 
     # Perform action
-    if CONFIG.get('action_enter_grace') is not None:
+    if CONFIG['action_enter_grace']:
         info('performing action %s' % CONFIG['action_enter_grace'])
         try:
             os.system(CONFIG['action_enter_grace'])
@@ -345,11 +345,11 @@ def action_exit_grace ():
     debug('sleep cancelled')
 
     # Alert user
-    msg = "PowerNap detected activity. Canceling action [%s]" % CONFIG['action']
+    msg = "PowerNap detected activity. Canceling action"
     commands.getoutput("echo '%s' | wall" % msg)
 
     # Perform action
-    if CONFIG.get('action_exit_grace') is not None:
+    if CONFIG['action_exit_grace']:
         info('performing action %s' % CONFIG['action_exit_grace'])
         try:
             os.system(CONFIG['action_exit_grace'])
@@ -454,7 +454,7 @@ def powernapd_loop ():
                 else:
                     grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
                     for m in MONITORS:
-                          if hasattr(m, 'grace'): grace = max(grace, m.grace())
+                        if hasattr(m, 'grace'): grace = max(grace, m.grace())
 
                 # Change state
                 state = STATE_SLEEP
@@ -477,7 +477,7 @@ def powernapd_loop ():
                 # Set period (same as grace) so we continually reassert
                 grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
                 for m in MONITORS:
-                      if hasattr(m, 'grace'): grace = max(grace, m.grace())
+                    if hasattr(m, 'grace'): grace = max(grace, m.grace())
             
 
 # ###########################################################################
