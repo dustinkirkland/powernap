@@ -436,6 +436,7 @@ def powernapd_loop ():
         # Grace
         elif state == STATE_GRACE:
             grace -= period
+            debug('grace period remaining %0.2f sec' % grace)
 
             # Sleep
             if grace <= 0:
@@ -449,25 +450,27 @@ def powernapd_loop ():
                 if CONFIG['sleep_reset']:
                     for m in MONITORS:
                         if hasattr(m, 'reset'): m.reset()
+                    debug('monitor states reset')
 
                 # Set grace period and wait
                 else:
                     grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
                     for m in MONITORS:
                         if hasattr(m, 'grace'): grace = max(grace, m.grace())
+                    debug('grace (sleep) period set %0.2f' % grace)
+                    last_time = time.time() # clear
 
                 # Change state
                 state = STATE_SLEEP
-    
-            else:
-                debug('grace period remaining %0.2f sec' % grace)
 
         # Sleeping
         elif state == STATE_SLEEP:
             grace -= period
+            debug('grace period remaining %0.2f sec' % grace)
 
             # Continually re-assert
             if grace <= 0:
+                debug('re-entering sleep')
                 # Note: we don't check sleep_reset as we wouldn't be here
                 #       if it was set
 
@@ -478,6 +481,7 @@ def powernapd_loop ():
                 grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
                 for m in MONITORS:
                     if hasattr(m, 'grace'): grace = max(grace, m.grace())
+                debug('grace (sleep) period set %0.2f' % grace)
             
 
 # ###########################################################################
