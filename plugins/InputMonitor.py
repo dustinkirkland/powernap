@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, threading
+import os, re, threading
 from logging import error, debug, info, warn
 from Monitor import Monitor
 
@@ -29,8 +29,19 @@ class InputMonitor ( Monitor, threading.Thread ):
     def __init__ ( self, config ):
         threading.Thread.__init__(self)
         Monitor.__init__(self, config)
+        if config.has_key('regex'):
+            if hasattr(config['regex'], '__iter__'):
+                self._regex = map(re.compile, config['regex'])
+            else:
+                self._regex = [ re.compile(config['regex']) ]
+        else:
+            self._regex = None
         self._running = False
-        if not config.has_key('name'): self._name = '/dev/input'
+        if not config.has_key('config'):
+            self._path = '/dev/input'
+        else:
+            self._path = config['path']
+        if not config.has_key('name'): self._name = self._path
 
     # Start the thread
     def start ( self ):
@@ -52,13 +63,23 @@ class InputMonitor ( Monitor, threading.Thread ):
         # Get all events
         poll = select.poll()
         fps  = {}
-        for f in os.listdir('/dev/input'):
-            path = os.path.join('/dev/input', f)
+        for f in os.listdir(self._path):
+            path = os.path.join(self._path, f)
             if not os.path.isdir(path):
-                fp = open(path)
-                fps[fp.fileno()] = fp
-                poll.register(fp, select.POLLIN)
-                debug('%s - adding input device %s' % (self, path))
+                
+                # Check each regex
+                res = self._regex is None
+                if not res:
+                    for r in self._regex:
+                        res = r.match(f)
+                        if res: break
+            
+                # Include
+                if res:
+                    fp = open(path)
+                    fps[fp.fileno()] = fp
+                    poll.register(fp, select.POLLIN)
+                    debug('%s - adding input device %s' % (self, path))
 
         # Poll for events
         while self._running:
