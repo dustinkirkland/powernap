@@ -68,9 +68,10 @@ class InputMonitor ( Monitor, threading.Thread ):
 
             # Search expressions
             res = not self._regex
-            for r in self._regex:
-                res = r.match(p)
-                if res: break
+            if not res:
+                for r in self._regex:
+                    res = r.match(p)
+                    if res: break
             if not res: continue
 
             # Existing
