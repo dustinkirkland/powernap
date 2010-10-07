@@ -1,6 +1,9 @@
 powernap (1.11) unreleased; urgency=low
 
-  * UNRELEASED
+  [ Adam Sutton ]
+  * reworked config file and config file parsing
+  * modularized the monitoring to a set of logical plugins
+  * added a monitor on a UDP port for staying awake
 
  -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 18 May 2010 12:33:37 -0500
 
