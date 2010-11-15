@@ -8,7 +8,7 @@ _powerwake()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     options="-b --broadcast -m --method"
-    files="/etc/ethers /var/cache/powerwake/ethers"
+    files="/etc/ethers /var/cache/powerwake/ethers $HOME/.cache/ethers"
     targets="$( cat ${files} 2>/dev/null | awk '{print $2}' )"
 
     case "${prev}" in
