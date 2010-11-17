@@ -8,6 +8,8 @@ powernap (1.11) unreleased; urgency=low
   [ Nobuto MURATA ]
   * powerwake_completion: add bash completion from $HOME/.cache/ethers,
     LP: #675445
+  * debian/powernap.upstart: fix LP: #598241 cannot enable Wake-on-LAN
+    when ifconfig output is translated
 
  -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 17 Nov 2010 17:15:25 -0600
 
