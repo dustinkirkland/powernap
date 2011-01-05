@@ -1,2 +1,2 @@
-powerwake usr/bin
+bin/powerwake usr/bin
 powerwake_completion etc/bash_completion.d
