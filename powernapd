@@ -1,10 +1,10 @@
 #!/usr/bin/python
+#
 #    powernapd - monitor a system process table; if IDLE amount of time
 #               goes by with no MONITORED_PROCESSES running, run ACTION
 #    Copyright (C) 2009 Canonical Ltd.
 #
 #    Authors: Dustin Kirkland <kirkland@canonical.com>
-#             Adam Sutton <dev@adamsutton.me.uk>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,167 +18,205 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# #########################################################################
 # Imports
-# #########################################################################
-
 import commands
 import logging, logging.handlers
-from logging import debug, info, warning, error
 import os
 import re
 import signal
 import sys
 import time
-import threading
 
-# #########################################################################
-# Configuration
-# #########################################################################
+# Define globals
+global PKG, LOCK, CONFIG
+PKG = "powernap"
+LOCK = "/var/run/%s.pid" % PKG
+CONFIG = "/etc/%s/config" % PKG
+LOG = "/var/log/%s.log" % PKG
 
-PKG      = 'powernap'
-CONFIG   = {
-    'log'                : '/var/log/%s.log' % PKG,
-    'pid'                : '/var/run/%s.pid' % PKG,
-    'debug'              : 0,
-    'daemon'             : True,
-    'absent'             : 60.0,
-    'interval'           : 1.0,
-    'grace'              : 60.0,
-    'sleep_reset'        : False,
-    'sleep_grace'        : 120.0,
-    'plugin_dir'         : './plugins',
-    'monitors'           : [],
-    'action_enter_sleep' : '/usr/sbin/powernap',
-    'action_exit_sleep'  : None,
-    'action_enter_grace' : None,
-    'action_exit_grace'  : None,
-}
-RUNNING  = True
-MONITORS = []
+logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.DEBUG,)
 
-# Config signal handler
-def sig_handler_config ( sig, frame ):
-    if ( sig == signal.SIGHUP ):
-        warn('configuration reloading not supported, restart daemon')
+# CONFIG values can override these
+global MONITORED_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG
+MONITORED_PROCESSES = []
+ABSENT_SECONDS = sys.maxint
+ACTION = "/usr/sbin/powernap"
+INTERVAL_SECONDS = 1
+GRACE_SECONDS = 60
+DEBUG = 0
 
-# Load configuration
-def load_config ():
-    global PKG, CONFIG
-    from optparse import OptionParser
-    from ConfigParser import ConfigParser
-
-    # Build options
-    optp = OptionParser()
-    optp.add_option("-c", "--config", dest="config",
-                    default=None,
-                    help="Specify an alternative configuration file")
-    optp.add_option("-l", "--log", dest="log",
-                    default=None,
-                    help="Specify an alternative log file")
-    optp.add_option("--pid", dest="pid",
-                    default=None,
-                    help="Specify an alternative PID file")
-    optp.add_option("-i", "--interval", dest="interval",
-                    default=None, type='float',
-                    help="Specify interval period in seconds")
-    optp.add_option("-a", "--absent", dest="absent",
-                    default=None, type='float',
-                    help="Specify global absent period in seconds")
-    optp.add_option("-g", "--grace", dest="grace",
-                    default=None, type='float',
-                    help="Specify global grace period in seconds")
-    optp.add_option('-s', '--sleepgrace', dest='sleep_grace',
-                    default=None, type='float',
-                    help='Specify grace period when entering sleep (not used if sleep_reset is set)')
-    optp.add_option('-r', '--reset', dest='sleep_reset',
-                    default=None,
-                    action='store_true',
-                    help='Reset timers when entering sleep (DO NOT set if action does not perform true suspend)')
-    optp.add_option("-d", "--debug", dest="debug",
-                    default=None, type='int',
-                    help="Specify level of debug logging")
-    optp.add_option("--nodaemon", dest="daemon",
-                    default=None,
-                    action='store_false',
-                    help="Do not run as a daemon process")
-
-    # Parse command line
-    (opts,args) = optp.parse_args()
-
-    # Get config file path
-    conf_path   = '/etc/%s/config' % PKG
-    if ( opts.config ): conf_path = opts.config
-
-    # Load config file
-    cfgp = ConfigParser()
-    if ( os.path.isfile(conf_path) ): cfgp.read([conf_path])
-
-    # Update from config file
-    #   Note: although there are security risks using eval() we're running
-    #         it on what should be a controlled file, to which a limited
-    #         number of people (sysadmins) have access
-    if cfgp.has_section('global'):
-        for k, v in cfgp.items('global'):
-            CONFIG[k] = eval(v)
-
-    # Update from command line
-    if opts.log         != None: CONFIG['log']         = opts.log
-    if opts.pid         != None: CONFIG['pid']         = opts.pid
-    if opts.debug       != None: CONFIG['debug']       = opts.debug
-    if opts.absent      != None: CONFIG['absent']      = opts.absent
-    if opts.interval    != None: CONFIG['interval']    = opts.interval
-    if opts.grace       != None: CONFIG['grace']       = opts.grace
-    if opts.sleep_grace != None: CONFIG['sleep_grace'] = opts.sleep_grace
-    if opts.sleep_reset != None: CONFIG['sleep_reset'] = opts.sleep_reset
-    if opts.daemon      != None: CONFIG['daemon']      = opts.daemon
-
-    # Load monitors
-    CONFIG['monitors'] = []
-    for sect in cfgp.sections():
-        if sect.startswith('monitor:'):
-            pts = sect.split(':')
-            config = { 'name' : pts[1], 'absent' : CONFIG['absent'] }
-            for (key,val) in cfgp.items(sect):
-                config[key] = eval(val)
-            monitor = { 'class' : pts[2], 'config' : config }
-            CONFIG['monitors'].append(monitor)
-
-# ###########################################################################
-# Logging
-# ###########################################################################
-
-# Setup logging
-def init_logging ():
-    global CONFIG
-    level  = logging.CRITICAL
-    levels = [
-        logging.CRITICAL,
-        logging.ERROR,
-        logging.WARNING,
-        logging.INFO,
-        logging.DEBUG ]
-    if   CONFIG['debug'] < 0:            level = logging.CRITICAL
-    elif CONFIG['debug'] >= len(levels): level = logging.DEBUG
-    else:                                level = levels[CONFIG['debug']]
-    logging.basicConfig(filename=CONFIG['log'], level=level,
-                        format='%(asctime)s %(levelname)-8s %(message)s',
-                        datefmt='%Y-%m-%d_%H:%M:%S')
-
-# Bomb out after reporting message
-def critical ( msg ):
-    logging.critical(msg)
+# Load configuration file
+try:
+    execfile(CONFIG)
+except:
+    # No error function yet, use a raw print
+    print("Invalid configuration [%s]" % CONFIG)
     sys.exit(1)
 
-# ###########################################################################
-# Daemon Setup
-# ###########################################################################
+# Define Process object to hold regex and absence counter
+class Process(object):
+    def __init__(self, process):
+        self.process = process
+        self.regex = re.compile(process)
+        self.absent_seconds = 0
+
+# Generic debug function
+def debug(level, msg):
+    if level >= (logging.ERROR - 10*DEBUG):
+        logging.log(level, msg)
+
+# Generic error function
+def error(msg):
+    debug(logging.ERROR, msg)
+    sys.exit(1)
+
+# Lock function, using a pidfile in /var/run
+def establish_lock():
+    if os.path.exists(LOCK):
+        f = open(LOCK,'r')
+        pid = f.read()
+        f.close()
+        error("Another instance is running [%s]" % pid)
+    else:
+        try:
+            f = open(LOCK,'w')
+        except:
+            error("Administrative privileges are required to run %s" % PKG);
+        f.write(str(os.getpid()))
+        f.close()
+        # Set signal handlers
+        signal.signal(signal.SIGHUP, signal_handler)
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGQUIT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGUSR1, take_action_handler)
+
+# Clean up lock file on termination signals
+def signal_handler(signal, frame):
+    if os.path.exists(LOCK):
+        os.remove(LOCK)
+    debug(logging.INFO, "Stopping %s" % PKG)
+    sys.exit(1)
+
+# Search process list for regex, return on first match
+def find_process(ps, p):
+    for str in ps:
+        if p.search(str):
+            return 1
+    return 0
+
+# Check /dev/*, such that we don't powernap the system if someone
+# is actively using a terminal device
+def get_console_activity():
+    dev = commands.getoutput("ls -t /dev").split('\n')
+    c = 0
+    d = "/dev/null"
+    # Find the most recently touched device
+    for d in dev:
+      d = "/dev/%s" % d
+      debug(logging.DEBUG, "      Examining [%s]" % d)
+      if os.path.isdir(d):
+          pass
+      else:
+          t = os.stat(d)
+          c = time.time() - t.st_mtime
+          break
+    i = get_interrupts()
+    return c, d, i
+
+# Read keyboard/mouse from /proc/interrupts
+# Note: only works for ps2 keyboards/mice
+def get_interrupts():
+    interrupts = 0
+    f = open("/proc/interrupts", "r")
+    for line in f.readlines():
+        items = line.split()
+        source = items.pop()
+        if source == "i8042" or source == "keyboard" or source == "mouse":
+            items.pop(0)
+            items.pop()
+            for i in items:
+                interrupts += int(i)
+    f.close()
+    return interrupts
+
+# Send a message to system users, that we're about to take an action,
+# and sleep for a grace period
+def warn_users():
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (GRACE_SECONDS, ACTION)
+    msg2 = "To cancel this operation, press any key in any terminal"
+    debug(logging.WARNING, msg1)
+    commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
+    t = 0
+    c, d, last_i = get_console_activity()
+    while t < GRACE_SECONDS:
+        time.sleep(INTERVAL_SECONDS)
+        t += INTERVAL_SECONDS
+        c, d, i = get_console_activity()
+        if c < INTERVAL_SECONDS or i != last_i:
+            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, ACTION)
+            debug(logging.WARNING, msg)
+            commands.getoutput("echo '%s' | wall" % msg)
+            return 1
+        last_i = i
+    return 0
+
+# TODO: notify authorities about action taken
+def notify_authorities():
+    debug(logging.WARNING, "Taking action [%s]" % ACTION)
+
+# Zero the counters and take the action
+def take_action():
+    notify_authorities()
+    debug(logging.DEBUG, "Reseting counters prior to taking action")
+    for p in PROCESSES:
+        p.absent_seconds = 0
+    os.system(ACTION)
+
+# Handler for asynchronous external signals
+def take_action_handler(signal, frame):
+    take_action()
+
+# Main loop, search process table, increment counters, take actions, sleep
+def powernapd_loop():
+    last_i = 0
+    while 1:
+        debug(logging.DEBUG, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
+        time.sleep(INTERVAL_SECONDS)
+        # Examine process table, compute absent time of each monitored process
+        debug(logging.DEBUG, "Examining process table")
+        absent_processes = 0
+        ps = commands.getoutput("ps -eo args").splitlines()
+        for p in PROCESSES:
+            debug(logging.DEBUG, "  Looking for [%s]" % p.process)
+            if find_process(ps, p.regex):
+                # process running, so reset absent time
+                p.absent_seconds = 0
+                debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+            else:
+                # process not running, increment absent time
+                p.absent_seconds += INTERVAL_SECONDS
+                debug(logging.DEBUG, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+                if p.absent_seconds >= ABSENT_SECONDS:
+                    # process missing for >= absent_seconds threshold, mark absent
+                    debug(logging.DEBUG, "    Process absent for >= threshold, so mark absent")
+                    absent_processes += 1
+        # Determine if action needs to be taken
+        if absent_processes > 0 and absent_processes == len(PROCESSES):
+            debug(logging.DEBUG, "    Checking for console or terminal activity")
+            c, d, i = get_console_activity()
+            if c > ABSENT_SECONDS and i == last_i:
+                last_i = i
+                # All processes are absent, take action!
+                if warn_users() == 0:
+                    take_action()
+            else:
+                last_i = i
+                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
+
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
-def init_daemon ():
-    global CONFIG
-
-    # First fork
+def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
     try:
         pid = os.fork()
         if pid > 0:
@@ -186,12 +224,8 @@ def init_daemon ():
     except OSError, e:
         sys.stderr.write("fork #1 failed: (%d) %sn" % (e.errno, e.strerror))
         sys.exit(1)
-
-    # Setup environment
     os.chdir("/")
     os.setsid()
-
-    # Second fork
     try:
         pid = os.fork()
         if pid > 0:
@@ -199,334 +233,29 @@ def init_daemon ():
     except OSError, e:
         sys.stderr.write("fork #2 failed: (%d) %sn" % (e.errno, e.strerror))
         sys.exit(1)
-
-    # File handles
-    #   Note: although we redirect stdout/stderr to the log file, most
-    #         output will be sent there directly (via logging)
+    f = open(LOCK,'w')
+    f.write(str(os.getpid()))
+    f.close()
     for f in sys.stdout, sys.stderr: f.flush()
-    si = file('/dev/null', 'r')
-    so = file(CONFIG['log'], 'a+')
-    se = file(CONFIG['log'], 'a+', 0)
+    si = file(stdin, 'r')
+    so = file(stdout, 'a+')
+    se = file(stderr, 'a+', 0)
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
 
-# Create PID file (locked)
-def create_pid ():
-    global CONFIG, PKG
-    import fcntl
-    f = None
-    try:
-        f = open(CONFIG['pid'], 'w')
-    except:
-        error("admin privileges are required to run %s" % PKG);
-   
-    try:
-        fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        f.write(str(os.getpid()))
-    except:
-        error("another instance is already running [pid=%s]" % f.read())
-
-# Setup signal handlers
-def init_signal_handlers ():
-    signal.signal(signal.SIGHUP,  sig_handler_config)
-    signal.signal(signal.SIGINT,  sig_handler_exit)
-    signal.signal(signal.SIGQUIT, sig_handler_exit)
-    signal.signal(signal.SIGTERM, sig_handler_exit)
-    signal.signal(signal.SIGUSR1, sig_handler_take_action)
-
-# Clean up lock file on termination signals
-def sig_handler_exit ( sig, frame ):
-    # Force shutdown!
-    if ( sig == signal.SIGTERM ):
-        info('forcing shutdown')
-        sys.exit(1)
-    else:
-        global RUNNING
-        info('requesting shutdown')
-        RUNNING = False
-
-
-# ###########################################################################
-# Monitors
-# ###########################################################################
-
-# Generate monitors
-#   Note: I really don't like this and if someone has a better way of
-#         doing this feel free to change it!
-def create_monitors ( monitor_config ):
-    ret  = []
-    mods = {}
-
-    # Add plugin dir to path
-    sys.path.insert(0, CONFIG['plugin_dir'])
-
-    # Source all plugins
-    for f in os.listdir(CONFIG['plugin_dir']):
-        p = os.path.join(CONFIG['plugin_dir'], f)
-        if os.path.isfile(p) and f.endswith('.py'):
-            n = f.replace('.py', '')
-            try:
-                m = __import__(n, globals(), locals(), [n], -1)
-                globals()[n] = getattr(m, n)
-            except Exception, e:
-                error('failed to import plugin %s [e=%s]' % (n, str(e)))
-
-    # Process each
-    for m in monitor_config:
-        cons = '%s(%s)' % (m['class'], m['config'])
-        debug('loading monitor: %s' % cons)
-        monitor = eval(cons)
-        ret.append(monitor)
-
-    return ret
-
-# ###########################################################################
-# Actions
-# ###########################################################################
-
-# Enter sleep
-def action_enter_sleep ():
-    global CONFIG
-    info('entering sleep')
-
-    # Perform action
-    if CONFIG['action_enter_sleep']:
-        info('performing action %s' % CONFIG['action_enter_sleep'])
-        try:
-            os.system(CONFIG['action_enter_sleep'])
-        except Exception, e:
-            error('failed to run action_enter_sleep [e=%s]' % e)
-
-# Exit sleep (woken up)
-def action_exit_sleep ( period ):
-    global CONFIG
-    days   = int(period / 86400)
-    period = period % 86400
-    hrs    = int(period / 3600)
-    period = period % 3600
-    mins   = int(period / 60)
-    secs   = period % 60
-    debug('resumed after sleeping for %d days %02d hrs %02d mins %02d secs'
-          % (days, hrs, mins, secs))
-
-    # Perform action
-    if CONFIG['action_exit_sleep']:
-        info('performing action %s' % CONFIG['action_exit_sleep'])
-        try:
-            os.system(CONFIG['action_exit_sleep'])
-        except Exception, e:
-            error('failed to run action_exit_sleep [e=%s]' % e)
-
-# Enter grace period
-def action_enter_grace ( period ):
-    global CONFIG
-    info('grace period entered')
-    action = 'None'
-    if CONFIG['action_enter_sleep']:
-        action = CONFIG['action_enter_sleep']
-
-    # Alert user
-    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (period, action)
-    msg2 = "To cancel this operation, press any key in any terminal"
-    commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
-
-    # Perform action
-    if CONFIG['action_enter_grace']:
-        info('performing action %s' % CONFIG['action_enter_grace'])
-        try:
-            os.system(CONFIG['action_enter_grace'])
-        except Exception, e:
-            error('failed to run action_enter_grace [e=%s]' % e)
-
-# Cancel grace period
-def action_exit_grace ():
-    global CONFIG
-    debug('sleep cancelled')
-
-    # Alert user
-    msg = "PowerNap detected activity. Canceling action"
-    commands.getoutput("echo '%s' | wall" % msg)
-
-    # Perform action
-    if CONFIG['action_exit_grace']:
-        info('performing action %s' % CONFIG['action_exit_grace'])
-        try:
-            os.system(CONFIG['action_exit_grace'])
-        except Exception, e:
-            error('failed to run action_exit_grace [e=%s]' % e)
-
-# Handle external request to sleep
-#   TODO: this should probably set the state?
-def sig_handler_take_action ( sig, frame ):
-    if ( sig == signal.SIGUSR1 ): action_enter_sleep()
-
-# ###########################################################################
-# State Machine
-# ###########################################################################
-
-# States
-STATE_ACTIVE = 1 # Processes currently alive
-STATE_GRACE  = 2 # In the grace period
-STATE_SLEEP  = 3 # Currently inactive (possibly asleep)
-
-# State machine
-def powernapd_loop ():
-    global RUNNING, CONFIG
-
-    # Start state
-    last_time = time.time()
-    state     = STATE_ACTIVE
-    grace     = 0
-    sleep     = 0
-
-    # Until told to stop
-    while RUNNING:
-
-        # Wait
-        debug('sleeping for %d seconds' % CONFIG['interval'])
-        time.sleep(CONFIG['interval'])
-        if not RUNNING: break # get out for interrupted sleep at shutdown
-
-        # Get period
-        now       = time.time()
-        period    = now - last_time
-        last_time = now
-
-        # Check for activity
-        debug('checking activity')
-        active = 0
-        for m in MONITORS:
-            if hasattr(m, 'active') and m.active():
-                debug('  %-30s is active' % m)
-                active += 1
-            else:
-                debug('  %-30s is inactive' % m)
-
-        # Activity detected
-        if active > 0:
-            info('activity detected [count = %d]' % active)
-
-            # Woken up
-            if state == STATE_SLEEP:
-                action_exit_sleep(now - sleep)
-        
-            # Exit grace
-            elif state == STATE_GRACE:
-                action_exit_grace()
-
-            # Else (ignore)
-            else: pass
-        
-            # Set state
-            state = STATE_ACTIVE
-
-        # Enter grace period
-        elif state == STATE_ACTIVE:
-
-            # Set the period
-            grace = CONFIG['grace']
-            for m in MONITORS:
-                if hasattr(m, 'grace'): grace = max(grace, m.grace())
-            action_enter_grace(grace)
-
-            # Change state
-            state = STATE_GRACE
-
-        # Grace
-        elif state == STATE_GRACE:
-            grace -= period
-            debug('grace period remaining %0.2f sec' % grace)
-
-            # Sleep
-            if grace <= 0:
-                sleep = time.time()
-
-                # Perform action
-                action_enter_sleep()
-                # TODO: would be nice if we could auto detect a suspend/resume
-
-                # Reset counter (action caused a true suspend)
-                if CONFIG['sleep_reset']:
-                    for m in MONITORS:
-                        if hasattr(m, 'reset'): m.reset()
-                    debug('monitor states reset')
-
-                # Set grace period and wait
-                else:
-                    grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
-                    for m in MONITORS:
-                        if hasattr(m, 'grace'): grace = max(grace, m.grace())
-                    debug('grace (sleep) period set %0.2f' % grace)
-                    last_time = time.time() # clear
-
-                # Change state
-                state = STATE_SLEEP
-
-        # Sleeping
-        elif state == STATE_SLEEP:
-            grace -= period
-            debug('grace period remaining %0.2f sec' % grace)
-
-            # Continually re-assert
-            if grace <= 0:
-                debug('re-entering sleep')
-                # Note: we don't check sleep_reset as we wouldn't be here
-                #       if it was set
-
-                # Perform action
-                action_enter_sleep()
-
-                # Set period (same as grace) so we continually reassert
-                grace = max(CONFIG['sleep_grace'], CONFIG['grace'])
-                for m in MONITORS:
-                    if hasattr(m, 'grace'): grace = max(grace, m.grace())
-                debug('grace (sleep) period set %0.2f' % grace)
-            
-
-# ###########################################################################
-# Main 
-# ###########################################################################
-
 
 # Main program
 if __name__ == '__main__':
-
-    # Configure everything
-    load_config()
-    init_logging()
-    MONITORS = create_monitors(CONFIG['monitors'])
-
-    # Process setup
-    create_pid()
-    init_signal_handlers()
-    if CONFIG['daemon']: init_daemon()
-
-    # Main loop
-    info('starting monitors %s' % MONITORS)
+    # Ensure that only one instance runs
+    establish_lock()
+    daemonize()
     try:
-
-        # Init monitors
-        for m in MONITORS:
-            if hasattr(m, 'start'): m.start()
-
-        # Enter state machine
+        # Run the main powernapd loop
+        PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
+        debug(logging.INFO, "Starting %s" % PKG)
         powernapd_loop()
-
-    # Oh dear!
-    except Exception, e:
-        error("unhandled exception [e=%s]" % e)
-
-    # Shut it all down
     finally:
-        RUNNING = False
-        for m in MONITORS:
-            if hasattr(m, 'stop'): m.stop()
-        info('terminating')
-        sys.exit(0)
-
-# ###########################################################################
-# Editor directives
-# ###########################################################################
-
-# vim:sts=4:ts=4:sw=4:et
+        # Clean up the lock file
+        if os.path.exists(LOCK):
+            os.remove(LOCK)

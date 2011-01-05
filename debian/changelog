@@ -1,8 +1,9 @@
 powernap (1.12) unreleased; urgency=low
 
-  * UNRELEASED
+  * Revert Adam changes to some files (rev148 - Original PowerNap behavior)
+    - powernapd, powernapd.8, action, config.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 05 Jan 2011 18:13:31 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 05 Jan 2011 18:14:41 -0500
 
 powernap (1.11) unreleased; urgency=low
 

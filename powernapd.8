@@ -1,33 +1,27 @@
 .TH powernapd 8 "9 Jun 2009" powernap "powernapd"
 .SH NAME
-powernapd \- configurable daemon that will monitor the activity of the system, using a set of pluggable monitor classes, to determine when to put the system into a lower power state (such as suspending or even powering off)
+powernapd \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing powernap when all of a list of MONITORED_PROCESSES are missing from the system process table for a contiguous ABSENT_SECONDS.
 
 .SH DESCRIPTION
-powernapd will run \fBpowernap\fP(8) when no activity has been detected by a series of configurable monitor classes. Details of how long before a monitor will report inactivity can be configured on a per monitor (config = activity) basis.
+powernapd will run \fBpowernap\fP(8) when none of a set of MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS.
 
-Four monitors are provided by default for standard monitoring:
+powernapd will check the process table using "ps -eo args" every INTERVAL_SECONDS.  Note that MONITORED_PROCESSES taking less than INTERVAL_SECONDS to execute may be overlooked by powernapd.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
 
-InputMonitor - monitors the event files in /dev/input to determine if there is any user input present (such as from a mouse or keyboard).
+Use "ps -eo args" for sample output and development your regular expressions.
 
-ProcessMonitor - uses a regular expression (config = regexp) to determine activity based on presence in the process table.
-
-IOMonitor - uses a regular expression (config = regexp) to locate processes in the process table and then monitors the IO table to detect activity.
-
-RemoteMonitor - monitors a UDP port (config = port) for incoming data. Typically used in conjuction with a periodic WOL source.
-
-For more details of the configuration options please see the default config file.
+It acts as a sort of "screensaver" for servers, watching the process table for activity, rather than the keyboard or mouse.  For instance, PowerNap can automatically "pm-suspend" a system if no instance of "kvm" runs for some contiguous block of "300" seconds, checking the process table every "1" second.
 
 .TP
 \fIhttp://launchpad.net/powernap\fP
 .PD
 
 .SH FILES
-\fI/etc/powernap/config\fP, \fI/var/run/powernap.pid\fP, \fI/var/log/powernap.log\fP, \fI/var/log/powernap.err\fP
+\fI/etc/powernap/action\fP, \fI/etc/powernap/config\fP, \fI/var/run/powernap.pid\fP, \fI/var/log/powernap.log\fP, \fI/var/log/powernap.err\fP
 
 .SH SEE ALSO
-\fBpowernap\fP(8))
+\fBpgrep\fP(1), \fBpowernap\fP(8))
 
 .SH AUTHOR
-This manpage and the utility was written by Dustin Kirkland <kirkland@canonical.com> for Ubuntu systems (but may be used by others) and later modified by Adam Sutton <dev@adamsutton.me.uk>.  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 3 published by the Free Software Foundation.
+This manpage and the utility was written by Dustin Kirkland <kirkland@canonical.com> for Ubuntu systems (but may be used by others).  Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 3 published by the Free Software Foundation.
 
 On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
