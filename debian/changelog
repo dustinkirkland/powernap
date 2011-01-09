@@ -2,9 +2,15 @@ powernap (1.12) unreleased; urgency=low
 
   * Revert Adam changes to some files (rev148 - Original PowerNap behavior)
     - powernapd, powernapd.8, action, config.
-  * Re-organize the source and update the packaging.
+  * Re-organize the source and update the packaging:
+    - sbin: Moved powernap, powernapd, powernapd-now.
+    - bin: Moved powerwake, powernap_calculator.
+    - man: Moved manpages here.
+    - debian/{powernap,powerwake}.install: Update accordingly.
+    - debian/{powernap,powerwake}.manpages: Update accordingly.
+    - powernap/monitors: Moved Adam's Monitors.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 05 Jan 2011 18:33:45 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Sun, 09 Jan 2011 18:21:13 -0500
 
 powernap (1.11) unreleased; urgency=low
 
