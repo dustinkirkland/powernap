@@ -13,8 +13,17 @@ powernap (1.12) unreleased; urgency=low
     - actions/: Add a set of scripts to reduce power consumption
     - powernap-action: Add tool to enable/disable and list powersave actions.
     - debian/powernap.install: Install new files.
+  * Provide ability to select a PowerNap method to perform.
+    - config: Add config variable to select method.
+    - powernap/{powernap,powernapd}: Make necessary changes.
+  * Add WoL monitor to 'wake up' for when 'pm-powersave' action is taken.
+    - sbin/powernapd: Add WoL Monitor.
+    - sbin/powerna: Take pm-powersave action correctly.
+  * Add class to handle config:
+    - powernap/powernap.py: Add class that handles config and initialization
+      of different monitors
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Sun, 09 Jan 2011 18:27:07 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Sun, 09 Jan 2011 18:33:02 -0500
 
 powernap (1.11) unreleased; urgency=low
 
