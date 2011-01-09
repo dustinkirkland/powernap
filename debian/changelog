@@ -9,8 +9,12 @@ powernap (1.12) unreleased; urgency=low
     - debian/{powernap,powerwake}.install: Update accordingly.
     - debian/{powernap,powerwake}.manpages: Update accordingly.
     - powernap/monitors: Moved Adam's Monitors.
+  * Add new powersave method, using pm-powersave:
+    - actions/: Add a set of scripts to reduce power consumption
+    - powernap-action: Add tool to enable/disable and list powersave actions.
+    - debian/powernap.install: Install new files.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Sun, 09 Jan 2011 18:21:13 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Sun, 09 Jan 2011 18:27:07 -0500
 
 powernap (1.11) unreleased; urgency=low
 

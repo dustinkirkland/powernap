@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+#    disable_hal_polling: Disables HAL Polling for CD/DVD drive.
+#
+#    Copyright (C) 2010 Canonical Ltd.
+#
+#    Authors: Andres Rodriguez <andreserl@ubuntu.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+dev="/dev/scd0"
+
+disable_hal_polling() {
+	hal-disable-polling --device $dev
+}
+
+enable_hal_polling() {
+	hal-disable-polling --enable-polling --device $dev
+}
+
+help() {
+	echo "Disable HAL Polling for CD/DVD drive"
+}
+
+case $1 in
+	true)
+		# Change governor to powersave
+		disable_hal_polling ;;
+	false)
+                # Change governor to ondemand
+		enable_hal_polling ;;
+	help)
+		help;;
+	*)
+		exit $NA ;;
+esac

@@ -1,0 +1,46 @@
+#!/bin/sh
+
+#. "${PM_FUNCTIONS}"
+
+#command_exists ethtool || exit $NA
+
+DEFAULT_NIC_ALWAYS_ENABLED="${DEAFULT_NIC_ALWAYS_ENABLED:-eth0}"
+
+validate_cmd() {
+	. "${PM_FUNCTIONS}"
+	command_exists ethtool || exit $NA
+}
+
+help() {
+	echo "Disable WoL on all ethernet cards but eth0. This can be changed in this hook."
+}
+
+set_wol_status() {
+    for d in "/sys/class/net/"*; do
+	[ -e "$d/wireless" ] && continue
+	[ -h "$d/device/driver" ] || continue
+	printf "Setting Wake On Lan for %s to %s..." "${d##*/}" "$1"
+	case $1 in
+	    disable)
+		if [ $DEFAULT_NIC_ALWAYS_ENABLED != "${d##*/}" ]; then
+			ethtool -s "${d##*/}" wol d>/dev/null 2>&1
+		fi
+		;;
+	    enable) ethtool -s "${d##*/}" wol g>/dev/null 2>&1;;
+	esac
+	[ "$?" -eq 0 ] && echo Done. || echo Failed.
+    done
+}
+
+case $1 in
+    true)
+	validate_cmd
+	set_wol_status disable;;
+    false)
+	validate_cmd
+	set_wol_status enable;;
+    help) help;;
+    *) exit $NA;;
+esac
+
+exit 0
