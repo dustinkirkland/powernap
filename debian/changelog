@@ -23,7 +23,7 @@ powernap (1.12) unreleased; urgency=low
     - powernap/powernap.py: Add class that handles config and initialization
       of different monitors
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Sun, 09 Jan 2011 18:33:02 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 10 Jan 2011 12:28:45 -0500
 
 powernap (1.11) unreleased; urgency=low
 

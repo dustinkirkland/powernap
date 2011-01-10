@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#    usb_autosuspend: Auto suspend usb core.
+#    nic_giga_to_meg: Change gigabit ethernet card to 100Mpbs to save power
 #
 #    Copyright (C) 2010 Canonical Ltd.
 #
@@ -18,30 +18,25 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#for i in /sys/bus/usb/devices/*/power/autosuspend; do echo 1 > $i; done 
-#for i in /sys/bus/usb/devices/*/power/level; do echo auto > $i; done
-
-usb_autosuspend() {
-	for i in /sys/bus/usb/devices/*/power/autosuspend;
-	do
-		echo $1 > $i
-	done
-
-	for i in /sys/bus/usb/devices/*/power/level;
-	do
-		echo $2 > $i
-	done
+set_eth_speed() {
+	if [ $1 -eq 100 ]; then
+		# Save power
+		ethtool -s eth0 autoneg off speed $1
+	else
+		# Roll back to Gigabit
+		ethtool -s eth0 autoneg on speed $1
+	fi
 }
 
 help() {
-	echo "Auto suspend USB bus to save power."
+	echo "Change Gigabit Ethernet card speed to 100Mbps to save power."
 }
 
 case $1 in
 	true)
-		usb_autosuspend 1 auto ;;
+		set_eth_speed 100 ;;
 	false)
-		usb_autosuspend 2 on ;;
+		set_eth_speed 1000 ;;
 	help)
 		help;;
 	*)

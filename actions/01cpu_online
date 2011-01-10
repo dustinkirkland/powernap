@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-#    nic_giga_to_meg: Change gigabit ethernet card to 100Mpbs to save power
+#    turn_off_cpus: This script turns off all the CPU's available, except
+#    for CPU 0.
 #
 #    Copyright (C) 2010 Canonical Ltd.
 #
@@ -18,25 +19,24 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-gig_to_meg() {
-	if [ $1 -eq 100 ]; then
-		# Save power
-		ethtool -s eth0 autoneg off speed $1
-	else
-		# Roll back to Gigabit
-		ethtool -s eth0 autoneg on speed $1
-	fi
+set_cpu_online() {
+	for cpu in /sys/devices/system/cpu/cpu*/online; do
+		[ -w "$cpu" ] || continue
+		echo $1 > $cpu
+	done
 }
 
 help() {
-	echo "Change Gigabit Ethernet card speed to 100Mbps to save power."
+	echo "Turns off all the CPU's (cores) available but CPU0."
 }
 
 case $1 in
 	true)
-		gig_to_meg 100 ;;
+		# Disable CPU
+		set_cpu_online 0 ;;
 	false)
-		gig_to_meg 1000 ;;
+		# Enable CPU
+		set_cpu_online 1 ;;
 	help)
 		help;;
 	*)

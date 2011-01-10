@@ -1,8 +1,7 @@
 #!/bin/sh
 #
-#    poweraware_smp_sched: Power Aware SMP Scheduler. Power-saving for
-#                          Multi-code, Multi-Thread process scheduler.
-#                          May impact performance of some applications.
+#    lowest_cpu_freq: This script lowers the frequency of the cpus by changing
+#                     the scaling_governor from "ondemand" to "powersave"
 #
 #    Copyright (C) 2010 Canonical Ltd.
 #
@@ -20,30 +19,25 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-tune_core="/sys/devices/system/cpu/sched_mc_power_savings"
-tune_thread="/sys/devices/system/cpu/sched_smt_power_savings"
-
-poweraware_smp_scheduler() {
-	if [ -w $tune_core ]; then
-		echo $1 > $tune_core
-	fi
-
-	if [ -w $tune_thread ]; then
-		echo $1 > $tune_thread
-	fi
+set_cpu_governor() {
+	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+		[ -w "$cpu" ] || continue
+		echo $1 > $cpu
+	done
 }
 
 help() {
-	echo "Power aware SMP scheduler. Saves power for multi-core and multi-thread process scheduler."
+	echo "Lowers the CPU frequency to the minimum possible by changing the scaling governor from ondemand to powersave"
 }
 
 case $1 in
 	true)
-		poweraware_smp_scheduler 1 ;;
+		# Change governor to powersave
+		set_cpu_governor powersave ;;
 	false)
-		poweraware_smp_scheduler 0 ;;
-	help)
-		help;;
+                # Change governor to ondemand
+		set_cpu_governor ondemand ;;
+	help) help;;
 	*)
 		exit $NA ;;
 esac

@@ -1,6 +1,8 @@
 #!/bin/sh
 #
-#    disable_hal_polling: Disables HAL Polling for CD/DVD drive.
+#    poweraware_smp_sched: Power Aware SMP Scheduler. Power-saving for
+#                          Multi-code, Multi-Thread process scheduler.
+#                          May impact performance of some applications.
 #
 #    Copyright (C) 2010 Canonical Ltd.
 #
@@ -18,27 +20,28 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-dev="/dev/scd0"
+tune_core="/sys/devices/system/cpu/sched_mc_power_savings"
+tune_thread="/sys/devices/system/cpu/sched_smt_power_savings"
 
-disable_hal_polling() {
-	hal-disable-polling --device $dev
-}
+set_smp_scheduler() {
+	if [ -w $tune_core ]; then
+		echo $1 > $tune_core
+	fi
 
-enable_hal_polling() {
-	hal-disable-polling --enable-polling --device $dev
+	if [ -w $tune_thread ]; then
+		echo $1 > $tune_thread
+	fi
 }
 
 help() {
-	echo "Disable HAL Polling for CD/DVD drive"
+	echo "Power aware SMP scheduler. Saves power for multi-core and multi-thread process scheduler."
 }
 
 case $1 in
 	true)
-		# Change governor to powersave
-		disable_hal_polling ;;
+		set_smp_scheduler 1 ;;
 	false)
-                # Change governor to ondemand
-		enable_hal_polling ;;
+		set_smp_scheduler 0 ;;
 	help)
 		help;;
 	*)

@@ -1,7 +1,6 @@
 #!/bin/sh
 #
-#    turn_off_cpus: This script turns off all the CPU's available, except
-#    for CPU 0.
+#    usb_autosuspend: Auto suspend usb core.
 #
 #    Copyright (C) 2010 Canonical Ltd.
 #
@@ -19,24 +18,30 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-turn_cpus_on_off() {
-	for cpu in /sys/devices/system/cpu/cpu*/online; do
-		[ -w "$cpu" ] || continue
-		echo $1 > $cpu
+#for i in /sys/bus/usb/devices/*/power/autosuspend; do echo 1 > $i; done 
+#for i in /sys/bus/usb/devices/*/power/level; do echo auto > $i; done
+
+set_usb_autosuspend() {
+	for i in /sys/bus/usb/devices/*/power/autosuspend;
+	do
+		echo $1 > $i
+	done
+
+	for i in /sys/bus/usb/devices/*/power/level;
+	do
+		echo $2 > $i
 	done
 }
 
 help() {
-	echo "Turns off all the CPU's (cores) available but CPU0."
+	echo "Auto suspend USB bus to save power."
 }
 
 case $1 in
 	true)
-		# Disable CPU
-		turn_cpus_on_off 0 ;;
+		set_usb_autosuspend 1 auto ;;
 	false)
-		# Enable CPU
-		turn_cpus_on_off 1 ;;
+		set_usb_autosuspend 2 on ;;
 	help)
 		help;;
 	*)
