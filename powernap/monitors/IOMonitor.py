@@ -4,6 +4,7 @@
 #
 #    Authors: Dustin Kirkland <kirkland@canonical.com>
 #             Adam Sutton <dev@adamsutton.me.uk>
+#             Andres Rodriguez <andreserl@ubuntu.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
