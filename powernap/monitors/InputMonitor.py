@@ -21,29 +21,25 @@ import os, re, threading
 import select
 from fcntl import fcntl, F_NOTIFY, DN_CREATE, DN_DELETE, DN_MULTISHOT
 from logging import error, debug, info, warn
-from Monitor import Monitor
 
 # Monitor plugin
 #   Monitors devices in /dev/input for activity
-class InputMonitor ( Monitor, threading.Thread ):
+class InputMonitor ( threading.Thread ):
 
     # Initialise
     def __init__ ( self, config ):
         threading.Thread.__init__(self)
-        Monitor.__init__(self, config)
-        if config.has_key('regex'):
-            if hasattr(config['regex'], '__iter__'):
-                self._regex = map(re.compile, config['regex'])
-            else:
-                self._regex = [ re.compile(config['regex']) ]
+        self._name = config['name']
+        self._absent_seconds = 0
+        self._input_received = False
+
+        # If regex is in the way of by-id/regex, then path is changed to /dev/input/by-id
+        if os.path.split(config['regex'])[0]:
+            self._path = os.path.join("/dev/input", os.path.dirname(config['regex']))
+            self._regex = re.compile(os.path.basename(config['regex']))
         else:
-            self._regex = None
-        self._running = False
-        if not config.has_key('config'):
-            self._path = '/dev/input'
-        else:
-            self._path = config['path']
-        if not config.has_key('name'): self._name = self._path
+            self._path = "/dev/input"
+            self._regex = re.compile(config['regex'])
 
         # Register for directory events / setup input watches
         self._inputs = {}
@@ -55,46 +51,24 @@ class InputMonitor ( Monitor, threading.Thread ):
     # Update the input events list
     def _update_inputs ( self ):
         events = {}
-        for p in os.listdir(self._path):
-            path = os.path.abspath(os.path.join(self._path, p))
+        event = None # Name of the event to poll, after finding it
+        evpath = None # Absolute path of the event to poll
 
-            # Ignore dirs
-            if os.path.isdir(path): continue
+        # Search for the event in path:
+        for str in os.listdir(self._path):
+            match = self._regex.search(str)
+            if match:
+                event = str
+                evpath = os.path.abspath(os.path.join(self._path, event))
+                break
 
-            # Attempt to ignore already included
-            if os.path.islink(path):
-                path = os.path.abspath(os.readlink(path))
-                if path in events: continue
-
-            # Search expressions
-            res = not self._regex
-            if not res:
-                for r in self._regex:
-                    res = r.match(p)
-                    if res: break
-            if not res: continue
-
-            # Existing
-            if path in self._inputs:
-                events[path] = self._inputs
-    
-            # New
-            else:
-                fp = open(path)
-                events[path] = fp
-                self._poll.register(fp.fileno(), select.POLLIN|select.POLLPRI)
-                debug('%s - adding input device %s' % (self, path))
-
-        # Remove
-        for path in self._inputs:
-            if not path in events:
-                debug('%s - removing input device %s' % (self, path))
-                fp = self._inputs[path]
-                self._poll.unregister(fp.fileno())
-                fp.close()
-
-        # Update
-        self._inputs = events
+        # If event is different from None, then update!
+        if event:
+            fp = open(evpath)
+            events[evpath] = fp
+            # Register the event to poll
+            self._poll.register(fp.fileno(), select.POLLIN|select.POLLPRI)
+            self._inputs = events
 
     # Start the thread
     def start ( self ):
@@ -114,15 +88,13 @@ class InputMonitor ( Monitor, threading.Thread ):
                 for fd, e in res:
                     if e & (select.POLLIN|select.POLLPRI):
                         os.read(fd, 32768) # Read what is there!
-                        self.reset()
-        
-                        # Debug
-                        path = None
-                        for p in self._inputs:
-                            if self._inputs[p].fileno() == fd:
-                                path = p
-                                break
-                        debug('%s - input on %s' % (self, path)) 
+                        self._input_received = True
+
+    def active(self):
+        if self._input_received:
+            self._input_received = False
+            return True
+        return False
 
 # ###########################################################################
 # Editor directives

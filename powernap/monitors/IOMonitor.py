@@ -16,26 +16,48 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from logging import error, debug, info, warn
-from Monitor import Monitor
-from ProcessMonitor import ProcessMonitor, find_pids
+import re
+from logging import error, debug, info, warn, os
+#from Monitor import Monitor
 
 # Monitor plugin
 #   looks for processes that have IO activity. Useful for some server
 #   processes that are always present in the process list even when idle
-class IOMonitor ( ProcessMonitor ):
+def find_pids(regex):
+    ret = []
+    for d in os.listdir('/proc'):
+        try:
+            path = '/proc/%s/cmdline' % d
+            if os.path.isfile(path):
+                fp      = open(path)
+                cmdline = fp.read()
+                fp.close()
+                if regex.search(cmdline):
+                    ret.append(int(d))
+        except:
+            pass
+    return ret
+
+class IOMonitor ():
 
     # Initialise
     def __init__ ( self, config ):
-        ProcessMonitor.__init__(self, config)
         self._iocounts = {}
-        if not config.has_key('name'):
-            self._name = 'ioproc:%s' % config['regex']
-        
+        self._name = config["name"]
+        self._regex = re.compile(config['regex'])
+        self._absent_seconds = 0
+
+    def start(self):
+        pass
+
+    def active(self):
+        if self.get_io_count():
+            return True
+        return False
+
     # Check for activity
-    def active ( self ):
-        
+    def get_io_count ( self ):
+
         # Get new PID list from parent
         pids = find_pids(self._regex)
 
@@ -51,34 +73,25 @@ class IOMonitor ( ProcessMonitor ):
                 fp.close()
             except: pass # its possible the proc will die in here!
 
-        # Update counts
+        ioactivity = False
         for pid in pids:
-
             # New process (assume activity)
             if pid not in self._iocounts:
-               debug('    %s - adding new PID %d to list' % (self, pid))
-
+                debug('    %s - adding new PID %d to list' % (self, pid))
             # Existing: check for change
             else:
-                tmp = False
-                for f in self._iocounts[pid]:
-                    if self._iocounts[pid][f] != io_counts[pid][f]: self.reset()
-                if ( tmp ): debug('    %s - PID %d has IO activity' % (self, pid))
-
+                if (self._iocounts[pid]["write_bytes"] != io_counts[pid]["write_bytes"]) or \
+                   (self._iocounts[pid]["read_bytes"] != io_counts[pid]["read_bytes"]):
+                    ioactivity = True
+                    self._iocounts[pid] = io_counts[pid]
+                    break
             # Update count
             self._iocounts[pid] = io_counts[pid]
 
-        # Remove old
-        rem = []
-        for pid in self._iocounts:
-            if pid not in pids:
-                rem.append(pid)
-        for pid in rem:
-            debug('    %s - PID %d no longer exists' % (self, pid))
-            self._iocounts.pop(pid)
+        if ioactivity:
+            return True
 
-        # Use grand parent to signal result
-        return Monitor.active(self)
+        return False
 
 # ###########################################################################
 # Editor directives

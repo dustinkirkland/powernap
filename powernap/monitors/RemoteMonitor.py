@@ -17,22 +17,21 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
+import threading, time
 from logging import error, debug, info, warn
-from Monitor import Monitor
 
 # Monitor plugin
 #   listen for data on a UDP socket (typically WOL packets)
-class RemoteMonitor ( Monitor, threading.Thread ):
+class RemoteMonitor (threading.Thread):
 
     # Initialise
     def __init__ ( self, config ):
         threading.Thread.__init__(self)
-        Monitor.__init__(self, config)
-        self._port    = config['port']  
+        self._port    = config['port']
         self._running = False
-        if not config.has_key('name'):
-            self._name = 'remote(%d)' % self._port
+        self._name = config['name']
+        self._data_received = False
+        self._absent_seconds = 0
 
     # Start thread
     def start ( self ):
@@ -46,6 +45,7 @@ class RemoteMonitor ( Monitor, threading.Thread ):
     def run ( self ):
         import socket
 
+        print "CREATING SOCKET......................"
         # Create socket
         sock   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         listen = False
@@ -64,9 +64,17 @@ class RemoteMonitor ( Monitor, threading.Thread ):
                 try:
                     # Wait for data
                     sock.recvfrom(1024)
+                    print "DATA RECEIVEEEEEEEEEEEDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+                    self._data_received = True
                     debug('%s - data packet received' % self)
                     self.reset()
                 except: pass # timeout
+
+    def active(self):
+        if self._data_received:
+            self._data_received = False
+            return True
+        return False
 
 # ###########################################################################
 # Editor directives

@@ -17,47 +17,33 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, re
+import os, re, commands
 from logging import error, debug, info, warn
-from Monitor import Monitor
 
 # Find list of PIDs that match a given regex (cmdline)
-def find_pids ( regex ):
-    ret = []
-  
-    for d in os.listdir('/proc'):
-        try:
-            path = '/proc/%s/cmdline' % d
-            if os.path.isfile(path):
-                fp      = open(path)
-                cmdline = fp.read()
-                fp.close()
-                if regex.search(cmdline):
-                    ret.append(int(d))
-        except: pass
+def find_process(ps, regex):
+    for str in ps:
+        if regex.search(str):
+            return 1
+    return 0
 
-    return ret
-
-# Monitor plugin
-#   looks for the presence of a process (by regular expression) in the
-#   current process table (whether active or not)
-class ProcessMonitor ( Monitor ):
+class ProcessMonitor():
 
     # Initialise
-    def __init__ ( self, config ):
-        Monitor.__init__(self, config)
-        self._pids  = []
+    def __init__(self, config):
         self._regex = re.compile(config['regex'])
-        if not config.has_key('name'):
-            self._name = config['regex']
+        self._name = config['name']
+        self._absent_seconds = 0
 
     # Check for PIDs
-    def active ( self ):
-        pids = find_pids(self._regex)
-        if pids:
-            debug('%s - found pids %s' % (self, str(pids)))
-            self.reset()
-        return Monitor.active(self)
+    def active(self):
+        ps = commands.getoutput("ps -eo args").splitlines()
+        if find_process(ps, self._regex):
+		return True
+	return False
+
+    def start(self):
+        pass
 
 # ###########################################################################
 # Editor directives
