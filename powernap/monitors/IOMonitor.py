@@ -43,6 +43,7 @@ class IOMonitor ():
     # Initialise
     def __init__ ( self, config ):
         self._iocounts = {}
+        self._type = config['monitor']
         self._name = config["name"]
         self._regex = re.compile(config['regex'])
         self._absent_seconds = 0

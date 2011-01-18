@@ -1,3 +1,4 @@
+[powernap]
 # This is the configuration file for PowerNap.
 # See powernap(1) for more information.
 
@@ -18,16 +19,6 @@
 # The powersave method will use the pm-powersave command and will execute
 # hooks that are locate in /etc/pm/power.d
 ACTION_METHOD = 0
-
-# The MONITORED_PROCESSES variable should be a Python list of quoted regular
-# expressions.
-# Each item in this list will be compared against the output of "ps -eo args".
-# The default is to monitor /sbin/init, which should always be running.
-# Examples:
-#   MONITORED_PROCESSES = [ "kvm ", "sshd: .*\[priv\]$" ]
-#   MONITORED_PROCESSES = [ "mplayer ", "xine ", "vlc " ]
-#   MONITORED_PROCESSES = [ "^/sbin/init" ]
-MONITORED_PROCESSES = [ "^/sbin/init" ]
 
 # Number of seconds that all processes must be absent from the process table and
 # no keyboard activity on any terminals.
@@ -63,3 +54,72 @@ INTERVAL_SECONDS = 1
 #    DEBUG = 1
 #    DEBUG = 2
 DEBUG = 0
+
+# The MONITORED_PROCESSES variable should be a Python list of quoted regular
+# expressions.
+# Each item in this list will be compared against the output of "ps -eo args".
+# The default is to monitor /sbin/init, which should always be running.
+# Examples:
+#   MONITORED_PROCESSES = [ "kvm ", "sshd: .*\[priv\]$" ]
+#   MONITORED_PROCESSES = [ "mplayer ", "xine ", "vlc " ]
+#   MONITORED_PROCESSES = [ "^/sbin/init" ]
+
+############################################################################
+####                          MONITORS                                  ####
+############################################################################
+
+# The [ProcessMonitor] section lists all the processes to Monitor by using
+# regular expressions.
+# Each item listed will be compared against the output of "ps -eo args".
+# The default is to monitor /sbin/init, which should always be running. 
+# Examples:
+#  mplayer = "mplayer "
+#  sshd = "sshd: .*\[priv\]$"
+#  kvm = "kvm "
+[ProcessMonitor]
+init = "^/sbin/init"
+
+# The [RemoteMonitor] section lists all the UDP port on which to listen
+# for data.
+# Each item listed will bind a UDP port and listen to data.
+# There is no default Remote Monitor.
+# Examples:
+#  udp1024 = 1024
+#  udp9 = 9
+[RemoteMonitor]
+#udp9 = 9
+
+# The [IOMonitor] section lists all the processes to Monitor for IO
+# activity. A regular expressions is used to find the processes PIDs, which
+# are later used to monitor IO.
+# There is no default IO Monitor.
+# Examples:
+#  kvm-io = "kvm"
+#  mysqld-io = "mysql"
+[IOMonitor]
+#kvm-io = "kvm"
+#mysqld-io = "mysql"
+
+# The [InputMonitor] section lists all the Input Events (in /dev/input) to
+# Monitor. It uses the name of the event Monitor in "/dev/input".
+# Example:
+#  EventX = "mouse0"
+#
+# Alternatively, it can also monitor any device by the id (/dev/input/by-id).
+# This is enabled by adding the "by-id/" prefix, and specifying the device
+# to monitor.
+# Example:
+#  EventY = "by-id/usb-BTC_USB_Multimedia_Cordless_Kit-event-kbd"
+#
+# This monitor is regularly used to Monitor activy in Mouse and Keyboards
+# connected through USB.
+# There is no default Input Monitor
+# Examples:
+#  Event1 = "event1"
+#  Event2 = "by-id/usb-BTC_USB_Multimedia_Cordless_Kit-event-mouse"
+#
+# NOTE: Also note that when using the event name, the user will have to know what
+# event the device is using. This can be determined by "ls -l /dev/input/by-id"
+[InputMonitor]
+#MouseEvent = "event1"
+#KeyboardEvent = "event6"

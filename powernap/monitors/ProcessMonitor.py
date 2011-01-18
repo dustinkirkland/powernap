@@ -31,8 +31,9 @@ class ProcessMonitor():
 
     # Initialise
     def __init__(self, config):
-        self._regex = re.compile(config['regex'])
+        self._type = config['monitor']
         self._name = config['name']
+        self._regex = re.compile(config['regex'])
         self._absent_seconds = 0
 
     # Check for PIDs

@@ -27,9 +27,10 @@ class RemoteMonitor (threading.Thread):
     # Initialise
     def __init__ ( self, config ):
         threading.Thread.__init__(self)
-        self._port    = config['port']
-        self._running = False
+        self._type = config['monitor']
         self._name = config['name']
+        self._port = config['port']
+        self._running = False
         self._data_received = False
         self._absent_seconds = 0
 
@@ -45,7 +46,6 @@ class RemoteMonitor (threading.Thread):
     def run ( self ):
         import socket
 
-        print "CREATING SOCKET......................"
         # Create socket
         sock   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         listen = False
@@ -64,7 +64,6 @@ class RemoteMonitor (threading.Thread):
                 try:
                     # Wait for data
                     sock.recvfrom(1024)
-                    print "DATA RECEIVEEEEEEEEEEEDDDDDDDDDDDDDDDDDDDDDDDDDDD"
                     self._data_received = True
                     debug('%s - data packet received' % self)
                     self.reset()

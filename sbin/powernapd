@@ -28,45 +28,27 @@ import sys
 import time
 import socket, traceback
 import struct
+from powernap import powernap
+
+
+# Initialize Powernap. This initialization loads the config file.
+try:
+    powernap = powernap.PowerNap()
+    os.putenv("ACTION_METHOD", str(powernap.ACTION_METHOD))
+except:
+    print("Unale to initialize PowerNap")
+    sys.exit(1)
 
 # Define globals
-global PKG, LOCK, CONFIG
-PKG = "powernap"
-LOCK = "/var/run/%s.pid" % PKG
-CONFIG = "/etc/%s/config" % PKG
-LOG = "/var/log/%s.log" % PKG
+global LOCK, CONFIG, MONITORS
+LOCK = "/var/run/%s.pid" % powernap.PKG
+LOG = "/var/log/%s.log" % powernap.PKG
 
 logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.DEBUG,)
 
-# CONFIG values can override these
-global MONITORED_PROCESSES, ABSENT_SECONDS, ACTION, INTERVAL_SECONDS, GRACE_SECONDS, DEBUG, ACTION_METHOD
-MONITORED_PROCESSES = []
-ABSENT_SECONDS = sys.maxint
-ACTION = "/usr/sbin/powernap"
-INTERVAL_SECONDS = 1
-GRACE_SECONDS = 60
-DEBUG = 0
-ACTION_METHOD = 0
-
-# Load configuration file
-try:
-    execfile(CONFIG)
-    os.putenv("ACTION_METHOD", str(ACTION_METHOD))
-except:
-    # No error function yet, use a raw print
-    print("Invalid configuration [%s]" % CONFIG)
-    sys.exit(1)
-
-# Define Process object to hold regex and absence counter
-class Process(object):
-    def __init__(self, process):
-        self.process = process
-        self.regex = re.compile(process)
-        self.absent_seconds = 0
-
 # Generic debug function
 def debug(level, msg):
-    if level >= (logging.ERROR - 10*DEBUG):
+    if level >= (logging.ERROR - 10*powernap.DEBUG):
         logging.log(level, msg)
 
 # Generic error function
@@ -85,7 +67,7 @@ def establish_lock():
         try:
             f = open(LOCK,'w')
         except:
-            error("Administrative privileges are required to run %s" % PKG);
+            error("Administrative privileges are required to run %s" % powernap.PKG);
         f.write(str(os.getpid()))
         f.close()
         # Set signal handlers
@@ -99,15 +81,8 @@ def establish_lock():
 def signal_handler(signal, frame):
     if os.path.exists(LOCK):
         os.remove(LOCK)
-    debug(logging.INFO, "Stopping %s" % PKG)
+    debug(logging.INFO, "Stopping %s" % powernap.PKG)
     sys.exit(1)
-
-# Search process list for regex, return on first match
-def find_process(ps, p):
-    for str in ps:
-        if p.search(str):
-            return 1
-    return 0
 
 # Check /dev/*, such that we don't powernap the system if someone
 # is actively using a terminal device
@@ -147,18 +122,18 @@ def get_interrupts():
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
 def warn_users():
-    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (GRACE_SECONDS, ACTION)
+    msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (powernap.GRACE_SECONDS, powernap.ACTION)
     msg2 = "To cancel this operation, press any key in any terminal"
     debug(logging.WARNING, msg1)
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
     t = 0
     c, d, last_i = get_console_activity()
-    while t < GRACE_SECONDS:
-        time.sleep(INTERVAL_SECONDS)
-        t += INTERVAL_SECONDS
+    while t < powernap.GRACE_SECONDS:
+        time.sleep(powernap.INTERVAL_SECONDS)
+        t += powernap.INTERVAL_SECONDS
         c, d, i = get_console_activity()
-        if c < INTERVAL_SECONDS or i != last_i:
-            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, ACTION)
+        if c < powernap.INTERVAL_SECONDS or i != last_i:
+            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, powernap.ACTION)
             debug(logging.WARNING, msg)
             commands.getoutput("echo '%s' | wall" % msg)
             return 1
@@ -167,7 +142,7 @@ def warn_users():
 
 # TODO: notify authorities about action taken
 def notify_authorities():
-    debug(logging.WARNING, "Taking action [%s]" % ACTION)
+    debug(logging.WARNING, "Taking action [%s]" % powernap.ACTION)
 
 # Recover action for ACTION_METHOD=4 (pm-powersave).
 # TODO-andreserl: Find a better way to do this. Maybe involving ACTION variable and passing a false?
@@ -180,9 +155,9 @@ def take_recover_action():
 def take_action():
     notify_authorities()
     debug(logging.DEBUG, "Reseting counters prior to taking action")
-    for p in PROCESSES:
-        p.absent_seconds = 0
-    os.system(ACTION)
+    for monitor in MONITORS:
+        monitor._absent_seconds = 0
+    os.system(powernap.ACTION)
 
 # Handler for asynchronous external signals
 def take_action_handler(signal, frame):
@@ -228,7 +203,11 @@ def start_wol_monitor():
 
     # Prepare the socket and bind port
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((host, port))
+    try:
+        s.bind((host, port))
+    except:
+        error("Unable to bind port [%s]" % port)
+        return
 
     while 1:
         try:
@@ -246,36 +225,39 @@ def start_wol_monitor():
         except:
             traceback.print_exc()
 
-# Main loop, search process table, increment counters, take actions, sleep
 def powernapd_loop():
+
+    # TODO-TODO-TODO-TODO: Monitors should be obtained in Main Loop???
+
+    # Starting the Monitors
+    for monitor in MONITORS:
+        monitor.start()
+
     last_i = 0
     while 1:
-        debug(logging.DEBUG, "Sleeping [%d] seconds" % INTERVAL_SECONDS)
-        time.sleep(INTERVAL_SECONDS)
+        debug(logging.DEBUG, "Sleeping [%d] seconds" % powernap.INTERVAL_SECONDS)
+        time.sleep(powernap.INTERVAL_SECONDS)
         # Examine process table, compute absent time of each monitored process
-        debug(logging.DEBUG, "Examining process table")
-        absent_processes = 0
-        ps = commands.getoutput("ps -eo args").splitlines()
-        #TODO - TODO: This for is the "ProcessMonitor"
-        for p in PROCESSES:
-            debug(logging.DEBUG, "  Looking for [%s]" % p.process)
-            if find_process(ps, p.regex):
-                # process running, so reset absent time
-                p.absent_seconds = 0
-                debug(logging.DEBUG, "    Process found, reset absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
+        debug(logging.DEBUG, "Examining Monitors")
+        absent_monitors = 0
+        for monitor in MONITORS:
+            debug(logging.DEBUG, "  Looking for [%s:%s]" % (monitor._type, monitor._name))
+            if monitor.active():
+                monitor._absent_seconds = 0
+                debug(logging.DEBUG, "    Activity found, reset absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
             else:
                 # process not running, increment absent time
-                p.absent_seconds += INTERVAL_SECONDS
-                debug(logging.DEBUG, "    Process not found, increment absent time [%d/%d]" % (p.absent_seconds, ABSENT_SECONDS))
-                if p.absent_seconds >= ABSENT_SECONDS:
+                monitor._absent_seconds += powernap.INTERVAL_SECONDS
+                debug(logging.DEBUG, "    Activity not found, increment absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
+                if monitor._absent_seconds >= powernap.ABSENT_SECONDS:
                     # process missing for >= absent_seconds threshold, mark absent
-                    debug(logging.DEBUG, "    Process absent for >= threshold, so mark absent")
-                    absent_processes += 1
+                    debug(logging.DEBUG, "    Acitivity absent for >= threshold, so mark absent")
+                    absent_monitors += 1
         # Determine if action needs to be taken
-        if absent_processes > 0 and absent_processes == len(PROCESSES):
+        if absent_monitors > 0 and absent_monitors == len(MONITORS):
             debug(logging.DEBUG, "    Checking for console or terminal activity")
             c, d, i = get_console_activity()
-            if c > ABSENT_SECONDS and i == last_i:
+            if c > powernap.ABSENT_SECONDS and i == last_i:
                 last_i = i
                 # All processes are absent, take action!
                 if warn_users() == 0:
@@ -284,19 +266,19 @@ def powernapd_loop():
                     # This monitor will only work when entering on 'pm-powersave', and will only wakeup when a matching WoL packet
                     # for the default interface is received
                     # TODO - provide method to define default interface
-                    if ACTION_METHOD == 4:
+                    if powernap.ACTION_METHOD == 4:
                         debug(logging.DEBUG, "Starting WoL monitor")
                         # Start WoL Monitor. Returns when WoL packet has been received
+                        # TODO - What happens if cannot bind port after taking an action?
                         start_wol_monitor()
                         # Takes recover action for ACTION_METHOD = 4, when returning from WoL Monitor
                         take_recover_action()
             else:
                 last_i = i
-                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, ABSENT_SECONDS))
-
+                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, powernap.ABSENT_SECONDS))
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
-def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % PKG, stderr="/var/log/%s.err" % PKG):
+def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % powernap.PKG, stderr="/var/log/%s.err" % powernap.PKG):
     try:
         pid = os.fork()
         if pid > 0:
@@ -332,8 +314,8 @@ if __name__ == '__main__':
     daemonize()
     try:
         # Run the main powernapd loop
-        PROCESSES = [Process(p) for p in MONITORED_PROCESSES]
-        debug(logging.INFO, "Starting %s" % PKG)
+        MONITORS = powernap.get_monitors()
+        debug(logging.INFO, "Starting %s" % powernap.PKG)
         powernapd_loop()
     finally:
         # Clean up the lock file

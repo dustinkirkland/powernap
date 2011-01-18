@@ -29,6 +29,7 @@ class InputMonitor ( threading.Thread ):
     # Initialise
     def __init__ ( self, config ):
         threading.Thread.__init__(self)
+        self._type = config['monitor']
         self._name = config['name']
         self._absent_seconds = 0
         self._input_received = False

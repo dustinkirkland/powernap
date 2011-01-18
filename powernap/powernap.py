@@ -21,19 +21,21 @@
 import ConfigParser, sys
 from monitors import ProcessMonitor, InputMonitor, RemoteMonitor, IOMonitor
 
+
 class PowerNap:
 
     def __init__(self):
         self.PKG = "powernap"
-        #self.CONFIG = "/etc/powernap/config"
-	self.CONFIG = "test.config"
-        self.ACTION = "/usr/bin/powernap"
+        self.CONFIG = "/etc/powernap/config"
+        #self.CONFIG = "test.config"
+        self.ACTION = "/usr/sbin/powernap"
         self.ABSENT_SECONDS = sys.maxint
         self.INTERVAL_SECONDS = int(1)
         self.GRACE_SECONDS = int(60)
-        self.DEBUG = 0
+        self.DEBUG = int(0)
         self.ACTION_METHOD = 0
         self.MONITORS = []
+        self.load_config_file()
 
     def load_config_file(self):
         cfg = ConfigParser.ConfigParser()
@@ -43,7 +45,7 @@ class PowerNap:
             # Load items in DEFAULT section
             defaults = cfg.items(self.PKG)
             for items in defaults:
-                self.set_default_values(items[0], items[1])
+                self.set_default_values(items[0], eval(items[1]))
 
             # Load items on each monitor
             monitors_config = cfg.sections()
@@ -56,13 +58,15 @@ class PowerNap:
 
     def set_default_values(self, var, value):
         if var == "absent_seconds":
-            self.ABSENT_SECONDS = int(value)
+            self.ABSENT_SECONDS = value
         if var == "interval_seconds":
-            self.INTERVAL_SECONDS = int(value)
+            self.INTERVAL_SECONDS = value
         if var == "grace_seconds":
-            self.GRACE_SECONDS = int(value)
+            self.GRACE_SECONDS = value
         if var == "debug":
             self.DEBUG = value
+        if var == "action":
+            self.ACTION = value
         if var == "action_method":
             self.ACTION_METHOD = value
 
@@ -70,7 +74,12 @@ class PowerNap:
         if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "RemoteMonitor":
-            self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
+            # TODO TODO TODO
+            # If ACTION_METHOD is 4 (PowerSave) and port is 7, do *NOT* create a monitor
+            # This will cause that the WoL monitor not to be able to bind the port.
+            # TODO: Display a message that port is not being binded!!
+            if self.ACTION_METHOD == 4 and items[1] == 7:
+                self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
 
     def get_monitors(self):
         monitor = []
