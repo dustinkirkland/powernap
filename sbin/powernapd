@@ -229,10 +229,9 @@ def start_wol_monitor():
 
 def powernapd_loop():
 
-    # TODO-TODO-TODO-TODO: Monitors should be obtained in Main Loop???
-
     # Starting the Monitors
     for monitor in MONITORS:
+        debug(logging.DEBUG, "Starting [%s:%s]" % (monitor._type, monitor._name))
         monitor.start()
 
     last_i = 0
