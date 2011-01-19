@@ -4,8 +4,12 @@ powernap (1.13) unreleased; urgency=low
   * powernap/powernap.py: Minor fixes to not crash when loading monitors.
   * sbin/powernapd: Integrate Monitors approach to work with Daemon.
   * Update copyright headers for some files
+  * Update packaging:
+    - debian/control: Add python related fileds.
+    - debian/powernap.install: Install new files.
+    - debian/rules: Add dh_pycentral related rules.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 18 Jan 2011 17:29:41 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 18 Jan 2011 19:15:38 -0500
 
 powernap (1.12-0ubuntu1) natty; urgency=low
 

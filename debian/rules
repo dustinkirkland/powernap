@@ -34,6 +34,7 @@ binary-indep: build install
 	dh_compress -i
 	dh_fixperms -i
 	dh_installdeb -i
+	DH_PYCENTRAL="include-links" dh_pycentral -i
 	dh_gencontrol -i
 	dh_md5sums -i
 	dh_builddeb -i

@@ -6,3 +6,4 @@ bin/powernap_calculator usr/bin
 config etc/powernap
 action etc/powernap
 actions/* etc/pm/power.d
+powernap usr/share/pyshared
