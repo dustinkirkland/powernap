@@ -92,14 +92,15 @@ if __name__ == '__main__':
     actions.\n\
     \n\
     %prog --enable [action]\n\
-    %prog --disable [action]"
+    %prog --disable [action]\n\
+    %prog --list"
 
     parser = OptionParser(usage)
     parser.add_option('-e', '--enable', action='store', type='string', dest='enable',
                       help='enable available PowerNap actions', metavar='ACTION')
     parser.add_option('-d', '--disable', action='store', type='string', dest='disable',
                       help='disable available PowerNap actions', metavar='ACTION')
-    parser.add_option('-l', '--list', action='store_true', dest='list', help='Lists the available actions')
+    parser.add_option('-l', '--list', action='store_true', dest='list', help='Lists available actions')
 
     (opt, args) = parser.parse_args()
 

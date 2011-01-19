@@ -1,13 +1,11 @@
 .TH powernapd 8 "9 Jun 2009" powernap "powernapd"
 .SH NAME
-powernapd \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing powernap when all of a list of MONITORED_PROCESSES are missing from the system process table for a contiguous ABSENT_SECONDS.
+powernapd \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing powernap when all of a list of MONITORS are missing or inactive for a contiguous ABSENT_SECONDS.
 
 .SH DESCRIPTION
-powernapd will run \fBpowernap\fP(8) when none of a set of MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS.
+powernapd will run \fBpowernap\fP(8) when none of a set of MONITORS have executed for some number of ABSENT_SECONDS. These MONITORS are defined as ProcessMonitor, RemoteMonitor, IOMonitor, and InputMonitor.
 
-powernapd will check the process table using "ps -eo args" every INTERVAL_SECONDS.  Note that MONITORED_PROCESSES taking less than INTERVAL_SECONDS to execute may be overlooked by powernapd.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
-
-Use "ps -eo args" for sample output and development your regular expressions.
+powernapd will check for activity on each enabled monitor every INTERVAL_SECONDS.  Note that MONITORS taking less than INTERVAL_SECONDS to execute may be overlooked by powernapd.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
 
 It acts as a sort of "screensaver" for servers, watching the process table for activity, rather than the keyboard or mouse.  For instance, PowerNap can automatically "pm-suspend" a system if no instance of "kvm" runs for some contiguous block of "300" seconds, checking the process table every "1" second.
 
