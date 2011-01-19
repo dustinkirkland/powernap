@@ -242,7 +242,7 @@ def powernapd_loop():
         debug(logging.DEBUG, "Examining Monitors")
         absent_monitors = 0
         for monitor in MONITORS:
-            debug(logging.DEBUG, "  Looking for [%s:%s]" % (monitor._type, monitor._name))
+            debug(logging.DEBUG, "  Looking for [%s] %s" % (monitor._name, monitor._type))
             if monitor.active():
                 monitor._absent_seconds = 0
                 debug(logging.DEBUG, "    Activity found, reset absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))

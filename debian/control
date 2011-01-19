@@ -11,13 +11,32 @@ Vcs-Bzr: http://bazaar.launchpad.net/~kirkland/powernap/trunk
 Package: powernap
 Architecture: all
 XB-Python-Version: ${python:Versions}
-Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0, pm-utils
+Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
+ pm-utils, powernap-common (= ${binary:Version})
 Recommends: ethtool
 Enhances: powerwake
 Description: run a defined action if not running some particular processes
  PowerNap will run an administrator-specified ACTION when none of a list of
- MONITORED_PROCESSES have executed for some number of ABSENT_SECONDS,
- checking the process table every INTERVAL_SECONDS.
+ MONITORS have executed or had activity for some number of ABSENT_SECONDS,
+ checking the monitors every INTERVAL_SECONDS.
+ .
+ PowerNap can be used to bring a running system to a lower power state when
+ none of a list of critical processes have run for some amount of time.  It
+ can act as sort of a "screensaver" for servers, watching the process table
+ for activity rather than the keyboard or mouse.
+ .
+ For instance, PowerNap can automatically "pm-suspend" a system if no instance
+ of "kvm" runs for some contiguous block of "300" seconds, checking the process
+ table every "1" second.
+
+Package: powernap-common
+Architecture: all
+XB-Python-Version: ${python:Versions}
+Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0
+Description: run a defined action if not running some particular processes
+ PowerNap will run an administrator-specified ACTION when none of a list of
+ MONITORS have executed or had activity for some number of ABSENT_SECONDS,
+ checking the monitors every INTERVAL_SECONDS.
  .
  PowerNap can be used to bring a running system to a lower power state when
  none of a list of critical processes have run for some amount of time.  It
