@@ -166,21 +166,12 @@ def take_action_handler(signal, frame):
     take_action()
 
 # Obtain MAC address from Monitor Interface
-def obtain_mac_address(iface):
+def get_mac_address(iface):
     file = "/sys/class/net/%s/address" % iface
     f = open(file, 'r')
     iface = f.read()
     f.close
     return iface.strip()
-
-# Verify that MAC address is correct (taken from powerwake)
-def is_mac(mac):
-    r1 = re.compile('^[0-9a-fA-F]{12}$')
-    r2 = re.compile('^[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}$')
-    if r1.match(mac) or r2.match(mac):
-        return 1
-    else:
-        return 0
 
 # Generate WoL data for local interface to compare with received packet (Partially taken from powerwake)
 def get_local_wol_data(mac):
@@ -194,32 +185,46 @@ def get_local_wol_data(mac):
         wol_data = ''.join([wol_data, struct.pack('B', int(data[i: i + 2], 16))])
     return wol_data
 
+# Obtain a list of available eth's, with its MAC address and WoL data.
+def get_eths_mac_wol_info():
+    ifaces = []
+    prefix = re.compile("eth")
+    dirs = os.listdir("/sys/class/net")
+    for iface in dirs:
+        if prefix.search(iface):
+            # Obtain MAC address
+            mac = get_mac_address(iface)
+            # Obtain WoL data of eth
+            data = get_local_wol_data(mac)
+            ifaces.append({"iface":iface, "mac":mac, "wol":data})
+    return ifaces
+
 # WoL Monitor
 def start_wol_monitor():
+    isRunning = False
     host = '' # Bind to all interfaces
     port = 7
-    iface = 'eth0' # TODO-andreserl - Provide ability to configure which interface will be used as Wakeup WoL Monitor
-    mac = obtain_mac_address(iface)
-    #isMac = is_mac(mac)
-    local_wol_data = get_local_wol_data(mac)
+    ifaces = get_eths_mac_wol_info()
 
     # Prepare the socket and bind port
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.bind((host, port))
+        isRunning = True
     except:
         error("Unable to bind port [%s]" % port)
         return
 
-    while 1:
+    while isRunning:
         try:
             debug(logging.DEBUG, "    WoL monitor started at port [%s]" % port)
             recv_wol_msg, address = s.recvfrom(1024)
             debug(logging.DEBUG, "    WoL packet received from %s" % address[0])
-            # Compares if received WoL data matches the WoL data for the local interface
-            if recv_wol_msg == local_wol_data:
-                debug(logging.DEBUG, "    WoL data matches local interface [%s]" % iface)
-                break
+            for iface in ifaces:
+                if recv_wol_msg == iface["wol"]:
+                    debug(logging.DEBUG, "    WoL data matches local interface [%s]" % iface["iface"])
+                    isRunning = False
+                    break
             # Acknowledge it.
             #s.sendto("I am here", address)
         except (KeyboardInterrupt, SystemExit):

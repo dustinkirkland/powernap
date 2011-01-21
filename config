@@ -20,16 +20,16 @@
 # hooks that are locate in /etc/pm/power.d
 ACTION_METHOD = 0
 
-# Number of seconds that all processes must be absent from the process table and
-# no keyboard activity on any terminals.
+# Number of seconds that all processes must be absent from the process
+# table and no keyboard activity on any terminals.
 # The default is an absence period of 5 minutes.
 # Example:
 #   ABSENT_SECONDS = 300
 ABSENT_SECONDS = 300
 
-# Grace period, after ABSENT_SECONDS have elapsed with all of MONITORED_PROCESSES
-# absent from the process table, that the system will allow for an administrator
-# to kill powernapd and thereby cancel the /usr/sbin/powernap action.
+# Grace period, after ABSENT_SECONDS have elapsed with all of the Monitors
+# with absent activity, the system will allow for an administrator to kill
+# powernapd and thereby cancel the /usr/sbin/powernap action.
 # The default grace period is 60 seconds.
 # Example:
 #   GRACE_SECONDS = 60
@@ -39,9 +39,8 @@ GRACE_SECONDS = 60
 # table for matching processes.  Lower values of INTERVAL_SECONDS will provide
 # more detailed process monitoring but will consume more system resources.
 # Higher values of INTERVAL_SECONDS will consume less system resources, but
-# might miss processes that execute for less than INTERVAL_SECONDS.
-# The minimum runtime of a MONITORED_PROCESSES should not be less than
-# INTERVAL_SECONDS.
+# might miss activity that execute for less than INTERVAL_SECONDS.
+# The minimum runtime of any monitor should not be less than INTERVAL_SECONDS.
 # The default interval is 1 second.
 # Example:
 #   INTERVAL_SECONDS = 1
@@ -54,15 +53,6 @@ INTERVAL_SECONDS = 1
 #    DEBUG = 1
 #    DEBUG = 2
 DEBUG = 0
-
-# The MONITORED_PROCESSES variable should be a Python list of quoted regular
-# expressions.
-# Each item in this list will be compared against the output of "ps -eo args".
-# The default is to monitor /sbin/init, which should always be running.
-# Examples:
-#   MONITORED_PROCESSES = [ "kvm ", "sshd: .*\[priv\]$" ]
-#   MONITORED_PROCESSES = [ "mplayer ", "xine ", "vlc " ]
-#   MONITORED_PROCESSES = [ "^/sbin/init" ]
 
 ############################################################################
 ####                          MONITORS                                  ####
@@ -79,6 +69,8 @@ DEBUG = 0
 [ProcessMonitor]
 init = "^/sbin/init"
 
+# TODO: Add TCPMonitor
+# TODO: UDPMonitor instead of RemoteMonitor
 # The [RemoteMonitor] section lists all the UDP port on which to listen
 # for data.
 # Each item listed will bind a UDP port and listen to data.
