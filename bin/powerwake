@@ -62,7 +62,7 @@ def wakeonlan(mac):
     info("Sending magic packet to: [%s]" % mac)
     # We should cache this to /var/cache/powerwake/ethers,
     # in case arp entry isn't available next time
-    data = ''.join(['FFFFFFFFFFFF', mac * 20])
+    data = ''.join(['FFFFFFFFFFFF', mac * 16])
     send_data = ''
     for i in range(0, len(data), 2):
         send_data = ''.join([send_data, struct.pack('B', int(data[i: i + 2], 16))])

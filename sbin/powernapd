@@ -179,7 +179,7 @@ def get_local_wol_data(mac):
     mac = nonhex.sub('', mac)
     if len(mac) != 12:
         error("Malformed mac address [%s]" % mac)
-    data = ''.join(['FFFFFFFFFFFF', mac * 20])
+    data = ''.join(['FFFFFFFFFFFF', mac * 16])
     wol_data = ''
     for i in range(0, len(data), 2):
         wol_data = ''.join([wol_data, struct.pack('B', int(data[i: i + 2], 16))])
