@@ -1,5 +1,22 @@
 powernap (2.0) unreleased; urgency=low
 
+  * powernap/monitors: Re-work Monitors to integrate them with PowerNap.
+  * powernap/powernap.py: Minor fixes to not crash when loading monitors.
+  * sbin/powernapd: Integrate Monitors approach to work with Daemon.
+  * Update copyright headers for some files
+  * Update manpages and add one for powernap-action.
+  * Update packaging:
+    - debian/control: Add python related fileds.
+    - debian/rules: Add dh_pycentral related rules.
+  * Add new package to contain new modules and monitors:
+    - debian/control: Add package powernap-common.
+    - debian/powernap-common.install: Install new files (PowerNap class and
+      Monitors); Move action scripts installation to this package.
+
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 19 Jan 2011 13:00:43 -0500
+
+powernap (2.0) released; urgency=low
+
   [ Andres Rodriguez ]
   * powernap/monitors: Re-work Monitors to integrate them with PowerNap.
   * powernap/powernap.py: Minor fixes to not crash when loading monitors.
