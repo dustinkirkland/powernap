@@ -1,5 +1,6 @@
-powernap (2.0) unreleased; urgency=low
+powernap (2.0-0ubuntu1) natty; urgency=low
 
+  [ Andres Rodriguez ]
   * powernap/monitors: Re-work Monitors to integrate them with PowerNap.
   * powernap/powernap.py: Minor fixes to not crash when loading monitors.
   * sbin/powernapd: Integrate Monitors approach to work with Daemon.
@@ -13,7 +14,7 @@ powernap (2.0) unreleased; urgency=low
     - debian/powernap-common.install: Install new files (PowerNap class and
       Monitors); Move action scripts installation to this package.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 19 Jan 2011 13:00:43 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 21 Jan 2011 19:01:40 -0600
 
 powernap (2.0) released; urgency=low
 
