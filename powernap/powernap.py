@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import ConfigParser, sys
-from monitors import ProcessMonitor, InputMonitor, UDPMonitor, IOMonitor
+from monitors import ProcessMonitor, InputMonitor, UDPMonitor, IOMonitor, WoLMonitor
 
 
 class PowerNap:
@@ -71,7 +71,6 @@ class PowerNap:
             self.ACTION_METHOD = value
 
     def load_monitors_config(self, monitor, items):
-        print monitor
         if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "UDPMonitor":
@@ -80,6 +79,8 @@ class PowerNap:
             # TODO: Display a message that port is not being binded!!
             if self.ACTION_METHOD == 4 and items[1] != 7:
                 self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
+        if monitor == "WoLMonitor":
+            self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
 
     def get_monitors(self):
         monitor = []
@@ -88,6 +89,8 @@ class PowerNap:
                 p = ProcessMonitor.ProcessMonitor(config)
             if config["monitor"] == "UDPMonitor":
                 p = UDPMonitor.UDPMonitor(config)
+            if config["monitor"] == "WoLMonitor":
+                p = WoLMonitor.WoLMonitor(config)
             if config["monitor"] == "InputMonitor":
                 p = InputMonitor.InputMonitor(config)
             if config["monitor"] == "IOMonitor":

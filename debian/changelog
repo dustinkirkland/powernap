@@ -1,9 +1,11 @@
 powernap (2.1) unreleased; urgency=low
 
   * config: Default ACTION to pm-powersave instead of best-effort.
-  * powernap/monitors: Rename RemoteMonitor to UDPMonitor.
+  * powernap/monitors:
+    - Rename RemoteMonitor to UDPMonitor.
+    - Add WoLMonitor and support to run it. NOT enabled just yet.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Jan 2011 11:45:34 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Jan 2011 13:02:53 -0500
 
 powernap (2.0-0ubuntu1) natty; urgency=low
 
