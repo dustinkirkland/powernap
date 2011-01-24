@@ -243,7 +243,7 @@ def powernapd_loop():
     while 1:
         debug(logging.DEBUG, "Sleeping [%d] seconds" % powernap.INTERVAL_SECONDS)
         time.sleep(powernap.INTERVAL_SECONDS)
-        # Examine process table, compute absent time of each monitored process
+        # Examine monitor activity, compute absent time of each monitored monitor process
         debug(logging.DEBUG, "Examining Monitors")
         absent_monitors = 0
         for monitor in MONITORS:
@@ -252,12 +252,12 @@ def powernapd_loop():
                 monitor._absent_seconds = 0
                 debug(logging.DEBUG, "    Activity found, reset absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
             else:
-                # process not running, increment absent time
+                # activity not found, increment absent time
                 monitor._absent_seconds += powernap.INTERVAL_SECONDS
                 debug(logging.DEBUG, "    Activity not found, increment absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
                 if monitor._absent_seconds >= powernap.ABSENT_SECONDS:
-                    # process missing for >= absent_seconds threshold, mark absent
-                    debug(logging.DEBUG, "    Acitivity absent for >= threshold, so mark absent")
+                    # activity missing for >= absent_seconds threshold, mark absent
+                    debug(logging.DEBUG, "    Activity absent for >= threshold, so mark absent")
                     absent_monitors += 1
         # Determine if action needs to be taken
         if absent_monitors > 0 and absent_monitors == len(MONITORS):
@@ -265,7 +265,7 @@ def powernapd_loop():
             c, d, i = get_console_activity()
             if c > powernap.ABSENT_SECONDS and i == last_i:
                 last_i = i
-                # All processes are absent, take action!
+                # All monitors are absent, take action!
                 if warn_users() == 0:
                     take_action()
                     # Starts WoL Monitor if ACTION_METHOD is set to powersave. Waits here until a matching WoL packet is received
@@ -275,7 +275,7 @@ def powernapd_loop():
                     if powernap.ACTION_METHOD == 4:
                         debug(logging.DEBUG, "Starting WoL monitor")
                         # Start WoL Monitor. Returns when WoL packet has been received
-                        # TODO - What happens if cannot bind port after taking an action?
+                        # If failed to bind port, it will return and take recover action
                         start_wol_monitor()
                         # Takes recover action for ACTION_METHOD = 4, when returning from WoL Monitor
                         take_recover_action()

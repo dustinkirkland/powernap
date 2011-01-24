@@ -18,7 +18,7 @@
 # defined script at /etc/powernap/action, or suspend, hibernate, poweroff
 # The powersave method will use the pm-powersave command and will execute
 # hooks that are locate in /etc/pm/power.d
-ACTION_METHOD = 0
+ACTION_METHOD = 4
 
 # Number of seconds that all processes must be absent from the process
 # table and no keyboard activity on any terminals.
@@ -61,7 +61,7 @@ DEBUG = 0
 # The [ProcessMonitor] section lists all the processes to Monitor by using
 # regular expressions.
 # Each item listed will be compared against the output of "ps -eo args".
-# The default is to monitor /sbin/init, which should always be running. 
+# The default is to monitor /sbin/init, which should always be running.
 # Examples:
 #  mplayer = "mplayer "
 #  sshd = "sshd: .*\[priv\]$"
@@ -69,8 +69,6 @@ DEBUG = 0
 [ProcessMonitor]
 init = "^/sbin/init"
 
-# TODO: Add TCPMonitor
-# TODO: UDPMonitor instead of RemoteMonitor
 # The [RemoteMonitor] section lists all the UDP port on which to listen
 # for data.
 # Each item listed will bind a UDP port and listen to data.
