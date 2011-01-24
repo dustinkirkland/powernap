@@ -3,7 +3,7 @@
 powernapd \- configurable daemon that will run at a specified INTERVAL_SECONDS, executing powernap when all of a list of MONITORS are missing or inactive for a contiguous ABSENT_SECONDS.
 
 .SH DESCRIPTION
-powernapd will run \fBpowernap\fP(8) when none of a set of MONITORS have executed for some number of ABSENT_SECONDS. These MONITORS are defined as [ProcessMonitor, RemoteMonitor, IOMonitor, InputMonitor].
+powernapd will run \fBpowernap\fP(8) when none of a set of MONITORS have executed for some number of ABSENT_SECONDS. These MONITORS are defined as [ProcessMonitor, UDPMonitor, IOMonitor, InputMonitor].
 
 powernapd will check for activity on each enabled monitor every INTERVAL_SECONDS.  Note that MONITORS taking less than INTERVAL_SECONDS to execute may be overlooked by powernapd.  Choose your INTERVAL_SECONDS value accordingly.  These parameters are configured in \fI/etc/powernap/config\fP.
 

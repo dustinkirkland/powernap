@@ -23,7 +23,7 @@ from logging import error, debug, info, warn
 
 # Monitor plugin
 #   listen for data on a UDP socket (typically WOL packets)
-class RemoteMonitor (threading.Thread):
+class UDPMonitor (threading.Thread):
 
     # Initialise
     def __init__ ( self, config ):
