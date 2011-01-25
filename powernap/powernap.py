@@ -26,8 +26,8 @@ class PowerNap:
 
     def __init__(self):
         self.PKG = "powernap"
-        #self.CONFIG = "/etc/powernap/config"
-        self.CONFIG = "test.config"
+        self.CONFIG = "/etc/powernap/config"
+        #self.CONFIG = "test.config"
         self.ACTION = "/usr/sbin/powernap"
         self.ABSENT_SECONDS = sys.maxint
         self.INTERVAL_SECONDS = int(1)
