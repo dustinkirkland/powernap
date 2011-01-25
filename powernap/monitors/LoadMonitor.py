@@ -19,15 +19,6 @@
 import os, re, commands
 from logging import error, debug, info, warn
 
-# Test load against threshold
-def over_load(threshold):
-    f = open("/proc/loadavg")
-    l = f.read().split()
-    f.close()
-    if l > threshold:
-        return 1
-    return 0
-
 class LoadMonitor():
 
     # Initialise
@@ -42,8 +33,11 @@ class LoadMonitor():
 
     # Check system load
     def active(self):
-        if over_load(self._threshold):
-		return True
+        f = open("/proc/loadavg")
+        l = f.read().split()
+        f.close()
+        if l[0] > self._threshold:
+	    return True
 	return False
 
     def start(self):
