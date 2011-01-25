@@ -1,4 +1,4 @@
-powernap (2.1-0ubuntu1) natty; urgency=low
+powernap (2.1) unreleased; urgency=low
 
   [ Andres Rodriguez ]
   * config: Default ACTION to pm-powersave instead of best-effort.
