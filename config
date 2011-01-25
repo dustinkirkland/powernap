@@ -74,13 +74,16 @@ init = "^/sbin/init"
 # 'active' and will not powernap.  If the system is already powernapping, then
 # the system will awake out of the powernap mode if the load raises above the
 # threshold.
-# The default threshold is equal to the number of online processors, as
-# determined by getconf _NPROCESSORS_ONLN
+# If the threshold is set to "n" (which is default), threshold is automatically
+# calculated to be the number of online processors, as determined by:
+#   getconf _NPROCESSORS_ONLN
 # Example:
 #   threshold = 1.5
 #   threshold = 9999
 #   threshold = 0
+#   threshold = "n"
 [LoadMonitor]
+threshold = "n"
 
 # The [TCPMonitor] section lists all the TCP ports on which to watch for
 # established connections using netstat(8).

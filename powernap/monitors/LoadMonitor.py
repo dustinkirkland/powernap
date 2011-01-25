@@ -34,7 +34,7 @@ class LoadMonitor():
     def __init__(self, config):
         self._type = config['monitor']
         self._name = config['name']
-        if len(config['threshold']) == 0:
+        if config['threshold'] == "n":
             self._threshold = commands.getoutput("getconf _NPROCESSORS_ONLN")
         else:
             self._threshold = config['threshold']
