@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import ConfigParser, sys
-from monitors import ProcessMonitor, InputMonitor, UDPMonitor, IOMonitor, WoLMonitor, ConsoleMonitor
+from monitors import ProcessMonitor, InputMonitor, TCPMonitor, UDPMonitor, IOMonitor, WoLMonitor, ConsoleMonitor
 
 
 class PowerNap:
@@ -71,8 +71,10 @@ class PowerNap:
             self.ACTION_METHOD = value
 
     def load_monitors_config(self, monitor, items):
-        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor":
+        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor" or monitor == "TCPMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
+        if monitor == "TCPMonitor":
+            self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1])})
         if monitor == "UDPMonitor":
             # If ACTION_METHOD is 4 (PowerSave) and port is 7, do *NOT* create a monitor
             # This will cause that the WoL monitor not to be able to bind the port.
@@ -97,6 +99,8 @@ class PowerNap:
                 p = ConsoleMonitor.ConsoleMonitor(config)
             if config["monitor"] == "IOMonitor":
                 p = IOMonitor.IOMonitor(config)
+            if config["monitor"] == "TCPMonitor":
+                p = TCPMonitor.TCPMonitor(config)
             monitor.append(p)
 
         return monitor

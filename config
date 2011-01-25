@@ -69,15 +69,25 @@ DEBUG = 0
 [ProcessMonitor]
 init = "^/sbin/init"
 
+# The [TCPMonitor] section lists all the TCP ports on which to watch for
+# established connections using netstat(8).
+# There is no default TCP Monitor.
+# Examples:
+#  ssh = 22
+#  http = 80
+#  https = 443
+[TCPMonitor]
+#ssh = 22
+
 # The [UDPMonitor] section lists all the UDP port on which to listen
 # for data.
 # Each item listed will bind a UDP port and listen to data.
 # There is no default Remote Monitor.
 # Examples:
-#  udp1024 = 1024
-#  udp9 = 9
+#  wol = 7
+#  wol = 9
 [UDPMonitor]
-#udp9 = 9
+#wol = 7
 
 # The [IOMonitor] section lists all the processes to Monitor for IO
 # activity. A regular expressions is used to find the processes PIDs, which
