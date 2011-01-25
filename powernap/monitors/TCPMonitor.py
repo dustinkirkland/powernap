@@ -21,7 +21,7 @@ from logging import error, debug, info, warn
 
 # True if an network connection matches 
 def find_connection(netstat, regex):
-    for str in ps:
+    for str in netstat:
         if regex.search(str):
             return 1
     return 0

@@ -95,15 +95,17 @@ threshold = "n"
 [TCPMonitor]
 #ssh = 22
 
-# The [UDPMonitor] section lists all the UDP port on which to listen
+# The [UDPMonitor] section lists all the UDP ports on which to listen
 # for data.
-# Each item listed will bind a UDP port and listen to data.
-# There is no default Remote Monitor.
+# Each item listed will BIND a UDP port and listen to any data. Keep
+# in mind that this port will be bined and no other application will
+# be able to use this port.
+# There is no default UDP Monitor.
 # Examples:
-#  wol = 7
-#  wol = 9
+#  data1 = 1025
+#  data2 = 2048
 [UDPMonitor]
-#wol = 7
+#data1 = 1025
 
 # The [IOMonitor] section lists all the processes to Monitor for IO
 # activity. A regular expressions is used to find the processes PIDs, which
