@@ -78,9 +78,9 @@ init = "^/sbin/init"
 # calculated to be the number of online processors, as determined by:
 #   getconf _NPROCESSORS_ONLN
 # Example:
-#   threshold = 1.5
-#   threshold = 9999
-#   threshold = 0
+#   threshold = "1.5"
+#   threshold = "9999"
+#   threshold = "0"
 #   threshold = "n"
 [LoadMonitor]
 threshold = "n"
