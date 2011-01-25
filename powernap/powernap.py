@@ -26,8 +26,8 @@ class PowerNap:
 
     def __init__(self):
         self.PKG = "powernap"
-        self.CONFIG = "/etc/powernap/config"
-        #self.CONFIG = "test.config"
+        #self.CONFIG = "/etc/powernap/config"
+        self.CONFIG = "test.config"
         self.ACTION = "/usr/sbin/powernap"
         self.ABSENT_SECONDS = sys.maxint
         self.INTERVAL_SECONDS = int(1)
@@ -71,15 +71,15 @@ class PowerNap:
             self.ACTION_METHOD = value
 
     def load_monitors_config(self, monitor, items):
-        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor" or monitor == "TCPMonitor":
+        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "TCPMonitor":
-            self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1])})
+            self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "UDPMonitor":
             # If ACTION_METHOD is 4 (PowerSave) and port is 7, do *NOT* create a monitor
             # This will cause that the WoL monitor not to be able to bind the port.
             # TODO: Display a message that port is not being binded!!
-            if self.ACTION_METHOD == 4 and items[1] != 7:
+            if self.ACTION_METHOD == 4 and (items[1] != 7 or items[1] != 9):
                 self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "WoLMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
