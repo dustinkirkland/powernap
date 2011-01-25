@@ -4,9 +4,9 @@ powernap (2.1) unreleased; urgency=low
   * powernap/monitors:
     - Rename RemoteMonitor to UDPMonitor.
     - Add WoLMonitor and support to run it. NOT yet enabled.
-    - Add PS2Monitor and support to run it. NOT yet enabled.
+    - Add ConsoleMonitor and support to run it. NOT yet enabled.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Jan 2011 14:35:28 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Jan 2011 19:40:09 -0500
 
 powernap (2.0-0ubuntu1) natty; urgency=low
 

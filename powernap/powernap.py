@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import ConfigParser, sys
-from monitors import ProcessMonitor, InputMonitor, UDPMonitor, IOMonitor, WoLMonitor, PS2Monitor
+from monitors import ProcessMonitor, InputMonitor, UDPMonitor, IOMonitor, WoLMonitor, ConsoleMonitor
 
 
 class PowerNap:
@@ -71,7 +71,7 @@ class PowerNap:
             self.ACTION_METHOD = value
 
     def load_monitors_config(self, monitor, items):
-        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "PS2Monitor":
+        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "UDPMonitor":
             # If ACTION_METHOD is 4 (PowerSave) and port is 7, do *NOT* create a monitor
@@ -93,8 +93,8 @@ class PowerNap:
                 p = WoLMonitor.WoLMonitor(config)
             if config["monitor"] == "InputMonitor":
                 p = InputMonitor.InputMonitor(config)
-            if config["monitor"] == "PS2Monitor":
-                p = PS2Monitor.PS2Monitor(config)
+            if config["monitor"] == "ConsoleMonitor":
+                p = ConsoleMonitor.ConsoleMonitor(config)
             if config["monitor"] == "IOMonitor":
                 p = IOMonitor.IOMonitor(config)
             monitor.append(p)

@@ -17,8 +17,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, re, commands
+import os, re, commands, time
 from logging import error, debug, info, warn
+
+# Check /dev/*, such that we don't powernap the system if someone
+# is actively using a terminal device
+def get_console_activity():
+    ptmx = "/dev/ptmx"
+    time = os.stat(ptmx).st_mtime
+    irqs = get_interrupts()
+    return time, irqs
 
 # Obtain the interrupts at any given point in time
 def get_interrupts():
@@ -35,7 +43,7 @@ def get_interrupts():
     f.close()
     return interrupts
 
-class PS2Monitor():
+class ConsoleMonitor():
 
     # Initialise
     def __init__(self, config):
@@ -43,13 +51,14 @@ class PS2Monitor():
         self._name = config['name']
         self._regex = re.compile(config['regex'])
         self._absent_seconds = 0
-        self._interrupts = get_interrupts()
+        self._time, self._irqs = get_console_activity()
 
     # Check for PIDs
     def active(self):
-        current_i = get_interrupts()
-        if current_i > self._interrupts:
-                self._interrupts = current_i
+        cur_time, cur_irqs = get_console_activity()
+        if cur_time > self._time or cur_irqs > self._irqs:
+                self._irqs = cur_irqs
+                self._time = cur_time
 		return True
 	return False
 

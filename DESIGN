@@ -64,8 +64,13 @@ Approach 1:
 Approach 2:
  * Run awake-monitors while awake, asleep-monitors while asleep
 
-
-
-
-
+Approach 3:
+ * Run all monitors at all times.
+ * During ABSENT_SECONDS, check activity every INTERVAL seconds
+ * During powersave, do NOT check every INTERVAL seconds, but use an EVENT based approach.
+ * Example:
+   - While in ABSENT_SECONDS TCPMonitor will be checked for activity every INTERVAL_SECONDS (10)
+     - If activity was found within the last INTERVAL_SECONDS, then reset absent seconds of monitor.
+   - While in POWERSAVE mode, the powernapd will stop polling, and TCPMonitor will send an EVENT
+     - This EVENT will instruct machine to take RECOVER ACTION.
 
