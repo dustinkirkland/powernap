@@ -8,8 +8,10 @@ powernap (2.1-0ubuntu1) natty; urgency=low
     - Add ConsoleMonitor and support to run it. NOT yet enabled.
 
   [ Dustin Kirkland ]
-  * config, powernap/monitors/TCPMonitor.py, powernap/powernap.py: add
-    a TCP Monitor
+  * config, powernap/monitors/TCPMonitor.py, powernap/powernap.py:
+    - add a TCP Monitor
+  * config, powernap/monitors/LoadMonitor.py, powernap/powernap.py:
+    - add a system Load Monitor
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Jan 2011 19:40:09 -0500
 

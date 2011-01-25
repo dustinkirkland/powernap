@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import ConfigParser, sys
-from monitors import ProcessMonitor, InputMonitor, TCPMonitor, UDPMonitor, IOMonitor, WoLMonitor, ConsoleMonitor
+from monitors import ProcessMonitor, LoadMonitor, InputMonitor, TCPMonitor, UDPMonitor, IOMonitor, WoLMonitor, ConsoleMonitor
 
 
 class PowerNap:
@@ -73,6 +73,8 @@ class PowerNap:
     def load_monitors_config(self, monitor, items):
         if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor" or monitor == "TCPMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
+        if monitor == "LoadMonitor":
+            self.MONITORS.append({"monitor":monitor, "name":items[0], "threshold":eval(items[1])})
         if monitor == "TCPMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1])})
         if monitor == "UDPMonitor":
@@ -89,6 +91,8 @@ class PowerNap:
         for config in self.MONITORS:
             if config["monitor"] == "ProcessMonitor":
                 p = ProcessMonitor.ProcessMonitor(config)
+            if config["monitor"] == "LoadMonitor":
+                p = LoadMonitor.LoadMonitor(config)
             if config["monitor"] == "UDPMonitor":
                 p = UDPMonitor.UDPMonitor(config)
             if config["monitor"] == "WoLMonitor":
