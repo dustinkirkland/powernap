@@ -9,16 +9,16 @@
 
 # The ACTION_METHOD variable determines what action to take.
 # The possible actions are:
-# 0 - Best-effort
+# 0 - powersave
 # 1 - suspend
 # 2 - hibernate
 # 3 - poweroff
-# 4 - powersave
+# 4 - best-effort
 # The default mode of operation is Best-effort. First, it will try a user-
 # defined script at /etc/powernap/action, or suspend, hibernate, poweroff
 # The powersave method will use the pm-powersave command and will execute
 # hooks that are locate in /etc/pm/power.d
-ACTION_METHOD = 4
+ACTION_METHOD = 0
 
 # Number of seconds that all processes must be absent from the process
 # table and no keyboard activity on any terminals.
@@ -90,7 +90,7 @@ ptmx = y
 #  sshd = "sshd: .*\[priv\]$"
 #  kvm = "kvm "
 [ProcessMonitor]
-init = "^/sbin/init"
+#init = "^/sbin/init"
 
 # The [LoadMonitor] section defines the load threshold.  When the system load
 # according to /proc/loadavg is above this value, then system will be deemed

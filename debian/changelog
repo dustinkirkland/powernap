@@ -4,6 +4,8 @@ powernap (2.1) unreleased; urgency=low
   * config:
     - Default ACTION to pm-powersave instead of best-effort.
     - Enable WoLMonitor and ConsoleMonitor by default
+    - Disable ProcessMonitor by default.
+    - Change powersave defaults to 0 instead of 4. Update related files.
   * powernap/monitors:
     - Rename RemoteMonitor to UDPMonitor.
     - Add WoLMonitor and support to run it.
@@ -26,7 +28,7 @@ powernap (2.1) unreleased; urgency=low
   * debian/control: bump standards version
   * debian/rules: make sure powernapd starts on install, LP: #705959
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 26 Jan 2011 17:05:42 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 26 Jan 2011 17:28:23 -0500
 
 powernap (2.0-0ubuntu1) natty; urgency=low
 

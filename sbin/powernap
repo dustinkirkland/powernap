@@ -43,7 +43,7 @@ best_effort() {
 
 case $ACTION_METHOD in
 	0)
-		best_effort
+		exec /usr/bin/pm-powersave true
 		exit ;;
 	1)
 		exec /usr/sbin/pm-suspend
@@ -55,6 +55,6 @@ case $ACTION_METHOD in
 		exec /sbin/poweroff
 		exit ;;
 	4)
-		exec /usr/sbin/pm-powersave true
+		best_effort
 		exit ;;
 esac
