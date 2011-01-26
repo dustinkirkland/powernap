@@ -15,6 +15,8 @@ powernap (2.1) unreleased; urgency=low
       (ABSENT_SECONDS - GRACE_SECONDS)
     - Only send a Wall message when on GRACE Period.
     - Enable Monitors to run at all times. Specifically when in PowerSave.
+  * man/powernapd.8: Update to list available monitors.
+  * Update Copyright years/email in some of the files.
 
   [ Dustin Kirkland ]
   * config, powernap/monitors/TCPMonitor.py, powernap/powernap.py:
@@ -24,7 +26,7 @@ powernap (2.1) unreleased; urgency=low
   * debian/control: bump standards version
   * debian/rules: make sure powernapd starts on install, LP: #705959
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 26 Jan 2011 14:16:31 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 26 Jan 2011 17:05:42 -0500
 
 powernap (2.0-0ubuntu1) natty; urgency=low
 
