@@ -29,6 +29,7 @@ class PowerNap:
         self.CONFIG = "/etc/powernap/config"
         #self.CONFIG = "test.config"
         self.ACTION = "/usr/sbin/powernap"
+        self.RECOVER_ACTION = "/usr/sbin/pm-powersave false"
         self.ABSENT_SECONDS = sys.maxint
         self.INTERVAL_SECONDS = int(1)
         self.GRACE_SECONDS = int(60)
@@ -71,15 +72,17 @@ class PowerNap:
             self.ACTION_METHOD = value
 
     def load_monitors_config(self, monitor, items):
-        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor" or monitor == "ConsoleMonitor":
+        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
+        if monitor == "ConsoleMonitor" and (items[1] == "y" or items[1] == "yes"):
+            self.MONITORS.append({"monitor":monitor, "name":items[0]})
         if monitor == "LoadMonitor":
-            self.MONITORS.append({"monitor":monitor, "name":items[0], "threshold":eval(items[1])})
+            self.MONITORS.append({"monitor":monitor, "name":items[0], "threshold":items[1]})
         if monitor == "TCPMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "UDPMonitor":
-            # If ACTION_METHOD is 4 (PowerSave) and port is 7, do *NOT* create a monitor
-            # This will cause that the WoL monitor not to be able to bind the port.
+            # If ACTION_METHOD is 4 (PowerSave) and port is 7 or 9, do *NOT* create a monitor
+            # This will cause that the WoL monitor to not be able to bind the port or viceversa.
             # TODO: Display a message that port is not being binded!!
             if self.ACTION_METHOD == 4 and (items[1] != 7 or items[1] != 9):
                 self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})

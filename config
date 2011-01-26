@@ -58,6 +58,29 @@ DEBUG = 0
 ####                          MONITORS                                  ####
 ############################################################################
 
+# The [WoLMonitor] section lists all ports on which the WoL Monitor will be
+# listening for WoL Packets for any of the network interfaces.
+# Once a WoL Packet is received, the WoLMonitor will compare the data received
+# with all the network interfaces (eth's) to determine wether it is destined
+# for any of the network interfaces.
+# The default is to monitor ports 7 and 9 for WoL data packets. It can also be
+# set to any other port on which the machine is receiving WoL packets
+# Example:
+#  wol1052 = 1052
+[WoLMonitor]
+wol7 = 7
+wol9 = 9
+
+# The [ConsoleMonitor] section enables or disables  monitoring of activity
+# in the Console (tty), also tracking activity from any locally connected
+# mouse and keyboard (PS2 Only).
+# The default is enabled, set to 'y'. It can be disabled by setting it to 'n'.
+# Examples:
+#  console = y
+#  console = n
+[ConsoleMonitor]
+ptmx = y
+
 # The [ProcessMonitor] section lists all the processes to Monitor by using
 # regular expressions.
 # Each item listed will be compared against the output of "ps -eo args".
@@ -78,12 +101,12 @@ init = "^/sbin/init"
 # calculated to be the number of online processors, as determined by:
 #   getconf _NPROCESSORS_ONLN
 # Example:
-#   threshold = "1.5"
-#   threshold = "9999"
-#   threshold = "0"
-#   threshold = "n"
+#   threshold = 1.5
+#   threshold = 9999
+#   threshold = 0
+#   threshold = n
 [LoadMonitor]
-threshold = "n"
+threshold = n
 
 # The [TCPMonitor] section lists all the TCP ports on which to watch for
 # established connections using netstat(8).
@@ -102,10 +125,10 @@ threshold = "n"
 # be able to use this port.
 # There is no default UDP Monitor.
 # Examples:
-#  data1 = 1025
-#  data2 = 2048
+#  udp-1 = 1025
+#  udp-2 = 2048
 [UDPMonitor]
-#data1 = 1025
+#udp-1025 = 1025
 
 # The [IOMonitor] section lists all the processes to Monitor for IO
 # activity. A regular expressions is used to find the processes PIDs, which

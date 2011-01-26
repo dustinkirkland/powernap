@@ -49,7 +49,6 @@ class ConsoleMonitor():
     def __init__(self, config):
         self._type = config['monitor']
         self._name = config['name']
-        self._regex = re.compile(config['regex'])
         self._absent_seconds = 0
         self._time, self._irqs = get_console_activity()
 

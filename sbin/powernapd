@@ -86,41 +86,6 @@ def signal_handler(signal, frame):
     debug(logging.INFO, "Stopping %s" % powernap.PKG)
     sys.exit(1)
 
-# Check /dev/*, such that we don't powernap the system if someone
-# is actively using a terminal device
-def get_console_activity():
-    dev = commands.getoutput("ls -t /dev").split('\n')
-    c = 0
-    d = "/dev/null"
-    # Find the most recently touched device
-    for d in dev:
-      d = "/dev/%s" % d
-      debug(logging.DEBUG, "      Examining [%s]" % d)
-      if os.path.isdir(d):
-          pass
-      else:
-          t = os.stat(d)
-          c = time.time() - t.st_mtime
-          break
-    i = get_interrupts()
-    return c, d, i
-
-# Read keyboard/mouse from /proc/interrupts
-# Note: only works for ps2 keyboards/mice
-def get_interrupts():
-    interrupts = 0
-    f = open("/proc/interrupts", "r")
-    for line in f.readlines():
-        items = line.split()
-        source = items.pop()
-        if source == "i8042" or source == "keyboard" or source == "mouse":
-            items.pop(0)
-            items.pop()
-            for i in items:
-                interrupts += int(i)
-    f.close()
-    return interrupts
-
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period
 def warn_users():
@@ -128,19 +93,6 @@ def warn_users():
     msg2 = "To cancel this operation, press any key in any terminal"
     debug(logging.WARNING, msg1)
     commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
-    t = 0
-    c, d, last_i = get_console_activity()
-    while t < powernap.GRACE_SECONDS:
-        time.sleep(powernap.INTERVAL_SECONDS)
-        t += powernap.INTERVAL_SECONDS
-        c, d, i = get_console_activity()
-        if c < powernap.INTERVAL_SECONDS or i != last_i:
-            msg = "PowerNap detected activity on [%s]; Canceling action [%s]" % (d, powernap.ACTION)
-            debug(logging.WARNING, msg)
-            commands.getoutput("echo '%s' | wall" % msg)
-            return 1
-        last_i = i
-    return 0
 
 # TODO: notify authorities about action taken
 def notify_authorities():
@@ -149,9 +101,11 @@ def notify_authorities():
 # Recover action for ACTION_METHOD=4 (pm-powersave).
 # TODO-andreserl: Find a better way to do this. Maybe involving ACTION variable and passing a false?
 def take_recover_action():
-    recover = "/usr/sbin/pm-powersave false"
-    debug(logging.DEBUG, "Taking recover action [%s]" % recover)
-    os.system(recover)
+    debug(logging.WARNING, "Taking recover action [%s]" % powernap.RECOVER_ACTION)
+    os.system(powernap.RECOVER_ACTION)
+    debug(logging.DEBUG, "Reseting counters after taking recover action")
+    for monitor in MONITORS:
+        monitor._absent_seconds = 0
 
 # Zero the counters and take the action
 def take_action():
@@ -165,73 +119,6 @@ def take_action():
 def take_action_handler(signal, frame):
     take_action()
 
-# Obtain MAC address from Monitor Interface
-def get_mac_address(iface):
-    file = "/sys/class/net/%s/address" % iface
-    f = open(file, 'r')
-    iface = f.read()
-    f.close
-    return iface.strip()
-
-# Generate WoL data for local interface to compare with received packet (Partially taken from powerwake)
-def get_local_wol_data(mac):
-    nonhex = re.compile('[^0-9a-fA-F]')
-    mac = nonhex.sub('', mac)
-    if len(mac) != 12:
-        error("Malformed mac address [%s]" % mac)
-    data = ''.join(['FFFFFFFFFFFF', mac * 16])
-    wol_data = ''
-    for i in range(0, len(data), 2):
-        wol_data = ''.join([wol_data, struct.pack('B', int(data[i: i + 2], 16))])
-    return wol_data
-
-# Obtain a list of available eth's, with its MAC address and WoL data.
-def get_eths_mac_wol_info():
-    ifaces = []
-    prefix = re.compile("eth")
-    dirs = os.listdir("/sys/class/net")
-    for iface in dirs:
-        if prefix.search(iface):
-            # Obtain MAC address
-            mac = get_mac_address(iface)
-            # Obtain WoL data of eth
-            data = get_local_wol_data(mac)
-            ifaces.append({"iface":iface, "mac":mac, "wol":data})
-    return ifaces
-
-# WoL Monitor
-def start_wol_monitor():
-    isRunning = False
-    host = '' # Bind to all interfaces
-    port = 7
-    ifaces = get_eths_mac_wol_info()
-
-    # Prepare the socket and bind port
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.bind((host, port))
-        isRunning = True
-    except:
-        error("Unable to bind port [%s]" % port)
-        return
-
-    while isRunning:
-        try:
-            debug(logging.DEBUG, "    WoL monitor started at port [%s]" % port)
-            recv_wol_msg, address = s.recvfrom(1024)
-            debug(logging.DEBUG, "    WoL packet received from %s" % address[0])
-            for iface in ifaces:
-                if recv_wol_msg == iface["wol"]:
-                    debug(logging.DEBUG, "    WoL data matches local interface [%s]" % iface["iface"])
-                    isRunning = False
-                    break
-            # Acknowledge it.
-            #s.sendto("I am here", address)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            traceback.print_exc()
-
 def powernapd_loop():
 
     # Starting the Monitors
@@ -239,49 +126,65 @@ def powernapd_loop():
         debug(logging.DEBUG, "Starting [%s:%s]" % (monitor._type, monitor._name))
         monitor.start()
 
-    last_i = 0
+    grace_seconds = powernap.GRACE_SECONDS
+    in_powersave_mode = False
+    users_warned = False
+
     while 1:
         debug(logging.DEBUG, "Sleeping [%d] seconds" % powernap.INTERVAL_SECONDS)
         time.sleep(powernap.INTERVAL_SECONDS)
         # Examine monitor activity, compute absent time of each monitored monitor process
         debug(logging.DEBUG, "Examining Monitors")
         absent_monitors = 0
+        grace_monitors = 0
         for monitor in MONITORS:
             debug(logging.DEBUG, "  Looking for [%s] %s" % (monitor._name, monitor._type))
             if monitor.active():
                 monitor._absent_seconds = 0
+                grace_seconds = powernap.GRACE_SECONDS
+                users_warned = False
                 debug(logging.DEBUG, "    Activity found, reset absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
+                if in_powersave_mode and powernap.ACTION_METHOD == 4:
+                    take_recover_action()
+                    in_powersave_mode = False
+                    break
+            elif in_powersave_mode:
+               # activity during POWERSAVE mode. Only increments absent_seconds and provides logging.
+               monitor._absent_seconds += powernap.INTERVAL_SECONDS
+               debug(logging.DEBUG, "    Activity not found, increment absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
             else:
                 # activity not found, increment absent time
                 monitor._absent_seconds += powernap.INTERVAL_SECONDS
                 debug(logging.DEBUG, "    Activity not found, increment absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
+
+                if monitor._absent_seconds >= (powernap.ABSENT_SECONDS - powernap.GRACE_SECONDS):
+                    # If monitor is absent for (ABSENT_SECONDS - GRACE_SECONDS), we consider it in GRACE PERIOD.
+                    grace_monitors += 1
+
                 if monitor._absent_seconds >= powernap.ABSENT_SECONDS:
                     # activity missing for >= absent_seconds threshold, mark absent
                     debug(logging.DEBUG, "    Activity absent for >= threshold, so mark absent")
                     absent_monitors += 1
+
+        # GRACE PERIOD: Time between ABSENT_SECONDS and (ABSENT_SECONDS - GRACE_SECONDS)
+        # If all monitors are in their own GRACE period
+        if grace_monitors > 0 and grace_monitors == len(MONITORS):
+            if users_warned is False:
+                # Only display warn_users() wall message when initially entering to GRACE_PERIOD
+                # If in GRACE_PERIOD but a warn_users() already issued, then ignore condition.
+                warn_users()
+                users_warned = True
+            debug(logging.WARNING, "Entered into GRACE PERIOD. Action [%s] will be taken in [%d] seconds" % (powernap.ACTION, grace_seconds))
+            grace_seconds -= powernap.INTERVAL_SECONDS
+
         # Determine if action needs to be taken
         if absent_monitors > 0 and absent_monitors == len(MONITORS):
-            debug(logging.DEBUG, "    Checking for console or terminal activity")
-            c, d, i = get_console_activity()
-            if c > powernap.ABSENT_SECONDS and i == last_i:
-                last_i = i
-                # All monitors are absent, take action!
-                if warn_users() == 0:
-                    take_action()
-                    # Starts WoL Monitor if ACTION_METHOD is set to powersave. Waits here until a matching WoL packet is received
-                    # This monitor will only work when entering on 'pm-powersave', and will only wakeup when a matching WoL packet
-                    # for the default interface is received
-                    # TODO - provide method to define default interface
-                    if powernap.ACTION_METHOD == 4:
-                        debug(logging.DEBUG, "Starting WoL monitor")
-                        # Start WoL Monitor. Returns when WoL packet has been received
-                        # If failed to bind port, it will return and take recover action
-                        start_wol_monitor()
-                        # Takes recover action for ACTION_METHOD = 4, when returning from WoL Monitor
-                        take_recover_action()
-            else:
-                last_i = i
-                debug(logging.DEBUG, "    There appears to be activity on [%s] within the last [%d] seconds" % (d, powernap.ABSENT_SECONDS))
+            take_action()
+
+            # If ACTION_METHOD is PowerSave then flag. Use is when tracking Monitor Activity
+            if powernap.ACTION_METHOD == 4:
+                in_powersave_mode = True
+
 
 # "Forking a Daemon Process on Unix" from The Python Cookbook
 def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % powernap.PKG, stderr="/var/log/%s.err" % powernap.PKG):
