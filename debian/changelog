@@ -21,6 +21,7 @@ powernap (2.1) unreleased; urgency=low
     - add a TCP Monitor
   * config, powernap/monitors/LoadMonitor.py, powernap/powernap.py:
     - add a system Load Monitor
+  * debian/control: bump standards version
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 26 Jan 2011 14:16:31 -0500
 
