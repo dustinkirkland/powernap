@@ -5,7 +5,7 @@
 # This file is Python syntax, and will be sourced by the powernap daemon
 # on start. To enact changes to this configuration, restart the daemon.
 # Example:
-#   /etc/init.d/powernap restart
+#   sudo service powernap restart
 
 # The ACTION_METHOD variable determines what action to take.
 # The possible actions are:
