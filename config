@@ -9,34 +9,35 @@
 
 # The ACTION_METHOD variable determines what action to take.
 # The possible actions are:
-# 0 - Best-effort
+# 0 - powersave
 # 1 - suspend
 # 2 - hibernate
 # 3 - poweroff
-# 4 - powersave
-# The default mode of operation is Best-effort. First, it will try a user-
-# defined script at /etc/powernap/action, or suspend, hibernate, poweroff
-# The powersave method will use the pm-powersave command and will execute
-# hooks that are locate in /etc/pm/power.d
-ACTION_METHOD = 4
+# 4 - best-effort
+# The default mode of operation is powersave. This method will use the
+# "pm-powersave" command and will execute hooks locate in "/etc/pm/power.d" and
+# "/usr/lib/pm-utils/power.d".
+# The best-effort method, witll first, it will try a user-defined script
+# at "/etc/powernap/action", or suspend, hibernate, poweroff.
+ACTION_METHOD = 0
 
-# Number of seconds that all processes must be absent from the process
-# table and no keyboard activity on any terminals.
+# Number of seconds that all monitors must have no activity or must be absent.
 # The default is an absence period of 5 minutes.
 # Example:
 #   ABSENT_SECONDS = 300
 ABSENT_SECONDS = 300
 
-# Grace period, after ABSENT_SECONDS have elapsed with all of the Monitors
-# with absent activity, the system will allow for an administrator to kill
-# powernapd and thereby cancel the /usr/sbin/powernap action.
+# Grace period, after (ABSENT_SECONDS - GRACE_SECONDS) have elapsed with all of
+# the Monitors with absent activity, the system will send a Wall message for an
+# administrator to warn that the system will perform the "/usr/sbin/powernap"
+# action in GRACE_SECONDS.
 # The default grace period is 60 seconds.
 # Example:
 #   GRACE_SECONDS = 60
 GRACE_SECONDS = 60
 
-# The powernap daemon will wake every INTERVAL_SECONDS and check the process
-# table for matching processes.  Lower values of INTERVAL_SECONDS will provide
+# The powernap daemon will wake every INTERVAL_SECONDS and check for activity
+# to all of the monitors.  Lower values of INTERVAL_SECONDS will provide
 # more detailed process monitoring but will consume more system resources.
 # Higher values of INTERVAL_SECONDS will consume less system resources, but
 # might miss activity that execute for less than INTERVAL_SECONDS.
@@ -90,7 +91,7 @@ ptmx = y
 #  sshd = "sshd: .*\[priv\]$"
 #  kvm = "kvm "
 [ProcessMonitor]
-init = "^/sbin/init"
+#init = "^/sbin/init"
 
 # The [LoadMonitor] section defines the load threshold.  When the system load
 # according to /proc/loadavg is above this value, then system will be deemed

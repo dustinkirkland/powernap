@@ -81,10 +81,10 @@ class PowerNap:
         if monitor == "TCPMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "UDPMonitor":
-            # If ACTION_METHOD is 4 (PowerSave) and port is 7 or 9, do *NOT* create a monitor
+            # If ACTION_METHOD is 0 (PowerSave) and port is 7 or 9, do *NOT* create a monitor
             # This will cause that the WoL monitor to not be able to bind the port or viceversa.
             # TODO: Display a message that port is not being binded!!
-            if self.ACTION_METHOD == 4 and (items[1] != 7 or items[1] != 9):
+            if self.ACTION_METHOD == 0 and (items[1] != 7 or items[1] != 9):
                 self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "WoLMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "port":eval(items[1]), "absent":self.ABSENT_SECONDS})

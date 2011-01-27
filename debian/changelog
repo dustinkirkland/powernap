@@ -4,6 +4,8 @@ powernap (2.1) unreleased; urgency=low
   * config:
     - Default ACTION to pm-powersave instead of best-effort.
     - Enable WoLMonitor and ConsoleMonitor by default
+    - Disable ProcessMonitor by default.
+    - Change powersave defaults to 0 instead of 4. Update related files.
   * powernap/monitors:
     - Rename RemoteMonitor to UDPMonitor.
     - Add WoLMonitor and support to run it.
@@ -15,6 +17,8 @@ powernap (2.1) unreleased; urgency=low
       (ABSENT_SECONDS - GRACE_SECONDS)
     - Only send a Wall message when on GRACE Period.
     - Enable Monitors to run at all times. Specifically when in PowerSave.
+  * man/powernapd.8: Update to list available Monitors with description.
+  * Update Copyright years/email in some of the files.
 
   [ Dustin Kirkland ]
   * config, powernap/monitors/TCPMonitor.py, powernap/powernap.py:

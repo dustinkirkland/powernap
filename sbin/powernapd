@@ -3,10 +3,10 @@
 #    powernapd - monitor a system process table; if IDLE amount of time
 #               goes by with no MONITORED_PROCESSES running, run ACTION
 #
-#    Copyright (C) 2009 Canonical Ltd.
+#    Copyright (C) 2009-2011 Canonical Ltd.
 #
 #    Authors: Dustin Kirkland <kirkland@canonical.com>
-#             Andres Rodriguez <andreserl@ubuntu.com>
+#             Andres Rodriguez <andreserl@canonical.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -98,8 +98,7 @@ def warn_users():
 def notify_authorities():
     debug(logging.WARNING, "Taking action [%s]" % powernap.ACTION)
 
-# Recover action for ACTION_METHOD=4 (pm-powersave).
-# TODO-andreserl: Find a better way to do this. Maybe involving ACTION variable and passing a false?
+# Recover action for ACTION_METHOD=0 (pm-powersave).
 def take_recover_action():
     debug(logging.WARNING, "Taking recover action [%s]" % powernap.RECOVER_ACTION)
     os.system(powernap.RECOVER_ACTION)
@@ -144,7 +143,7 @@ def powernapd_loop():
                 grace_seconds = powernap.GRACE_SECONDS
                 users_warned = False
                 debug(logging.DEBUG, "    Activity found, reset absent time [%d/%d]" % (monitor._absent_seconds, powernap.ABSENT_SECONDS))
-                if in_powersave_mode and powernap.ACTION_METHOD == 4:
+                if in_powersave_mode and powernap.ACTION_METHOD == 0:
                     take_recover_action()
                     in_powersave_mode = False
                     break
@@ -182,7 +181,7 @@ def powernapd_loop():
             take_action()
 
             # If ACTION_METHOD is PowerSave then flag. Use is when tracking Monitor Activity
-            if powernap.ACTION_METHOD == 4:
+            if powernap.ACTION_METHOD == 0:
                 in_powersave_mode = True
 
 
