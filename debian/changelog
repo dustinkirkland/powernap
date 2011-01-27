@@ -1,4 +1,4 @@
-powernap (2.1) unreleased; urgency=low
+powernap (2.1-0ubuntu1) natty; urgency=low
 
   [ Andres Rodriguez ]
   * config:
@@ -29,7 +29,7 @@ powernap (2.1) unreleased; urgency=low
   * debian/rules: make sure powernapd starts on install, LP: #705959
   * config: update service restart method
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 26 Jan 2011 14:16:31 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 27 Jan 2011 16:38:22 -0600
 
 powernap (2.0-0ubuntu1) natty; urgency=low
 
