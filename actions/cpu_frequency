@@ -19,6 +19,25 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+RUNDIR="/var/run/powernap"
+GOVERNOR="/var/run/powernap/cpu_governor.default"
+CPUFILE="/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+full_power=`head -1 $CPUFILE`
+save_power="powersave"
+
+# Creates the $RUNDIR if it does not exists
+if [ ! -f $RUNDIR ]; then
+	mkdir -p $RUNDIR
+fi
+
+# Saves the default governor into a temp file.
+# Later used to retrieve and set the default governor
+if [ ! -f $GOVERNOR ]; then
+	echo $full_power > $GOVERNOR
+else
+	full_power=`head -1 $GOVERNOR`
+fi
+
 set_cpu_governor() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
 		[ -w "$cpu" ] || continue
@@ -27,16 +46,16 @@ set_cpu_governor() {
 }
 
 help() {
-	echo "Lowers the CPU frequency to the minimum possible by changing the scaling governor from ondemand to powersave"
+	echo "Lowers the CPU frequency, changing the scaling governor from $full_power to $save_power."
 }
 
 case $1 in
 	true)
 		# Change governor to powersave
-		set_cpu_governor powersave ;;
+		set_cpu_governor $save_power ;;
 	false)
                 # Change governor to ondemand
-		set_cpu_governor ondemand ;;
+		set_cpu_governor $full_power ;;
 	help) help;;
 	*)
 		exit $NA ;;

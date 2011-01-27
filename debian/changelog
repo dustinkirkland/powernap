@@ -1,8 +1,10 @@
 powernap (2.2) unreleased; urgency=low
 
-  * UNRELEASED
+  * actions:
+    - cpu_smp_sched,eth_wol: Dropped. pm-utils provides its own verion.
+    - cpu_frequency: Store default governor to reset it to default value.
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 27 Jan 2011 16:38:30 -0600
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 27 Jan 2011 18:03:36 -0500
 
 powernap (2.1-0ubuntu1) natty; urgency=low
 
