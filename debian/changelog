@@ -2,8 +2,13 @@ powernap (2.3) unreleased; urgency=low
 
   * config,sbin/powernapd,powernap/powernap.py: New option to decide if
     powernapd will WARN the user via a wall message. Default yes.
+  * sbin/powernapd: Use a Timestamp when sending the wall message.
+  * InputMonitor now only enables/disables keyboard and mouse monitoring.
+    - powernap/monitors/InputMonitor.py: Match regex in /by-id for kbd.
+    - powernap/powernap.py: Support only mouse/keyboard
+    - config: Only add options for mouse/keyboard.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 12:18:20 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 17:45:49 -0500
 
 powernap (2.2-0ubuntu1) natty; urgency=low
 
