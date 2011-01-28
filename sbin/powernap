@@ -43,7 +43,7 @@ best_effort() {
 
 case $ACTION_METHOD in
 	0)
-		exec /usr/bin/pm-powersave true
+		exec /usr/sbin/pm-powersave true
 		exit ;;
 	1)
 		exec /usr/sbin/pm-suspend
