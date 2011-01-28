@@ -3,8 +3,9 @@ powernap (2.2) unreleased; urgency=low
   * actions:
     - cpu_smp_sched,eth_wol: Dropped. pm-utils provides its own verion.
     - cpu_frequency: Store default governor to reset it to default value.
+  * debian/rules: run dh_installdeb *after* dh_pycentral.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 27 Jan 2011 18:03:36 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 10:32:21 -0500
 
 powernap (2.1-0ubuntu1) natty; urgency=low
 
