@@ -1,5 +1,6 @@
-powernap (2.2) unreleased; urgency=low
+powernap (2.2-0ubuntu1) natty; urgency=low
 
+  [ Andres Rodriguez ]
   * actions:
     - cpu_smp_sched,eth_wol: Dropped. pm-utils provides its own verion.
     - cpu_frequency: Store default governor to reset it to default value.
@@ -7,7 +8,7 @@ powernap (2.2) unreleased; urgency=low
   * Add lintian-overrides (LP: #706974)
   * sbin/powernap: Fix pm-powersave command path.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 11:28:44 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 28 Jan 2011 10:46:38 -0600
 
 powernap (2.1-0ubuntu1) natty; urgency=low
 
