@@ -92,7 +92,8 @@ def warn_users():
     msg1 = "PowerNap will take the following action in [%s] seconds: [%s]" % (powernap.GRACE_SECONDS, powernap.ACTION)
     msg2 = "To cancel this operation, press any key in any terminal"
     debug(logging.WARNING, msg1)
-    commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
+    if powernap.WARN:
+        commands.getoutput("echo '%s\n%s' | wall" % (msg1, msg2))
 
 # TODO: notify authorities about action taken
 def notify_authorities():

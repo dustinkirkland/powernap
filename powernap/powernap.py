@@ -36,6 +36,7 @@ class PowerNap:
         self.DEBUG = int(0)
         self.ACTION_METHOD = 0
         self.MONITORS = []
+        self.WARN = True
         self.load_config_file()
 
     def load_config_file(self):
@@ -46,7 +47,7 @@ class PowerNap:
             # Load items in DEFAULT section
             defaults = cfg.items(self.PKG)
             for items in defaults:
-                self.set_default_values(items[0], eval(items[1]))
+                self.set_default_values(items[0], items[1])
 
             # Load items on each monitor
             monitors_config = cfg.sections()
@@ -59,17 +60,20 @@ class PowerNap:
 
     def set_default_values(self, var, value):
         if var == "absent_seconds":
-            self.ABSENT_SECONDS = value
+            self.ABSENT_SECONDS = eval(value)
         if var == "interval_seconds":
-            self.INTERVAL_SECONDS = value
+            self.INTERVAL_SECONDS = eval(value)
         if var == "grace_seconds":
-            self.GRACE_SECONDS = value
+            self.GRACE_SECONDS = eval(value)
         if var == "debug":
-            self.DEBUG = value
+            self.DEBUG = eval(value)
         if var == "action":
-            self.ACTION = value
+            self.ACTION = eval(value)
         if var == "action_method":
-            self.ACTION_METHOD = value
+            self.ACTION_METHOD = eval(value)
+        if var == "warn":
+            if value == "n" or value == "no":
+                self.WARN = False
 
     def load_monitors_config(self, monitor, items):
         if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor":

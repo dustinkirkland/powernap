@@ -47,6 +47,18 @@ GRACE_SECONDS = 60
 #   INTERVAL_SECONDS = 1
 INTERVAL_SECONDS = 1
 
+# The powernap daemon will issue a warning message to the console whenever it
+# has entered into GRACE period. This warning message will warn the user that
+# it is about to perform an ACTION.
+# This warning message is done using the "wall" command, notifying all the
+# users connected to a console.
+# The default is set to 'yes' to WARN the user. It can be disabled by setting
+# the option to 'n' or 'no'.
+# Example
+#   WARN = y
+#   WARN = n
+WARN = y
+
 # The powernap daemon logs errors to /var/log/powernap.err, and some basic
 # information to /var/log/powernap.log.  To change the verbosity of this
 # logging, set DEBUG to 0, 1, 2, or 3:

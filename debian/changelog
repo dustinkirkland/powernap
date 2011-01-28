@@ -1,8 +1,9 @@
 powernap (2.3) unreleased; urgency=low
 
-  * UNRELEASED
+  * config,sbin/powernapd,powernap/powernap.py: New option to decide if
+    powernapd will WARN the user via a wall message. Default yes.
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 28 Jan 2011 10:46:49 -0600
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 12:18:20 -0500
 
 powernap (2.2-0ubuntu1) natty; urgency=low
 
