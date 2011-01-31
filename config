@@ -156,11 +156,12 @@ threshold = n
 
 # The [InputMonitor] section lists the USB Input devices for which to track
 # events. Currently, only two types of devices are supported, mouse and keyboard.
-# No InputMonitor's are  enabled by default. To enable, simply set "y" or "yes".
-# Otherwise, they can be disabled by setting  "n" or "no" or simply comment them.
+# Both InputMonitor's are enabled by default. In the case there are no USB
+# devices connected, PowerNap will ignore these settings.
+# To disable, set them to "n" or "no", or simply comment them.
 # Examples:
 #  keyboard = n
 #  keyboard = y
 [InputMonitor]
-#keyboard = y
-#mouse = y
+keyboard = y
+mouse = y

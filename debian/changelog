@@ -7,8 +7,12 @@ powernap (2.3) unreleased; urgency=low
     - powernap/monitors/InputMonitor.py: Match regex in /by-id for kbd.
     - powernap/powernap.py: Support only mouse/keyboard
     - config: Only add options for mouse/keyboard.
+  * Enabled InputMonitors by default.
+    - config: Enable.
+    - powernap.py: Only try to initialize if "mouse" or "kbd" are connected
+      by looking into /dev/input/by-id.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 17:45:49 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 31 Jan 2011 18:24:01 -0500
 
 powernap (2.2-0ubuntu1) natty; urgency=low
 
