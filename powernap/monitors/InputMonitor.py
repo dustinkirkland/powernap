@@ -39,6 +39,9 @@ class InputMonitor ( threading.Thread ):
         if os.path.split(config['regex'])[0]:
             self._path = os.path.join("/dev/input", os.path.dirname(config['regex']))
             self._regex = re.compile(os.path.basename(config['regex']))
+        elif config["regex"] == "kbd":
+            self._path = "/dev/input/by-id"
+            self._regex = re.compile(config['regex'])
         else:
             self._path = "/dev/input"
             self._regex = re.compile(config['regex'])

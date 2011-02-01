@@ -27,7 +27,6 @@ class PowerNap:
     def __init__(self):
         self.PKG = "powernap"
         self.CONFIG = "/etc/powernap/config"
-        #self.CONFIG = "test.config"
         self.ACTION = "/usr/sbin/powernap"
         self.RECOVER_ACTION = "/usr/sbin/pm-powersave false"
         self.ABSENT_SECONDS = sys.maxint
@@ -36,7 +35,7 @@ class PowerNap:
         self.DEBUG = int(0)
         self.ACTION_METHOD = 0
         self.MONITORS = []
-        self.WARN = True
+        self.WARN = False
         self.load_config_file()
 
     def load_config_file(self):
@@ -72,12 +71,19 @@ class PowerNap:
         if var == "action_method":
             self.ACTION_METHOD = eval(value)
         if var == "warn":
-            if value == "n" or value == "no":
-                self.WARN = False
+            if value == "y" or value == "yes":
+                self.WARN = True
 
     def load_monitors_config(self, monitor, items):
-        if monitor == "ProcessMonitor" or monitor == "IOMonitor" or monitor == "InputMonitor":
+        if monitor == "ProcessMonitor" or monitor == "IOMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
+        if monitor == "InputMonitor" and (items[1] == "y" or items[1] == "yes"):
+            if items[0] == "mouse":
+                self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":"mice"})
+            elif items[0] == "keyboard":
+                self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":"kbd"})
+            else:
+                self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":items[1]})
         if monitor == "ConsoleMonitor" and (items[1] == "y" or items[1] == "yes"):
             self.MONITORS.append({"monitor":monitor, "name":items[0]})
         if monitor == "LoadMonitor":

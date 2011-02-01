@@ -53,7 +53,7 @@ INTERVAL_SECONDS = 1
 # This warning message is done using the "wall" command, notifying all the
 # users connected to a console.
 # The default is set to 'yes' to WARN the user. It can be disabled by setting
-# the option to 'n' or 'no'.
+# the option to 'n' or 'no', or can simply be commented.
 # Example
 #   WARN = y
 #   WARN = n
@@ -154,26 +154,13 @@ threshold = n
 #kvm-io = "kvm"
 #mysqld-io = "mysql"
 
-# The [InputMonitor] section lists all the Input Events (in /dev/input) to
-# Monitor. It uses the name of the event Monitor in "/dev/input".
-# Example:
-#  EventX = "mouse0"
-#
-# Alternatively, it can also monitor any device by the id (/dev/input/by-id).
-# This is enabled by adding the "by-id/" prefix, and specifying the device
-# to monitor.
-# Example:
-#  EventY = "by-id/usb-BTC_USB_Multimedia_Cordless_Kit-event-kbd"
-#
-# This monitor is regularly used to Monitor activy in Mouse and Keyboards
-# connected through USB.
-# There is no default Input Monitor
+# The [InputMonitor] section lists the USB Input devices for which to track
+# events. Currently, only two types of devices are supported, mouse and keyboard.
+# No InputMonitor's are  enabled by default. To enable, simply set "y" or "yes".
+# Otherwise, they can be disabled by setting  "n" or "no" or simply comment them.
 # Examples:
-#  Event1 = "event1"
-#  Event2 = "by-id/usb-BTC_USB_Multimedia_Cordless_Kit-event-mouse"
-#
-# NOTE: Also note that when using the event name, the user will have to know what
-# event the device is using. This can be determined by "ls -l /dev/input/by-id"
+#  keyboard = n
+#  keyboard = y
 [InputMonitor]
-#MouseEvent = "event1"
-#KeyboardEvent = "event6"
+#keyboard = y
+#mouse = y
