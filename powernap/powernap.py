@@ -18,7 +18,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import ConfigParser, sys
+import ConfigParser, sys, re, os
 from monitors import ProcessMonitor, LoadMonitor, InputMonitor, TCPMonitor, UDPMonitor, IOMonitor, WoLMonitor, ConsoleMonitor
 
 
@@ -74,16 +74,28 @@ class PowerNap:
             if value == "y" or value == "yes":
                 self.WARN = True
 
+    def usb_input_available(self, event):
+        regex = re.compile(event)
+        path = "/dev/input/by-id"
+        exists = False
+
+        for str in os.listdir(path):
+            match = regex.search(str)
+            if match:
+                exists = True
+                break
+        return exists
+
     def load_monitors_config(self, monitor, items):
         if monitor == "ProcessMonitor" or monitor == "IOMonitor":
             self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":eval(items[1]), "absent":self.ABSENT_SECONDS})
         if monitor == "InputMonitor" and (items[1] == "y" or items[1] == "yes"):
-            if items[0] == "mouse":
+            if items[0] == "mouse" and self.usb_input_available("mouse"):
                 self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":"mice"})
-            elif items[0] == "keyboard":
+            elif items[0] == "keyboard" and self.usb_input_available("kbd"):
                 self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":"kbd"})
-            else:
-                self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":items[1]})
+            #else:
+            #    self.MONITORS.append({"monitor":monitor, "name":items[0], "regex":items[1]})
         if monitor == "ConsoleMonitor" and (items[1] == "y" or items[1] == "yes"):
             self.MONITORS.append({"monitor":monitor, "name":items[0]})
         if monitor == "LoadMonitor":

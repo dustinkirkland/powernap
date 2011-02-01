@@ -8,14 +8,19 @@ powernap (2.3) unreleased; urgency=low
     - powernap/monitors/InputMonitor.py: Match regex in /by-id for kbd.
     - powernap/powernap.py: Support only mouse/keyboard
     - config: Only add options for mouse/keyboard.
-
+  * Enabled InputMonitors by default.
+    - config: Enable.
+    - powernap.py: Only try to initialize if "mouse" or "kbd" are connected
+      by looking into /dev/input/by-id.
+  * powernapd: Add SIGIO handler. Ignores failure caused when disconnecting
+    a monitored USB InputDevice, that caused powernapd to stop running.
 
   [ Dustin Kirkland ]
   * man/powernap-action.8, man/powernap_calculator.1: fix lintian warnings,
     escpae hyphens
   * debian/control: update package descriptions
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 12:18:20 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 01 Feb 2011 12:49:51 -0500
 
 powernap (2.2-0ubuntu1) natty; urgency=low
 
