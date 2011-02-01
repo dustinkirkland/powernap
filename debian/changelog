@@ -1,7 +1,12 @@
 powernap (2.3) unreleased; urgency=low
 
+  [ Andres Rodriguez ]
   * config,sbin/powernapd,powernap/powernap.py: New option to decide if
     powernapd will WARN the user via a wall message. Default yes.
+
+  [ Dustin Kirkland ]
+  * man/powernap-action.8, man/powernap_calculator.1: fix lintian warnings,
+    escpae hyphens
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 28 Jan 2011 12:18:20 -0500
 
