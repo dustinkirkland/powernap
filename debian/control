@@ -15,37 +15,35 @@ Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
  pm-utils, powernap-common (= ${binary:Version})
 Recommends: ethtool
 Enhances: powerwake
-Description: run a defined action if not running some particular processes
- PowerNap will run an administrator-specified ACTION when none of a list of
- MONITORS have executed or had activity for some number of ABSENT_SECONDS,
- checking the monitors every INTERVAL_SECONDS.
+Description: reduce the power consumption of a system when inactive
+ PowerNap watches a series of configurable monitors.  When no activity
+ has occurred on any of these monitors for some specified time, PowerNap
+ deems the system inactive, and takes action, as configured by the system
+ administrator.
  .
- PowerNap can be used to bring a running system to a lower power state when
- none of a list of critical processes have run for some amount of time.  It
- can act as sort of a "screensaver" for servers, watching the process table
- for activity rather than the keyboard or mouse.
+ PowerNap can monitor:
+   * User Activity (Console, Keyboard, Mouse)
+   * System Activity (Load, Processes, Process IO)
+   * Network Activity (wake-on-lan, UDP ports, TCP ports)
  .
- For instance, PowerNap can automatically "pm-suspend" a system if no instance
- of "kvm" runs for some contiguous block of "300" seconds, checking the process
- table every "1" second.
+ Some of these are event-based, while others are poll-based.  PowerNap's
+ polling interval, INTERVAL_SECONDS, is configurable.
+ .
+ The required length of inactivity, ABSENT_SECONDS, is configurable.
+ . 
+ The action taken by PowerNap when the system is active, is configurable,
+ and might be one of pm-powersave, pm-suspend, pm-hibernate, poweroff,
+ or any executable script as chosen by the system administrator.
+ .
+ See /etc/powernap/config for all configurable options and defaults.
 
 Package: powernap-common
 Architecture: all
 XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0
-Description: run a defined action if not running some particular processes
- PowerNap will run an administrator-specified ACTION when none of a list of
- MONITORS have executed or had activity for some number of ABSENT_SECONDS,
- checking the monitors every INTERVAL_SECONDS.
- .
- PowerNap can be used to bring a running system to a lower power state when
- none of a list of critical processes have run for some amount of time.  It
- can act as sort of a "screensaver" for servers, watching the process table
- for activity rather than the keyboard or mouse.
- .
- For instance, PowerNap can automatically "pm-suspend" a system if no instance
- of "kvm" runs for some contiguous block of "300" seconds, checking the process
- table every "1" second.
+Description: common library files required by powernap
+ This package contains the common library files required as a runtime
+ dependency of powernap.
 
 Package: powerwake
 Architecture: all
