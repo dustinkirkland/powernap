@@ -78,6 +78,8 @@ def establish_lock():
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGQUIT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGIO, signal.SIG_IGN)
+        #signal.signal(signal.SIGIO, input_singal_handler)
         signal.signal(signal.SIGUSR1, take_action_handler)
 
 # Clean up lock file on termination signals
@@ -86,6 +88,11 @@ def signal_handler(signal, frame):
         os.remove(LOCK)
     debug(logging.INFO, "Stopping %s" % powernap.PKG)
     sys.exit(1)
+
+# Handler warns users when an USB Input device has been connected or
+# disconnected. This is only useful for [InputMonitor] to avoid errors.
+def input_signal_handler(signal, frame):
+    debug(logging.WARNING, "A monitored [InputMonitor] device has been disconnected or reconnected.")
 
 # Send a message to system users, that we're about to take an action,
 # and sleep for a grace period

@@ -11,8 +11,10 @@ powernap (2.3) unreleased; urgency=low
     - config: Enable.
     - powernap.py: Only try to initialize if "mouse" or "kbd" are connected
       by looking into /dev/input/by-id.
+  * powernapd: Add SIGIO handler. Ignores failure caused when disconnecting
+    a monitored USB InputDevice, that caused powernapd to stop running.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 31 Jan 2011 18:24:01 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 01 Feb 2011 12:30:36 -0500
 
 powernap (2.2-0ubuntu1) natty; urgency=low
 
