@@ -1,4 +1,4 @@
-powernap (2.3) unreleased; urgency=low
+powernap (2.3-0ubuntu1) natty; urgency=low
 
   [ Andres Rodriguez ]
   * config,sbin/powernapd,powernap/powernap.py: New option to decide if
@@ -20,7 +20,7 @@ powernap (2.3) unreleased; urgency=low
     escpae hyphens
   * debian/control: update package descriptions
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 01 Feb 2011 12:49:51 -0500
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 08 Feb 2011 23:10:40 -0600
 
 powernap (2.2-0ubuntu1) natty; urgency=low
 
