@@ -1,8 +1,8 @@
 powernap (2.4) unreleased; urgency=low
 
-  * UNRELEASED
+  * Fix wall message timestamp (LP: #718242)
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Tue, 08 Feb 2011 23:10:45 -0600
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 15 Feb 2011 19:32:57 -0500
 
 powernap (2.3-0ubuntu1) natty; urgency=low
 
