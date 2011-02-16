@@ -23,6 +23,7 @@ end script
 
 pre-stop script
 	powerwake-now || true
+	sleep 3
 end script
 
 exec /usr/sbin/powernapd

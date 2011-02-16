@@ -121,8 +121,8 @@ def take_recover_action():
 def take_recover_action_handler(signal, frame):
     global in_powersave_mode
     if powernap.ACTION_METHOD == 0 and in_powersave_mode:
-        in_powersave_mode = False
         take_recover_action()
+        in_powersave_mode = False
 
 # Zero the counters and take the action
 def take_action():
@@ -193,6 +193,10 @@ def powernapd_loop():
                 users_warned = True
             debug(logging.WARNING, "Entered into GRACE PERIOD. Action [%s] will be taken in [%d] seconds" % (powernap.ACTION, grace_seconds))
             grace_seconds -= powernap.INTERVAL_SECONDS
+            if grace_seconds == -1:
+                # Reset flags to original if powerwake finished GRACE PERIOD and ready to take action
+                grace_seconds = powernap.GRACE_SECONDS
+                users_warned = False
 
         # Determine if action needs to be taken
         if absent_monitors > 0 and absent_monitors == len(MONITORS):

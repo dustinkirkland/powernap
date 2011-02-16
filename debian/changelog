@@ -3,8 +3,14 @@ powernap (2.4) unreleased; urgency=low
   * Fix wall message timestamp (LP: #718242)
   * Add powerwake-now support. Sends signal to powernapd to wakeup
     powersave mode if the daemon is in powersave.
+  * debian/powernap.upstart: Add pre-stop.
+    - Issues 'powerwake-now' to wake up system if stopping while in powersave.
+    - Add 'sleep 3' to wait for recover action to take place before actually
+      stopping powernapd. Otherwise, it won't recover.
+  * bin/powernapd: Set flags back to initial values if GRACE PERIOD completed.
+    Ensures that flags have correct values if powerwake-now signal was received.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 16 Feb 2011 11:24:02 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 16 Feb 2011 12:26:14 -0500
 
 powernap (2.3-0ubuntu1) natty; urgency=low
 
