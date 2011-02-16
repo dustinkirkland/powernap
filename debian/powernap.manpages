@@ -1,5 +1,6 @@
 man/powernap.8
 man/powernapd.8
 man/powernap-now.8
+man/powerwake-now.8
 man/powernap-action.8
 man/powernap_calculator.1

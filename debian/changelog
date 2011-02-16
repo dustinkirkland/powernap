@@ -1,8 +1,10 @@
 powernap (2.4) unreleased; urgency=low
 
   * Fix wall message timestamp (LP: #718242)
+  * Add powerwake-now support. Sends signal to powernapd to wakeup
+    powersave mode if the daemon is in powersave.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 15 Feb 2011 19:32:57 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 16 Feb 2011 11:24:02 -0500
 
 powernap (2.3-0ubuntu1) natty; urgency=low
 

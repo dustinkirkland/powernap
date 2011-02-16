@@ -42,9 +42,10 @@ except:
     sys.exit(1)
 
 # Define globals
-global LOCK, CONFIG, MONITORS
+global LOCK, CONFIG, MONITORS, in_powersave_mode
 LOCK = "/var/run/%s.pid" % powernap.PKG
 LOG = "/var/log/%s.log" % powernap.PKG
+in_powersave_mode = False
 
 logging.basicConfig(filename=LOG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d_%H:%M:%S', level=logging.DEBUG,)
 
@@ -80,6 +81,7 @@ def establish_lock():
         signal.signal(signal.SIGIO, signal.SIG_IGN)
         #signal.signal(signal.SIGIO, input_singal_handler)
         signal.signal(signal.SIGUSR1, take_action_handler)
+        signal.signal(signal.SIGUSR2, take_recover_action_handler)
 
 # Clean up lock file on termination signals
 def signal_handler(signal, frame):
@@ -115,6 +117,13 @@ def take_recover_action():
     for monitor in MONITORS:
         monitor._absent_seconds = 0
 
+# Handler for asynchronous external signals
+def take_recover_action_handler(signal, frame):
+    global in_powersave_mode
+    if powernap.ACTION_METHOD == 0 and in_powersave_mode:
+        in_powersave_mode = False
+        take_recover_action()
+
 # Zero the counters and take the action
 def take_action():
     notify_authorities()
@@ -128,7 +137,7 @@ def take_action_handler(signal, frame):
     take_action()
 
 def powernapd_loop():
-
+    global in_powersave_mode
     # Starting the Monitors
     for monitor in MONITORS:
         debug(logging.DEBUG, "Starting [%s:%s]" % (monitor._type, monitor._name))
