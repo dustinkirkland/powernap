@@ -1,5 +1,6 @@
 powernap (2.4) unreleased; urgency=low
 
+  [ Andres Rodriguez ]
   * Fix wall message timestamp (LP: #718242)
   * Add powerwake-now support. Sends signal to powernapd to wakeup
     powersave mode if the daemon is in powersave.
@@ -9,6 +10,10 @@ powernap (2.4) unreleased; urgency=low
       stopping powernapd. Otherwise, it won't recover.
   * bin/powernapd: Set flags back to initial values if GRACE PERIOD completed.
     Ensures that flags have correct values if powerwake-now signal was received.
+
+  [ Dustin Kirkland ]
+  * sbin/powernapd: only display wall message if action is other than
+    powersave
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 16 Feb 2011 12:26:14 -0500
 
