@@ -186,7 +186,7 @@ def powernapd_loop():
         # GRACE PERIOD: Time between ABSENT_SECONDS and (ABSENT_SECONDS - GRACE_SECONDS)
         # If all monitors are in their own GRACE period
         if grace_monitors > 0 and grace_monitors == len(MONITORS):
-            if users_warned is False and powernap.ACTION != 0:
+            if users_warned is False and powernap.ACTION_METHOD != 0:
                 # Only display warn_users() wall message if action is something other than
 		# powersave, and only when initially entering to GRACE_PERIOD.
                 # If in GRACE_PERIOD but a warn_users() already issued, then ignore condition.
