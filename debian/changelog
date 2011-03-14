@@ -1,9 +1,10 @@
-powernap (2.5) unreleased; urgency=low
+powernap (2.5-0ubuntu1) natty; urgency=low
 
+  [ Andres Rodriguez ]
   * Add support to load confs from /etc/powernap/config.d. Added to leverage
     compatibility with other applications, such as Eucalytpus. (LP: #711587)
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 14 Mar 2011 16:55:19 -0400
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Mon, 14 Mar 2011 17:37:16 -0500
 
 powernap (2.4-0ubuntu1) natty; urgency=low
 
