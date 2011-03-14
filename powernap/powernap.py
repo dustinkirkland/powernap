@@ -36,6 +36,7 @@ class PowerNap:
         self.ACTION_METHOD = 0
         self.MONITORS = []
         self.WARN = False
+        # Load default config file (/etc/powernap/config)
         self.load_config_file()
 
     def load_config_file(self):
@@ -54,6 +55,28 @@ class PowerNap:
                 if monitor != self.PKG:
                     for items in cfg.items(monitor):
                         self.load_monitors_config(monitor, items)
+        except:
+            pass
+
+        # Load extra config files (/etc/powernap/config.d/*)
+        configd = "/etc/%s/config.d" % self.PKG
+        if os.path.exists(configd):
+            for config in os.listdir(configd):
+                self.load_configd_files("%s/%s" % (configd, config))
+
+    def load_configd_files(self, config_file):
+        cfg = ConfigParser.ConfigParser()
+        cfg.read(config_file)
+
+        try:
+            monitors_config = cfg.sections()
+            for monitor in monitors_config:
+                for items in cfg.items(monitor):
+                    for i in range(len(self.MONITORS)):
+                        if self.MONITORS[i]['monitor'] == monitor and self.MONITORS[i]['name'] == items[0]:
+                            self.MONITORS.pop(i)
+                            break
+                    self.load_monitors_config(monitor, items)
         except:
             pass
 
