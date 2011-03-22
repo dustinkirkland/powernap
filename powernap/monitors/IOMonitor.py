@@ -24,7 +24,10 @@ from logging import error, debug, info, warn, os
 # Monitor plugin
 #   looks for processes that have IO activity. Useful for some server
 #   processes that are always present in the process list even when idle
-def find_pids(regex):
+
+# Looks for the process regex in /proc/<PID>/cmdline to obtain its PID(s).
+# Optimal for processes that have a command line.
+def find_pids_cmdline(regex):
     ret = []
     for d in os.listdir('/proc'):
         try:
@@ -34,6 +37,24 @@ def find_pids(regex):
                 cmdline = fp.read()
                 fp.close()
                 if regex.search(cmdline):
+                    ret.append(int(d))
+        except:
+            pass
+    return ret
+
+# Looks for the process regex in the "Name:" filed of /proc/<PID>/status
+# to obtain its PID(s). Optimal for processes that do NOT have a command
+# line. (i.e. NFS daemon processes.)
+def find_pids_status(regex):
+    ret = []
+    for d in os.listdir('/proc'):
+        try:
+            path = '/proc/%s/status' % d
+            if os.path.isfile(path):
+                fp = open(path)
+                status = fp.readline()
+                fp.close()
+                if regex.search(status.split()[1]):
                     ret.append(int(d))
         except:
             pass
@@ -60,8 +81,12 @@ class IOMonitor ():
     # Check for activity
     def get_io_count ( self ):
 
-        # Get new PID list from parent
-        pids = find_pids(self._regex)
+        # Get new PID list from processes with command line.
+        pids = find_pids_cmdline(self._regex)
+        # Processes with no command line result on an empty PID list.
+        # if so, use alternate search method.
+        if not pids:
+            pids = find_pids_status(self._regex)
 
         # Get IO counts for all PIDs
         io_counts = {}

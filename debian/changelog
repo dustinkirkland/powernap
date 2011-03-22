@@ -1,8 +1,10 @@
 powernap (2.6) unreleased; urgency=low
 
-  * UNRELEASED
+  * debian/copyright: Update upstream authors and license years.
+  * powernap/monitors/IOMonitor.py: If processes do not have a command line,
+    search regex in the 'Name:' field of /proc/<PID>/status (LP: #735452)
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Mon, 14 Mar 2011 17:38:02 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 22 Mar 2011 18:51:31 -0400
 
 powernap (2.5-0ubuntu1) natty; urgency=low
 
