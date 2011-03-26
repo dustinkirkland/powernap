@@ -180,4 +180,5 @@ mouse = y
 #  sda = y
 #  sdb = n
 [DiskMonitor]
+#sda = y
 
