@@ -3,8 +3,12 @@ powernap (2.6) unreleased; urgency=low
   * debian/copyright: Update upstream authors and license years.
   * powernap/monitors/IOMonitor.py: If processes do not have a command line,
     search regex in the 'Name:' field of /proc/<PID>/status (LP: #735452)
+  * actions/cpu_frequency: Fix saving/restoring of wrong governor (LP: #743682)
+    Thanks to Mathieu Berard for the patch.
+    - Additionally, save 'ondemand' as default when acpi-support and ondemand
+      are run on boot to handle special case when running on battery.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 22 Mar 2011 18:51:31 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 28 Mar 2011 13:18:58 -0400
 
 powernap (2.5-0ubuntu1) natty; urgency=low
 

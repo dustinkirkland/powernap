@@ -30,12 +30,13 @@ if [ ! -f $RUNDIR ]; then
 	mkdir -p $RUNDIR
 fi
 
-# Saves the default governor into a temp file.
-# Later used to retrieve and set the default governor
-if [ ! -f $GOVERNOR ]; then
-	echo $full_power > $GOVERNOR
-else
-	full_power=`head -1 $GOVERNOR`
+# If governor is set to ondemand on boot, save as the default governor.
+# NOTE: Only for cases when Ubuntu machine is running on *battery* and
+# 'pm-powersave true' is executed on boot by S99acpi-support (power.sh),
+# and  before the governor is set to ondemand. Otherwise, it will save
+# 'performance' as the default governor.
+if [ -h /etc/rc3.d/S99acpi-support ] && [ -h /etc/rc3.d/S99ondemand ]; then
+	full_power="ondemand"
 fi
 
 set_cpu_governor() {
@@ -51,11 +52,19 @@ help() {
 
 case $1 in
 	true)
-		# Change governor to powersave
-		set_cpu_governor $save_power ;;
+		# Save current governor and change governor to powersave
+		if [ ! -f $GOVERNOR ]; then
+			echo $full_power > $GOVERNOR
+		fi
+		set_cpu_governor $save_power
+		;;
 	false)
-                # Change governor to ondemand
-		set_cpu_governor $full_power ;;
+		# Restore governor to default
+		if [ -f $GOVERNOR ]; then
+			full_power=`head -1 $GOVERNOR`
+			set_cpu_governor $full_power
+		fi
+		;;
 	help) help;;
 	*)
 		exit $NA ;;
