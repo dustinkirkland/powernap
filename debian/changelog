@@ -7,8 +7,11 @@ powernap (2.6) unreleased; urgency=low
     Thanks to Mathieu Berard for the patch.
     - Additionally, save 'ondemand' as default when acpi-support and ondemand
       are run on boot to handle special case when running on battery.
+  * debian/powernap.{preinst,postinst}: Add logic to handle the upgrade of
+    the config file as format has changed. (LP: #744588)
+    - install copy of config file in /usr/share/powernap to help with this.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 28 Mar 2011 13:18:58 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 28 Mar 2011 17:38:34 -0400
 
 powernap (2.5-0ubuntu1) natty; urgency=low
 

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+# Backup old confile
+if [ -n "$2" ] && dpkg --compare-versions "$2" lt 2.0; then
+	if [ -f /etc/powernap/config ]; then
+		if md5sum /etc/powernap/config | grep -qs def76ff408c21dc74683a05d7c5fcc5a; then
+			true
+		else
+			mv -f /etc/powernap/config /etc/powernap/config.old
+			echo "PowerNap: The configuration format has changed"
+			echo "Powernap: Moved /etc/powernap/config to /etc/powernap/config.old"
+			echo "PowerNap: You may need to merge your customizations into /etc/powernap/config"
+		fi
+	fi
+fi
+
+#DEBHELPER#
+
+exit 0

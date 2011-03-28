@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+# Unconditionally overwrite config file, if upgrading from before 2.0 (syntax changed)
+if [ -n "$2" ] && dpkg --compare-versions "$2" lt 2.0; then
+	cat /usr/share/powernap/config > /etc/powernap/config
+fi
+
+#DEBHELPER#
+
+exit 0
