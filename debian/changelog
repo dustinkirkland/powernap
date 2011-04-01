@@ -1,5 +1,6 @@
-powernap (2.6) unreleased; urgency=low
+powernap (2.6-0ubuntu1) natty; urgency=low
 
+  [ Andres Rodriguez ]
   * debian/copyright: Update upstream authors and license years.
   * powernap/monitors/IOMonitor.py: If processes do not have a command line,
     search regex in the 'Name:' field of /proc/<PID>/status (LP: #735452)
@@ -11,7 +12,7 @@ powernap (2.6) unreleased; urgency=low
     the config file as format has changed. (LP: #744588)
     - install copy of config file in /usr/share/powernap to help with this.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 28 Mar 2011 17:38:34 -0400
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 01 Apr 2011 17:21:48 -0500
 
 powernap (2.5-0ubuntu1) natty; urgency=low
 
