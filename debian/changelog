@@ -4,7 +4,11 @@ powernap (2.7) unreleased; urgency=low
   * DiskMonitor: Tracks disks activity by monitoring its state. If
     "standby/sleeping" they are assumed to be inactive. (LP: #738764).
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 19 Apr 2011 14:30:35 -0400
+  [ Mathieu Bérard ]
+  * actions/kms_powermode: Add action method to enable power management for
+    radeon kms driver. Should be removed when applied upstream or pm-utils.
+
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 19 Apr 2011 14:58:53 -0400
 
 powernap (2.6-0ubuntu1) natty; urgency=low
 
