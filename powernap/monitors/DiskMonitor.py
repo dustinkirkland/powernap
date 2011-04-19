@@ -1,6 +1,6 @@
 #    powernapd plugin - Monitors disk power state
 #
-#    Copyright (C) 2010, 2011 Canonical Ltd.
+#    Copyright (C) 2011 Jim Heck.
 #
 #    Authors: Jim Heck <pinball.rules@gmail.com>
 #
