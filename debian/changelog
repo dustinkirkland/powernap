@@ -1,8 +1,10 @@
 powernap (2.7) unreleased; urgency=low
 
-  * UNRELEASED
+  [ Jim Heck ]
+  * DiskMonitor: Tracks disks activity by monitoring its state. If
+    "standby/sleeping" they are assumed to be inactive. (LP: #738764).
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 01 Apr 2011 17:21:53 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 19 Apr 2011 14:30:35 -0400
 
 powernap (2.6-0ubuntu1) natty; urgency=low
 

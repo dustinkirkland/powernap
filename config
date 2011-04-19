@@ -165,3 +165,20 @@ threshold = n
 [InputMonitor]
 keyboard = y
 mouse = y
+
+# The [DiskMonitor] section lists the disk devices for which to track
+# standby/sleep status.  If any of the devices are active/idle the
+# system will be deemed 'active' and will not powernap. Generally useful
+# for monitoring data drives (e.g. NAS), but will not typically work to
+# monitor the root drive. Note also that this plugin only reacts to the
+# state of the drive and does not modify the behavior of the drive
+# directly. Therefore it only makes sense to monitor a drive that has
+# already been configured to standby or sleep.  
+# To disable checking specific drives, set them to "n" or "no",
+# or simply comment them.
+# Examples:
+#  sda = y
+#  sdb = n
+[DiskMonitor]
+#sda = y
+
