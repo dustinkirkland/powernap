@@ -134,7 +134,10 @@ def take_action():
 
 # Handler for asynchronous external signals
 def take_action_handler(signal, frame):
+    global in_powersave_mode
     take_action()
+    if powernap.ACTION_METHOD == 0:
+        in_powersave_mode = True
 
 def powernapd_loop():
     global in_powersave_mode

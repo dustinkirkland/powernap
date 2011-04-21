@@ -8,7 +8,11 @@ powernap (2.7) unreleased; urgency=low
   * actions/kms_powermode: Add action method to enable power management for
     radeon kms driver. Should be removed when applied upstream or pm-utils.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 19 Apr 2011 14:58:53 -0400
+  [ Andres Rodriguez ]
+  * sbin/powernapd: Take recover action when entered to powersave with
+    powernap-now (LP: #768598)
+
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 21 Apr 2011 17:05:37 -0400
 
 powernap (2.6-0ubuntu1) natty; urgency=low
 
