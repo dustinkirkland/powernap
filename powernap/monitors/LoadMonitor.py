@@ -16,7 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, re, commands
+import os, multiprocessing
 from logging import error, debug, info, warn
 
 class LoadMonitor():
@@ -25,18 +25,15 @@ class LoadMonitor():
     def __init__(self, config):
         self._type = config['monitor']
         self._name = config['name']
-        if config['threshold'] == "n":
-            self._threshold = commands.getoutput("getconf _NPROCESSORS_ONLN")
-        else:
-            self._threshold = config['threshold']
+        self._threshold = config['threshold']
         self._absent_seconds = 0
 
     # Check system load
     def active(self):
-        f = open("/proc/loadavg")
-        l = f.read().split()
-        f.close()
-        if l[0] > self._threshold:
+        t = self._threshold
+        if t == "n":
+            t = multiprocessing.cpu_count()
+        if os.getloadavg()[0] > t:
 	    return True
 	return False
 

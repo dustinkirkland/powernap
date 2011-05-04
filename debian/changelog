@@ -12,6 +12,9 @@ powernap (2.7) unreleased; urgency=low
   * sbin/powernapd: Take recover action when entered to powersave with
     powernap-now (LP: #768598)
 
+  [ Dustin Kirkland ]
+  * powernap/monitors/LoadMonitor.py: scale monitors correctly, LP: #777361
+
  -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 21 Apr 2011 17:05:37 -0400
 
 powernap (2.6-0ubuntu1) natty; urgency=low
