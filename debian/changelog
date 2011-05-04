@@ -1,4 +1,4 @@
-powernap (2.7) unreleased; urgency=low
+powernap (2.7-0ubuntu1) oneiric; urgency=low
 
   [ Jim Heck ]
   * DiskMonitor: Tracks disks activity by monitoring its state. If
@@ -15,7 +15,7 @@ powernap (2.7) unreleased; urgency=low
   [ Dustin Kirkland ]
   * powernap/monitors/LoadMonitor.py: scale monitors correctly, LP: #777361
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 21 Apr 2011 17:05:37 -0400
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 04 May 2011 14:44:50 -0500
 
 powernap (2.6-0ubuntu1) natty; urgency=low
 
