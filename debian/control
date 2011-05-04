@@ -3,14 +3,13 @@ Section: admin
 Priority: optional
 Maintainer: Dustin Kirkland <kirkland@ubuntu.com>
 Standards-Version: 3.9.1
-Build-Depends: debhelper (>= 6), gettext-base, python-central (>= 0.5), python
+Build-Depends: debhelper (>= 7), gettext-base, python (>= 2.6.6-3~)
 XS-Python-Version: current
 Homepage: http://launchpad.net/powernap
 Vcs-Bzr: http://bazaar.launchpad.net/~kirkland/powernap/trunk
 
 Package: powernap
 Architecture: all
-XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
  pm-utils, powernap-common (= ${binary:Version})
 Recommends: ethtool
@@ -39,7 +38,6 @@ Description: reduce the power consumption of a system when inactive
 
 Package: powernap-common
 Architecture: all
-XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0
 Description: common library files required by powernap
  This package contains the common library files required as a runtime
@@ -47,7 +45,6 @@ Description: common library files required by powernap
 
 Package: powerwake
 Architecture: all
-XB-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0
 Enhances: powernap
 Description: remotely wake a napping system

@@ -1,8 +1,9 @@
 powernap (2.8) unreleased; urgency=low
 
-  * UNRELEASED
+  * Switch to dpkg-source 3.0 (quilt) format
+  * Switch to dh_python2 instead of dh_pycentral
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Wed, 04 May 2011 14:45:32 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 04 May 2011 16:25:48 -0400
 
 powernap (2.7-0ubuntu1) oneiric; urgency=low
 
