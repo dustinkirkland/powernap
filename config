@@ -68,6 +68,32 @@ WARN = y
 DEBUG = 0
 
 ############################################################################
+####                        STAGE2 ACTION                               ####
+############################################################################
+[powernap-stage2]
+# Number of seconds that all monitors must have no activity or must be absent
+# while running in PowerSave mode to perform the STAGE2_ACTION_METHOD.
+# The default value is to be disabled by default. If you wish to enable the
+# Second Stage Action method, set the STAGE2_ABSENT_SECONDS and ensure that
+# STAGE2_ACTION_METHOD is set correctly.
+# Example:
+#   STAGE2_ABSENT_SECONDS = 500
+STAGE2_ABSENT_SECONDS = 0
+
+# The STAGE2_ACTION_METHOD variable determines what action should be taken
+# after a period on inactivity while under PowerSave Mode (See ACTION_METHOD
+# above).
+# The possible actions are:
+# 1 - suspend
+# 2 - hibernate
+# 3 - poweroff
+# 4 - best-effort
+# The default mode of operation is best-effort. This method will try to 
+# user-defined script  at "/etc/powernap/action", or suspend, hibernate, 
+# or poweroff the machine.
+STAGE2_ACTION_METHOD = 4
+
+############################################################################
 ####                          MONITORS                                  ####
 ############################################################################
 

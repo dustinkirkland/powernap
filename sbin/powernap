@@ -26,6 +26,7 @@
 
 
 PKG="powernap"
+ACTION_METHOD="$1"
 
 # Use the specified action, if configured
 # Otherwise, use the best available, supported sleep state

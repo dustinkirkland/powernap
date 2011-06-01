@@ -30,16 +30,20 @@ class PowerNap:
         self.ACTION = "/usr/sbin/powernap"
         self.RECOVER_ACTION = "/usr/sbin/pm-powersave false"
         self.ABSENT_SECONDS = sys.maxint
+        self.STAGE2_ABSENT_SECONDS = sys.maxint
         self.INTERVAL_SECONDS = int(1)
         self.GRACE_SECONDS = int(60)
         self.DEBUG = int(0)
         self.ACTION_METHOD = 0
+        self.STAGE2_ACTION_METHOD = 4
         self.MONITORS = []
         self.WARN = False
+        self.stage2_action_enabled = False
         # Load default config file (/etc/powernap/config)
         self.load_config_file()
 
     def load_config_file(self):
+        stage2_section = "%s-stage2" % self.PKG
         cfg = ConfigParser.ConfigParser()
         cfg.read(self.CONFIG)
 
@@ -49,10 +53,14 @@ class PowerNap:
             for items in defaults:
                 self.set_default_values(items[0], items[1])
 
+            stage2 = cfg.items(stage2_section)
+            for items in stage2:
+                self.set_stage2_values(items[0], items[1])
+
             # Load items on each monitor
             monitors_config = cfg.sections()
             for monitor in monitors_config:
-                if monitor != self.PKG:
+                if monitor not in [self.PKG, stage2_section]:
                     for items in cfg.items(monitor):
                         self.load_monitors_config(monitor, items)
         except:
@@ -96,6 +104,14 @@ class PowerNap:
         if var == "warn":
             if value == "y" or value == "yes":
                 self.WARN = True
+
+    def set_stage2_values(self, var, value):
+        if var == "stage2_action_method":
+            self.STAGE2_ACTION_METHOD = eval(value)
+        if var == "stage2_absent_seconds":
+            self.STAGE2_ABSENT_SECONDS = eval(value)
+            if self.STAGE2_ABSENT_SECONDS > 0:
+                self.stage2_action_enabled = True
 
     def usb_input_available(self, event):
         regex = re.compile(event)
