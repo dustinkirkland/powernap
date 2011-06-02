@@ -1,3 +1,9 @@
+powernap (2.10) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jun 2011 17:43:27 -0400
+
 powernap (2.9-0ubuntu1) oneiric; urgency=low
 
   * sbin/powernap, sbin/powernapd:
