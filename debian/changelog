@@ -1,4 +1,4 @@
-powernap (2.8) unreleased; urgency=low
+powernap (2.8-0ubuntu1) oneiric; urgency=low
 
   [ Andres Rodriguez ]
   * Switch to dpkg-source 3.0 (quilt) format
@@ -14,7 +14,7 @@ powernap (2.8) unreleased; urgency=low
   * debian/source/format, === removed directory debian/source:
     - drop these for now, as they're breaking the release scripts
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 01 Jun 2011 12:32:05 -0400
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jun 2011 16:51:20 -0400
 
 powernap (2.7-0ubuntu1) oneiric; urgency=low
 
