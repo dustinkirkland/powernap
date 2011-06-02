@@ -116,6 +116,7 @@ def take_recover_action():
     debug(logging.DEBUG, "Reseting counters after taking recover action")
     for monitor in MONITORS:
         monitor._absent_seconds = 0
+    os.unlink("/var/run/powernap.state")
 
 # Handler for asynchronous external signals
 def take_recover_action_handler(signal, frame):

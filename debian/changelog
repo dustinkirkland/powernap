@@ -1,6 +1,7 @@
 powernap (2.9) unreleased; urgency=low
 
-  * UNRELEASED
+  * sbin/powernap, sbin/powernapd:
+    - add an indicator to show when powernap is engaged, remove after waking
 
  -- Dustin Kirkland <kirkland@ubuntu.com>  Thu, 02 Jun 2011 16:51:27 -0400
 

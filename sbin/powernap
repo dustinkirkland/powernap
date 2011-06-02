@@ -42,6 +42,9 @@ best_effort() {
 	fi
 }
 
+# Raise the flag
+echo "$ACTION_METHOD" > /var/run/powernap.state
+
 case $ACTION_METHOD in
 	0)
 		exec /usr/sbin/pm-powersave true
