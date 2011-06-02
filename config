@@ -88,8 +88,8 @@ STAGE2_ABSENT_SECONDS = 0
 # 2 - hibernate
 # 3 - poweroff
 # 4 - best-effort
-# The default mode of operation is best-effort. This method will try to 
-# user-defined script  at "/etc/powernap/action", or suspend, hibernate, 
+# The default mode of operation is best-effort. This method will try to
+# user-defined script  at "/etc/powernap/action", or suspend, hibernate,
 # or poweroff the machine.
 STAGE2_ACTION_METHOD = 4
 

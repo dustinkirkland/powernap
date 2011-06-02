@@ -1,5 +1,6 @@
 powernap (2.8) unreleased; urgency=low
 
+  [ Andres Rodriguez ]
   * Switch to dpkg-source 3.0 (quilt) format
   * Switch to dh_python2 instead of dh_pycentral
   * sbin/powernap: ACTION_METHOD is now passed as an argument.
@@ -7,6 +8,11 @@ powernap (2.8) unreleased; urgency=low
     - config: Add config options.
     - powernap/powernap.py: Add loading of config values.
     - sbin/powernapd: Add logic to handle second stage action.
+
+  [ Dustin Kirkland ]
+  * config: remove trailing whitespace
+  * debian/source/format, === removed directory debian/source:
+    - drop these for now, as they're breaking the release scripts
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 01 Jun 2011 12:32:05 -0400
 
