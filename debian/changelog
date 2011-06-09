@@ -4,7 +4,7 @@ powernap (2.10) unreleased; urgency=low
     - powernap/monitors/TCPMonitor.py: Add support.
     - powernap/powernap.py: Ensure that ports are now passed as strings.
     - config: Update to reflect new feature.
-  * debian/control: 
+  * debian/control:
     - Bump Build-Depends on debhelper.
     - Change python supported version.
     - Update Bzr-VCS to current.
