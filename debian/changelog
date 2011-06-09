@@ -1,3 +1,9 @@
+powernap (2.11) unreleased; urgency=low
+
+  * UNRELEASED
+
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 09 Jun 2011 16:43:03 -0400
+
 powernap (2.10-0ubuntu1) oneiric; urgency=low
 
   * Add support for port ranges to TCPMonitor (LP: #760729)
