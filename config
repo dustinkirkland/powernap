@@ -148,12 +148,14 @@ ptmx = y
 threshold = n
 
 # The [TCPMonitor] section lists all the TCP ports on which to watch for
-# established connections using netstat(8).
+# established connections using netstat(8). It supports both, single TCP
+# as well as port ranges.
 # There is no default TCP Monitor.
 # Examples:
 #  ssh = 22
 #  http = 80
 #  https = 443
+#  other = 64500-65000
 [TCPMonitor]
 #ssh = 22
 

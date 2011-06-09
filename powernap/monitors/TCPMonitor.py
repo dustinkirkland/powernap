@@ -20,11 +20,12 @@ import os, re, commands
 from logging import error, debug, info, warn
 
 # True if an network connection matches 
-def find_connection(netstat, regex):
-    for str in netstat:
-        if regex.search(str):
-            return 1
-    return 0
+def find_connection(netstat, regexes):
+    for regex in regexes:
+        for str in netstat:
+            if regex.search(str):
+                return True
+    return False
 
 class TCPMonitor():
 
@@ -32,13 +33,17 @@ class TCPMonitor():
     def __init__(self, config):
         self._type = config['monitor']
         self._name = config['name']
-        self._regex = re.compile("^tcp\W.*:%s\W.*ESTABLISHED$" % config['port'])
         self._absent_seconds = 0
+        self._regexes = []
+        port_start = int(config['port'].split("-")[0].strip())
+        port_end = int(config['port'].split("-")[-1].strip()) + 1 # Add one to use correctly in range
+        for port in range(port_start, port_end):
+            self._regexes.append(re.compile("^tcp\W.*:%s\W.*ESTABLISHED$" % port))
 
     # Check for connections
     def active(self):
         ps = commands.getoutput("netstat -nt").splitlines()
-        if find_connection(ps, self._regex):
+        if find_connection(ps, self._regexes):
 		return True
 	return False
 
