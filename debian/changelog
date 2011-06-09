@@ -1,4 +1,4 @@
-powernap (2.10) unreleased; urgency=low
+powernap (2.10-0ubuntu1) oneiric; urgency=low
 
   * Add support for port ranges to TCPMonitor (LP: #760729)
     - powernap/monitors/TCPMonitor.py: Add support.
@@ -10,7 +10,7 @@ powernap (2.10) unreleased; urgency=low
     - Update Bzr-VCS to current.
     - Set Dustin as Original maintainer and set myself as maintainer.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 09 Jun 2011 14:46:58 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 09 Jun 2011 16:42:59 -0400
 
 powernap (2.9-0ubuntu1) oneiric; urgency=low
 
