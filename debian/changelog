@@ -1,8 +1,11 @@
 powernap (2.12) unreleased; urgency=low
 
-  * UNRELEASED
+  * Add Initial PowerNap (powerwaked) Server Capabilities:
+    - powerwake/*: Add module and Initial ARPMonitor (LP: #737479).
+    - powerwaked.conf: Add config file.
+    - powerwaked: Add daemon.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 20 Jun 2011 18:08:12 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 20 Jun 2011 18:26:37 -0400
 
 powernap (2.11-0ubuntu1) oneiric; urgency=low
 
