@@ -21,7 +21,6 @@
 import ConfigParser, sys, re, os
 from monitors import ARPMonitor 
 
-
 class PowerWake:
 
     def __init__(self):
@@ -64,7 +63,7 @@ class PowerWake:
 
     def load_monitors_config(self, monitor, items):
         if monitor == "ARPMonitor" and (items[1] == "y" or items[1] == "yes"):
-            self.MONITORS.append({"monitor":monitor, "cache":self.get_arp_cache()})
+            self.MONITORS.append({"monitor":monitor, "cache":self.get_monitored_hosts(monitor.lower())})
 
     def get_monitors(self):
         monitor = []
@@ -75,10 +74,9 @@ class PowerWake:
 
         return monitor
 
-    def get_arp_cache(self):
+    def get_monitored_hosts(self, monitor):
         host_to_mac = {}
-        PKG = 'powerwake'
-        for file in ["/var/cache/%s/ethers" % PKG, "/etc/ethers"]:
+        for file in ["/etc/powernap/powerwaked.%s.ethers" % monitor]:
             if os.path.exists(file):
                 f = open(file, 'r')
                 for i in f.readlines():
@@ -89,4 +87,93 @@ class PowerWake:
                         pass
                 f.close()
         return host_to_mac
-        
+
+    def set_monitored_hosts(self, host_to_mac, monitor):
+        path = ["/etc/powernap/powerwaked.%s.ethers" % monitor]
+        for file in path:
+            if not os.path.exists(file):
+                f = open(file, 'a')
+                f.close()
+        for file in ["/etc/powernap/powerwaked.%s.ethers" % monitor]:
+            if os.access(file, os.W_OK):
+                f = open(file, 'w')
+                for h in host_to_mac:
+                    if self.is_mac(host_to_mac[h]):
+                        f.write("%s %s\n" % (host_to_mac[h], h))
+                f.close()
+
+    def get_mac_or_ip_from_arp(self, host):
+        mac_or_ip = None
+        for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):                                           
+            (m, h) = i.split()
+            if self.is_mac(host) and host == m:
+                mac_or_ip = h
+                break
+            if self.is_ip(host) and host == h:
+                mac_or_ip = m
+                break
+        #if not mac_or_ip:
+        #    raise BaseException("Error")
+        return mac_or_ip
+
+    def is_ip(self, ip):
+        r1 = re.compile('^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+        if r1.match(ip):
+            return True
+        else:
+            return False
+
+    def is_mac(self, mac):
+        r1 = re.compile('^[0-9a-fA-F]{12}$')
+        r2 = re.compile('^[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}.[0-9a-fA-F]{2}$')
+        if r1.match(mac) or r2.match(mac):
+            return 1
+        else:
+            return 0
+
+#### --------------------------------- from powerwake --------------------------------####
+
+    # Source the cached, known arp entries
+    def get_arp_cache(self):
+        host_to_mac = {}
+        #for file in ["/var/cache/%s/ethers" % self.PKG, "/etc/ethers", "%s/.cache/ethers" % HOME]:
+        for file in ["/var/cache/%s/ethers" % self.PKG, "/etc/ethers"]:
+            if os.path.exists(file):
+                f = open(file, 'r')
+                for i in f.readlines():
+                    try:
+                        (m, h) = i.split()
+                        host_to_mac[h] = m
+                    except:
+                        pass
+                f.close()
+        return host_to_mac
+
+    # Source the current, working arp table
+    def get_arp_current(self, host_to_mac):
+        # Load hostnames
+        for i in os.popen("/usr/sbin/arp | awk '{print $3 \" \"  $1}'"):
+            (m, h) = i.split()
+            if is_mac(m):
+                host_to_mac[h] = m
+        # Load ip addresses
+        for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):
+            (m, h) = i.split()
+            if is_mac(m):
+                host_to_mac[h] = m
+        return host_to_mac
+
+    def write_arp_cache(self, host_to_mac):
+        if not os.access("%s/.cache/" % HOME, os.W_OK):
+            return
+        if not os.path.exists("%s/.cache/" % HOME):
+            os.makedirs("%s/.cache/" % HOME)
+        f = open("%s/.cache/ethers" % HOME, 'a')
+        f.close()
+        for file in ["/var/cache/%s/ethers" % PKG, "%s/.cache/ethers" % HOME]:
+            if os.access(file, os.W_OK):
+                f = open(file, 'w')
+                for h in host_to_mac:
+                    if self.is_mac(host_to_mac[h]):
+                        f.write("%s %s\n" % (host_to_mac[h], h))
+                f.close()
