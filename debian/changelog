@@ -6,7 +6,7 @@ powernap (2.12) unreleased; urgency=low
     - powerwaked: Add daemon.
     - powerwake-monitor: Add tool to add, delete, list, etc.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 30 Jun 2011 17:19:42 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 01 Jul 2011 12:21:51 -0400
 
 powernap (2.11-0ubuntu1) oneiric; urgency=low
 

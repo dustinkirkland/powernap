@@ -28,11 +28,11 @@ if not os.geteuid()==0:
     sys.exit("This utility may only be run by the root user.")
 
 def error(error):
-    print "ERROR: %s" % error
+    print " ERROR: %s" % error
     sys.exit(1)
 
 def info(info):
-    print "INFO: %s" % info
+    print " INFO: %s" % info
 
 # Add IP to monitor
 def add_host_to_monitor(powerwake, host, macaddr, monitor):
@@ -40,10 +40,12 @@ def add_host_to_monitor(powerwake, host, macaddr, monitor):
     host_to_mac = powerwake.get_monitored_hosts(monitor.lower())
     for ip, mac in host_to_mac.iteritems():
         if host == ip:
-            print "update ip %s" % host
-            # update
-            # if IP provided 
-            #get_arp_curren
+            info("Updating information for [%s] in [%s] monitor" % (host, monitor))
+            mac = powerwake.get_mac_or_ip_from_arp(host)
+            if not mac:
+                error("Could not automatically determine MAC address for [%s]. Update cancelled." % host)
+            host_to_mac[host] = mac
+            powerwake.set_monitored_hosts(host_to_mac, monitor)
             return
 
     # add new
@@ -51,7 +53,7 @@ def add_host_to_monitor(powerwake, host, macaddr, monitor):
     if powerwake.is_ip(host) and macaddr is None:
         mac = powerwake.get_mac_or_ip_from_arp(host)
         if not mac:
-            error("Could not automatically determine MAC Address for %s. Please specify MAC address." % ip)
+            error("Could not automatically determine MAC Address for [%s]. Please specify MAC address." % ip)
         # if mac given, look for ip
         host_to_mac[host] = mac
 
@@ -59,15 +61,24 @@ def add_host_to_monitor(powerwake, host, macaddr, monitor):
     if powerwake.is_mac(host) and macaddr is None:
         ip = get_ip_from_mac()
         if not ip:
-            error("Could not automatically determine IP address for %s. Please specify IP address." % mac)
+            error("Could not automatically determine IP address for [%s]. Please specify IP address." % mac)
         host_to_mac[ip] = mac
 
     # 3. If both MAC and IP are specified.
     if host and macaddr:
-        info("Adding %s - %s to monitored hosts" % (host, macaddr))
+        info("Adding [%s - %s] to monitored hosts fro [%s] monitor" % (host, macaddr, monitor))
         host_to_mac[host] = macaddr
 
     powerwake.set_monitored_hosts(host_to_mac, monitor)
+
+def delete_host_from_monitor(powerwake, host, monitor):
+    host_to_mac = powerwake.get_monitored_hosts(monitor.lower())
+    for ip, mac in host_to_mac.iteritems():
+        if host == ip or host == mac:
+            info("Deleting %s from [%s] monitor" % (ip, monitor))
+            del host_to_mac[ip]
+            powerwake.set_monitored_hosts(host_to_mac, monitor)
+            break
  
 # List IP's to monitor
 def list_monitored_hosts(powerwake, monitor):
@@ -79,14 +90,10 @@ def list_monitored_hosts(powerwake, monitor):
     except:
         error("Could not obtain monitored hosts")
 
-def list_monitored_hosts_per_monitor(powerwake, monitor):
-    print powerwake.get_monitored_hosts_per_monitor(monitor)
-# TODO:
-# Monitored hosts can be 1. Status Monitored. 2. Monitor Monitored.
-## - List all monitored hosts (status monitored)
-## - List MONITOR monitored hosts
-## - Add monitored hosts
-## - Add MONITORE monitored hosts
+def list_available_monitors(powerwake):
+    print " Listing available PowerWaked Monitors\n"
+    for monitor in powerwake.MONITORS:
+        print " [enabled] %+20s" % monitor['monitor']
 
 if __name__ == '__main__':
     powerwake = powerwake.PowerWake()
@@ -106,12 +113,12 @@ if __name__ == '__main__':
                       help='Add host to Monitor', metavar='IP')
     parser.add_option('-d', '--del', action='store', type='string', dest='delete',
                       help='Delete monitored host', metavar='IP')
-    parser.add_option('-m', '--mac', action='store', type='string', dest='mac',
+    parser.add_option('-c', '--mac', action='store', type='string', dest='mac',
                       help='specify MAC address', metavar='MAC', default=None)
-    parser.add_option('-n', '--monitor', action='store', type='string', dest='monitor',
+    parser.add_option('-m', '--monitor', action='store', type='string', dest='monitor',
                       help='specify monitor to add host', metavar='MONITOR', default='general')
     parser.add_option('-l', '--list', action='store_true', dest='list', help='List monitored hosts')
-    parser.add_option('-o', '--list-monitors', action='store_true', dest='list_monitors', help='List monitored hosts')
+    parser.add_option('-o', '--list-monitors', action='store_true', dest='list_monitors', help='List enabled monitors')
 
     (opt, args) = parser.parse_args()
 
@@ -133,10 +140,15 @@ if __name__ == '__main__':
 
     if opt.delete:
         hasOptions = True
+        delete_host_from_monitor(powerwake, opt.delete, opt.monitor)
 
     if opt.list:
         hasOptions = True
         list_monitored_hosts(powerwake, opt.monitor)
+
+    if opt.list_monitors:
+        hasOptions = True
+        list_available_monitors(powerwake)
 
     if not hasOptions:
         print parser.get_usage()

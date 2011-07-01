@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import ConfigParser, sys, re, os
-from monitors import ARPMonitor 
+#from monitors import ARPMonitor 
 
 class PowerWake:
 
@@ -66,6 +66,7 @@ class PowerWake:
             self.MONITORS.append({"monitor":monitor, "cache":self.get_monitored_hosts(monitor.lower())})
 
     def get_monitors(self):
+        from monitors import ARPMonitor 
         monitor = []
         for config in self.MONITORS:
             if config["monitor"] == "ARPMonitor":

@@ -21,6 +21,7 @@
 import os, threading
 from logging import error, debug, info, warn
 from scapy.all import *
+#from scapy.all import sniff, ARP, Ether, IP, UDP, Raw, sendp
 
 # Converts the MAC to some weird format
 def mac_to_string(mac):
