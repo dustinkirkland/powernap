@@ -1,0 +1,4 @@
+sbin/powerwaked usr/sbin
+sbin/powerwake-monitor usr/sbin
+powerwaked.conf usr/share/powernap
+powerwaked.conf etc/powernap

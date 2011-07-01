@@ -107,10 +107,10 @@ class PowerWake:
         mac_or_ip = None
         for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):                                           
             (m, h) = i.split()
-            if self.is_mac(host) and host == m:
+            if self.is_mac(host) and host == m and self.is_ip(h):
                 mac_or_ip = h
                 break
-            if self.is_ip(host) and host == h:
+            if self.is_ip(host) and host == h and self.is_mac(m):
                 mac_or_ip = m
                 break
         #if not mac_or_ip:

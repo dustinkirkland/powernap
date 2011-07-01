@@ -5,8 +5,12 @@ powernap (2.12) unreleased; urgency=low
     - powerwaked.conf: Add config file.
     - powerwaked: Add daemon.
     - powerwake-monitor: Add tool to add, delete, list, etc.
+  * Package powernap-server:
+    - debian/control: Add powerwaked, powerwake-common, powernap-server
+    - debian/{powerwaked,powerwake-common}.install: Add
+    - debian/powerwaked.upstart: Add upstart job.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 01 Jul 2011 12:21:51 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 01 Jul 2011 16:06:51 -0400
 
 powernap (2.11-0ubuntu1) oneiric; urgency=low
 

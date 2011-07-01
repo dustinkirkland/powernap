@@ -54,3 +54,36 @@ Description: remotely wake a napping system
  Currently, wake-on-lan is the only supported mechanism.  It also includes
  some handy caching of MAC addresses, such that systems can be awakened by
  hostname or ip address, in addition to MAC address.
+
+Package: powerwaked
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
+ powerwake-common (= ${binary:Version})
+Enhances: powerwake
+Description: remotely wake a napping system - Server Daemon
+ PowerWake Server is a mechanism to remotely monitor and wake up systems
+ based on manual intervation, or automatic intervention based on a set of
+ monitors.
+ .
+ PowerWake Server can monitor:
+   * PowerNap status (online, powersave, offline)
+   * Network activity (ARP activity for a given set of hosts)
+ .
+ When activity is received, the monitors will automatically try to wake up
+ if it is in powersave or offline mode.
+
+Package: powerwake-common
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
+ python-scapy
+Description: common library files required by powerwake
+ This package contains the common library files required as a runtime
+ dependency of powerwake-server.
+
+Package: powernap-server
+Architecture: all
+Depends: ${misc:Depends},
+ powerwaked, powerwake
+Description: PowerNap Power Services suite
+ This virtual package installs the dependencies necessary to remotely
+ monitor and manage PowerNap client and server services.
