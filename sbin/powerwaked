@@ -118,7 +118,9 @@ def take_action_handler(signal, frame):
 def powerwaked_loop():
     # Starting the Monitors
     for monitor in MONITORS:
-        debug(logging.DEBUG, "Starting [%s:%s]" % (monitor._type, monitor._name))
+        debug(logging.DEBUG, "Starting [%s] Monitoring" % monitor._type)
+        for ip, mac in monitor._arp_cache.iteritems():
+            debug(logging.DEBUG, "  Monitoring %s - %s" % (ip, mac))
         monitor.start()
 
     users_warned = False
@@ -178,7 +180,7 @@ def daemonize (stdin="/dev/null", stdout="/var/log/%s.log" % powerwake.PKG, stde
 if __name__ == '__main__':
     # Ensure that only one instance runs
     establish_lock()
-    #daemonize()
+    daemonize()
     try:
         # Run the main powernapd loop
         MONITORS = powerwake.get_monitors()
