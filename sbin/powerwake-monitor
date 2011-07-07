@@ -59,7 +59,7 @@ def add_host_to_monitor(powerwake, host, macaddr, monitor):
 
     # 2. If only MAC is specified, try to aumatically deftermine IP
     if powerwake.is_mac(host) and macaddr is None:
-        ip = get_ip_from_mac()
+        ip = powerewake.get_mac_or_ip_from_arp()
         if not ip:
             error("Could not automatically determine IP address for [%s]. Please specify IP address." % host)
         host_to_mac[ip] = host
@@ -104,9 +104,10 @@ if __name__ == '__main__':
     %prog is a utility that allows to enable and disable available PowerNap\n\
     actions.\n\
     \n\
-    %prog --add [IP] [MAC]\n\
-    %prog --del [IP|MAC]\n\
-    %prog --list"
+    %prog --add <IP> [-c <MAC>] [-m <monitor>]\n\
+    %prog --del <IP> | <MAC> [-m <monitor>]\n\
+    %prog --list [--monitor <monitor>]
+    %prog --list-monitors"
 
     parser = OptionParser(usage)
     parser.add_option('-a', '--add', action='store', type='string', dest='add',
