@@ -176,9 +176,6 @@ if __name__ == '__main__':
         print(usage_string)
         exit(1)
 
-    # Seed the mac cache
-    host_to_mac = get_arp_hash()
-
     # Process command line parameters
     for i in args:
         # If parameter matches a system with a static configuration, use it!
@@ -194,6 +191,8 @@ if __name__ == '__main__':
                     info("Trying to wake host: [%s]" % i)
                     m = host_to_mac[i]
                 else:
+		    # Seed the mac cache
+		    host_to_mac = get_arp_hash()
                     # cannot autodetect the mac address
                     error("Could not determine the MAC address of [%s]" % i)
                     continue

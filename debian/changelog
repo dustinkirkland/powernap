@@ -1,5 +1,6 @@
 powernap (2.12) unreleased; urgency=low
 
+  [ Andres Rodriguez ]
   * Add Initial PowerNap (powerwaked) Server Capabilities:
     - powerwake/*: Add module and Initial ARPMonitor (LP: #737479).
     - powerwaked.conf: Add config file.
@@ -9,6 +10,10 @@ powernap (2.12) unreleased; urgency=low
     - debian/control: Add powerwaked, powerwake-common, powernap-server
     - debian/{powerwaked,powerwake-common}.install: Add
     - debian/powerwaked.upstart: Add upstart job.
+
+  [ Dustin Kirkland ]
+  * bin/powerwake:
+    - only seed the arp cache if the argument is not already a mac address
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 01 Jul 2011 16:06:51 -0400
 
