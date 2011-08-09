@@ -1,4 +1,4 @@
-powernap (2.12) unreleased; urgency=low
+powernap (2.12-0ubuntu1) oneiric; urgency=low
 
   [ Andres Rodriguez ]
   * Add Initial PowerNap (powerwaked) Server Capabilities:
@@ -15,7 +15,7 @@ powernap (2.12) unreleased; urgency=low
   * bin/powerwake:
     - only seed the arp cache if the argument is not already a mac address
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 01 Jul 2011 16:06:51 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:35 -0400
 
 powernap (2.11-0ubuntu1) oneiric; urgency=low
 
