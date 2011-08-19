@@ -1,4 +1,4 @@
-powernap (2.13) unreleased; urgency=low
+powernap (2.13-0ubuntu1) oneiric; urgency=low
 
   [ Dustin Kirkland ]
   * sbin/powernapd:
@@ -25,7 +25,7 @@ powernap (2.13) unreleased; urgency=low
   * powernap/monitors/InputMonitor.py: LP: #826278
     - test device path existence before opening, fixes nasty crash
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:38 -0400
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 19 Aug 2011 09:57:07 -0700
 
 powernap (2.12-0ubuntu1) oneiric; urgency=low
 
