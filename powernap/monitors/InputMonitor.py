@@ -69,11 +69,12 @@ class InputMonitor ( threading.Thread ):
 
         # If event is different from None, then update!
         if event:
-            fp = open(evpath)
-            events[evpath] = fp
-            # Register the event to poll
-            self._poll.register(fp.fileno(), select.POLLIN|select.POLLPRI)
-            self._inputs = events
+	    if os.path.exists(evpath):
+		fp = open(evpath)
+		events[evpath] = fp
+		# Register the event to poll
+		self._poll.register(fp.fileno(), select.POLLIN|select.POLLPRI)
+		self._inputs = events
 
     # Start the thread
     def start ( self ):
