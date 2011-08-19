@@ -34,10 +34,8 @@ help() {
 
 case $1 in
 	true)
-		# Change governor to powersave
 		disable_crt_dvi disable ;;
 	false)
-                # Change governor to ondemand
 		disable_crt_dvi enable ;;
 	help)
 		help;;

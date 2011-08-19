@@ -8,6 +8,8 @@ powernap (2.13) unreleased; urgency=low
     - drop the nasty sleep 10 hack around gnome-settings-daemon bugginess;
       doesn't seem to be a problem at this point in Oneiric;  If this bug
       shows back up, we need to solve it in a better way
+  * actions/video:
+    - drop incorrect inline docs
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:38 -0400
 
