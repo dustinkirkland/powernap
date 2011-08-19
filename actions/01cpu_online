@@ -32,16 +32,6 @@ help() {
 
 case $1 in
 	true)
-		# If machine is a Desktop, delay the disabling of the CPU's because
-		# this apparently causes gnome-settings-daemon to crash, and the
-                # appearance template  does not get applied properly.
-		# If gnome-settings-daemon or gdm upstart job/init script exist,
-                # assume there's a desktop environment and sleep 10.
-		if [ -e /usr/bin/gnome-settings-daemon ] || \
-                   [ -f /etc/init/gdm.conf ] || [ -f /etc/init.d/gdm ]; then
-			sleep 10
-		fi
-
 		# Disable CPU
 		set_cpu_online 0 ;;
 	false)

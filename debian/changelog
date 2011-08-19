@@ -4,6 +4,10 @@ powernap (2.13) unreleased; urgency=low
   * sbin/powernapd:
     - make sure that powerwake-now works, even if a system has gone into
       powersave mode by other means (erhm, gnome-power-settings, erhm)
+  * actions/01cpu_online:
+    - drop the nasty sleep 10 hack around gnome-settings-daemon bugginess;
+      doesn't seem to be a problem at this point in Oneiric;  If this bug
+      shows back up, we need to solve it in a better way
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:38 -0400
 
