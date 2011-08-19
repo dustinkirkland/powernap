@@ -10,6 +10,10 @@ powernap (2.13) unreleased; urgency=low
       shows back up, we need to solve it in a better way
   * actions/video:
     - drop incorrect inline docs
+  * config:
+    - now that the default is powersave mode, adjust the absent time and
+      grace period; it takes fractions of a second to go in and out of
+      powersave mode
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:38 -0400
 
