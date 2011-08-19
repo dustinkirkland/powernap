@@ -121,7 +121,7 @@ def take_recover_action():
 # Handler for asynchronous external signals
 def take_recover_action_handler(signal, frame):
     global in_powersave_mode
-    if powernap.ACTION_METHOD == 0 and in_powersave_mode:
+    if powernap.ACTION_METHOD == 0:
         take_recover_action()
         in_powersave_mode = False
 

@@ -1,6 +1,9 @@
 powernap (2.13) unreleased; urgency=low
 
-  * UNRELEASED
+  [ Dustin Kirkland ]
+  * sbin/powernapd:
+    - make sure that powerwake-now works, even if a system has gone into
+      powersave mode by other means (erhm, gnome-power-settings, erhm)
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:38 -0400
 
