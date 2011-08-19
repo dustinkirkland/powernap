@@ -19,6 +19,9 @@ powernap (2.13) unreleased; urgency=low
       system
     - set/remove that flag in the 00flag script in the pm-utils suite
     - set/remove/query that same flag in powernapd itself
+  * debian/control: LP: #637635
+    - depend on anacron, to better handle server cronjobs on systems that
+      might have been asleep
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 09 Aug 2011 15:28:38 -0400
 
