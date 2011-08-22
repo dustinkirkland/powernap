@@ -186,16 +186,23 @@ if __name__ == '__main__':
                 m = i
                 pass
             else:
+	        # Retrieve the mac cache
+	        host_to_mac = get_arp_cache()
                 if host_to_mac.has_key(i):
                     # mac found in the hash
                     info("Trying to wake host: [%s]" % i)
                     m = host_to_mac[i]
-                else:
-		    # Seed the mac cache
-		    host_to_mac = get_arp_hash()
-                    # cannot autodetect the mac address
-                    error("Could not determine the MAC address of [%s]" % i)
-                    continue
+		else:
+		    # not in the cache, do the expensive arp search
+	            host_to_mac = get_arp_hash()
+                    if host_to_mac.has_key(i):
+                        # mac found in the hash
+                        info("Trying to wake host: [%s]" % i)
+                        m = host_to_mac[i]
+                    else:
+                        # cannot autodetect the mac address
+                        error("Could not determine the MAC address of [%s]" % i)
+                        continue
             if is_mac(m):
                 wakeonlan(m)
             else:
