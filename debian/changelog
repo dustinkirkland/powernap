@@ -1,9 +1,9 @@
-powernap (2.14) unreleased; urgency=low
+powernap (2.14-0ubuntu1) oneiric; urgency=low
 
   * bin/powerwake:
     - fix the powerake mac caching methodology, which was somewhat broken
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 19 Aug 2011 09:57:09 -0700
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Mon, 22 Aug 2011 00:38:17 -0500
 
 powernap (2.13-0ubuntu1) oneiric; urgency=low
 
