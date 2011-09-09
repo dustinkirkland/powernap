@@ -1,9 +1,9 @@
-powernap (2.15) unreleased; urgency=low
+powernap (2.15-0ubuntu1) oneiric; urgency=low
 
   * actions/eth_speed: Disable by default to not experience connectivity
     loss on certain network configs. (LP: #730210)
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 09 Sep 2011 15:29:31 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Fri, 09 Sep 2011 15:32:30 -0400
 
 powernap (2.14-0ubuntu1) oneiric; urgency=low
 
