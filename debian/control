@@ -74,8 +74,8 @@ Description: remotely wake a napping system - Server Daemon
 
 Package: powerwake-common
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
- python-scapy
+Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0
+Suggests: python-scapy
 Description: common library files required by powerwake
  This package contains the common library files required as a runtime
  dependency of powerwake-server.
