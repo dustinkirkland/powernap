@@ -1,5 +1,5 @@
 # powernap.spec
-%define version 2.4
+%define version 2.15
 %define release 1
 %define _unpackaged_files_terminate_build 0
 
@@ -50,12 +50,12 @@ hostname or ip address, in addition to MAC address.
 # prep section is used to setup the build environment for the software is created and directing
 # RPM through the process of preparing the software for building
 %prep
-%setup powernap-2.4
+%setup
 
 # Create the temporary build directory to build the rpms
 
 %install
-for x in $RPM_BUILD_ROOT $RPM_BUILD_ROOT/usr $RPM_BUILD_ROOT/usr/sbin $RPM_BUILD_ROOT/usr/bin $RPM_BUILD_ROOT/usr/share $RPM_BUILD_ROOT/usr/share/man $RPM_BUILD_ROOT/usr/lib/python2.7 $RPM_BUILD_ROOT/usr/lib/python2.7/dist-packages $RPM_BUILD_ROOT/usr/lib/python2.7/dist-packages/powernap $RPM_BUILD_ROOT/usr/lib/python2.7/dist-packages/powernap/monitors $RPM_BUILD_ROOT/usr/share/man/man1 $RPM_BUILD_ROOT/usr/share/man/man8 $RPM_BUILD_ROOT/usr/share/pyshared $RPM_BUILD_ROOT/usr/share/pyshared/powernap $RPM_BUILD_ROOT/usr/share/pyshared/powernap/monitors $RPM_BUILD_ROO/usr/share/doc/powernap/ $RPM_BUILD_ROOT/etc $RPM_BUILD_ROOT/etc/init $RPM_BUILD_ROOT/etc/init.d $RPM_BUILD_ROOT/etc/logrotate.d $RPM_BUILD_ROOT/etc/bash_completion.d/ $RPM_BUILD_ROOT/etc/powernap $RPM_BUILD_ROOT/etc/pm $RPM_BUILD_ROOT/etc/pm/power.d ; do
+for x in $RPM_BUILD_ROOT $RPM_BUILD_ROOT/usr $RPM_BUILD_ROOT/usr/sbin $RPM_BUILD_ROOT/usr/bin $RPM_BUILD_ROOT/usr/share $RPM_BUILD_ROOT/usr/share/man $RPM_BUILD_ROOT/usr/lib/python2.7 $RPM_BUILD_ROOT/usr/lib/python2.7/dist-packages $RPM_BUILD_ROOT/usr/lib/python2.7/dist-packages/powernap $RPM_BUILD_ROOT/usr/lib/python2.7/dist-packages/powernap/monitors $RPM_BUILD_ROOT/usr/share/man/man1 $RPM_BUILD_ROOT/usr/share/man/man8 $RPM_BUILD_ROOT%python_sitelib $RPM_BUILD_ROOT%python_sitelib/powernap $RPM_BUILD_ROOT%python_sitelib/powernap/monitors $RPM_BUILD_ROO/usr/share/doc/powernap/ $RPM_BUILD_ROOT/etc $RPM_BUILD_ROOT/etc/init $RPM_BUILD_ROOT/etc/init.d $RPM_BUILD_ROOT/etc/logrotate.d $RPM_BUILD_ROOT/etc/bash_completion.d/ $RPM_BUILD_ROOT/etc/powernap $RPM_BUILD_ROOT/etc/pm $RPM_BUILD_ROOT/etc/pm/power.d ; do
 install -d $x
 done
 
@@ -64,61 +64,61 @@ done
 # Installing all super user binaries in /usr/sbin
 pushd $RPM_BUILD_ROOT/usr/sbin
 for x in powernap powernapd powernap-now powernap-action powerwake-now ; do
-install -D /usr/src/redhat/BUILD/powernap-2.4/sbin/$x $RPM_BUILD_ROOT/usr/sbin
+install -D %_topdir/BUILD/powernap-%{version}/sbin/$x $RPM_BUILD_ROOT/usr/sbin
 done
 popd
 
 # Installing all binaries in /usr/bin
 pushd $RPM_BUILD_ROOT/usr/bin
 for x in powernap_calculator powerwake ; do
-install -D /usr/src/redhat/BUILD/powernap-2.4/bin/$x $RPM_BUILD_ROOT/usr/sbin
+install -D %_topdir/BUILD/powernap-%{version}/bin/$x $RPM_BUILD_ROOT/usr/sbin
 done
 popd
 
-install -D /usr/src/redhat/BUILD/powernap-2.4/powerwake_completion $RPM_BUILD_ROOT/etc/bash_completion.d
+install -D %_topdir/BUILD/powernap-%{version}/powerwake_completion $RPM_BUILD_ROOT/etc/bash_completion.d
 
 # Installing configuration files in /etc/powernap
 pushd $RPM_BUILD_ROOT/etc/powernap
 for x in action config ; do
-install -D /usr/src/redhat/BUILD/powernap-2.4/$x $RPM_BUILD_ROOT/etc/powernap
+install -D %_topdir/BUILD/powernap-%{version}/$x $RPM_BUILD_ROOT/etc/powernap
 done
 popd
 
 pushd $RPM_BUILD_ROOT/etc/pm/power.d
 for x in 01cpu_online cpu_frequency eth_speed usb usb_autosuspend video ; do
-install -D /usr/src/redhat/BUILD/powernap-2.4/actions/$x $RPM_BUILD_ROOT/etc/pm/power.d
+install -D %_topdir/BUILD/powernap-%{version}/actions/$x $RPM_BUILD_ROOT/etc/pm/power.d
 done
 popd
 
 # Installing all powernap specific python scripts
-pushd $RPM_BUILD_ROOT/usr/share/pyshared
+pushd $RPM_BUILD_ROOT%python_sitelib
 for x in __init__.py powernap.py ; do
-install -D /usr/src/redhat/BUILD/powernap-2.4/powernap/$x $RPM_BUILD_ROOT/usr/share/pyshared/powernap
+install -D %_topdir/BUILD/powernap-%{version}/powernap/$x $RPM_BUILD_ROOT%python_sitelib/powernap
 done
 popd
 
 # Installing all powernap specific python scripts
-pushd $RPM_BUILD_ROOT/usr/share/pyshared/powernap/monitors
+pushd $RPM_BUILD_ROOT%python_sitelib/powernap/monitors
 for x in ProcessMonitor.py ConsoleMonitor.py IOMonitor.py InputMonitor.py LoadMonitor.py Monitor.py TCPMonitor.py UDPMonitor.py WoLMonitor.py __init__.py ; do
-install -D /usr/src/redhat/BUILD/powernap-2.4/powernap/monitors/$x $RPM_BUILD_ROOT/usr/share/pyshared/powernap/monitors
+install -D %_topdir/BUILD/powernap-%{version}/powernap/monitors/$x $RPM_BUILD_ROOT%python_sitelib/powernap/monitors
 done
 popd
 
 # Installing man pages in man1 directory assuming that the source is present in
-# /usr/src/redhat/BUILD/powernap-2.4 directory
+# %_topdir/BUILD/powernap-%{version} directory
 pushd $RPM_BUILD_ROOT/usr/share/man/man1
 for x in powernap_calculator.1 powerwake.1 ; do
-gzip /usr/src/redhat/BUILD/powernap-2.4/man/$x
-install -D /usr/src/redhat/BUILD/powernap-2.4/man/$x.gz $x.gz
+gzip %_topdir/BUILD/powernap-%{version}/man/$x
+install -D %_topdir/BUILD/powernap-%{version}/man/$x.gz $x.gz
 done
 popd
 
 # Installing man pages in man8 directory assuming that the source is present in
-# /usr/src/redhat/BUILD/powernap-2.4 directory
+# %_topdir/BUILD/powernap-%{version} directory
 pushd $RPM_BUILD_ROOT/usr/share/man/man8
 for x in powernap.8 powernapd.8 powernap-now.8 powerwake-now.8 powernap-action.8 ; do
-gzip /usr/src/redhat/BUILD/powernap-2.4/man/$x
-install -D /usr/src/redhat/BUILD/powernap-2.4/man/$x.gz $x.gz
+gzip %_topdir/BUILD/powernap-%{version}/man/$x
+install -D %_topdir/BUILD/powernap-%{version}/man/$x.gz $x.gz
 done
 popd
 
@@ -139,7 +139,7 @@ popd
 # To clean up any files that are not part of the application's normal build area
 %clean
 #rm -rf $RPM_BUILD_ROOT
-#rm -rf /usr/src/redhat/BUILD/powernap-2.4
+#rm -rf %_topdir/BUILD/powernap-%{version}
 
 # Files section contains list of the files that are part of the rpm
 %files -n powernap
@@ -149,7 +149,7 @@ popd
 /usr/sbin/powernap-now
 /usr/sbin/powernap-action
 /usr/sbin/powerwake-now
-/usr/bin/powernap_calculator
+/usr/sbin/powernap_calculator
 /etc/powernap/action
 /etc/powernap/config
 /usr/share/man/man8/powernapd.8.gz
@@ -167,33 +167,22 @@ popd
 /etc/pm/power.d/usb
 /etc/pm/power.d/usb_autosuspend
 /etc/pm/power.d/video
-/usr/share/pyshared/powernap/__init__.py
-/usr/share/pyshared/powernap/monitors/ProcessMonitor.py
-/usr/share/pyshared/powernap/monitors/ConsoleMonitor.py
-/usr/share/pyshared/powernap/monitors/IOMonitor.py
-/usr/share/pyshared/powernap/monitors/InputMonitor.py
-/usr/share/pyshared/powernap/monitors/LoadMonitor.py
-/usr/share/pyshared/powernap/monitors/Monitor.py
-/usr/share/pyshared/powernap/monitors/TCPMonitor.py
-/usr/share/pyshared/powernap/monitors/UDPMonitor.py
-/usr/share/pyshared/powernap/monitors/WoLMonitor.py
-/usr/share/pyshared/powernap/monitors/__init__.py
-/usr/share/pyshared/powernap/powernap.py
-/usr/lib/python2.7/dist-packages/powernap/__init__.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/ConsoleMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/IOMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/InputMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/LoadMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/Monitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/ProcessMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/TCPMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/UDPMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/monitors/WoLMonitor.py
-/usr/lib/python2.7/dist-packages/powernap/powernap.py
+%python_sitelib/powernap/__init__.py
+%python_sitelib/powernap/monitors/ProcessMonitor.py
+%python_sitelib/powernap/monitors/ConsoleMonitor.py
+%python_sitelib/powernap/monitors/IOMonitor.py
+%python_sitelib/powernap/monitors/InputMonitor.py
+%python_sitelib/powernap/monitors/LoadMonitor.py
+%python_sitelib/powernap/monitors/Monitor.py
+%python_sitelib/powernap/monitors/TCPMonitor.py
+%python_sitelib/powernap/monitors/UDPMonitor.py
+%python_sitelib/powernap/monitors/WoLMonitor.py
+%python_sitelib/powernap/monitors/__init__.py
+%python_sitelib/powernap/powernap.py
 
 # Files to be added in powerwake rpm
 %files -n powerwake
-/usr/bin/powerwake
+/usr/sbin/powerwake
 /usr/share/man/man1/powerwake.1.gz
 /etc/bash_completion.d/powerwake_completion
 
