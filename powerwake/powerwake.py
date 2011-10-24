@@ -105,8 +105,9 @@ class PowerWake:
 
     def get_mac_or_ip_from_arp(self, host):
         mac_or_ip = None
-        for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):                                           
-            (m, h) = i.split()
+        for i in os.popen("/usr/sbin/arp -n"):                                           
+            m = i.split()[2]
+            h = i.split()[0]
             if self.is_mac(host) and host == m and self.is_ip(h):
                 mac_or_ip = h
                 break
@@ -153,13 +154,15 @@ class PowerWake:
     # Source the current, working arp table
     def get_arp_current(self, host_to_mac):
         # Load hostnames
-        for i in os.popen("/usr/sbin/arp | awk '{print $3 \" \"  $1}'"):
-            (m, h) = i.split()
+        for i in os.popen("/usr/sbin/arp"):
+            m = i.split()[2]
+            h = i.split()[0]
             if is_mac(m):
                 host_to_mac[h] = m
         # Load ip addresses
-        for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):
-            (m, h) = i.split()
+        for i in os.popen("/usr/sbin/arp -n"):
+            m = i.split()[2]
+            h = i.split()[0]
             if is_mac(m):
                 host_to_mac[h] = m
         return host_to_mac

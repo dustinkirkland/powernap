@@ -2,12 +2,15 @@ powernap (2.16) unreleased; urgency=low
 
   [ Andres Rodriguez ]
   * debian/control: Move python-scapy Depends to Suggests.
+  * Do not use awk to parse output. (LP: #879591)
+    - bin/powerwake
+    - powerwake/powerwake.py
 
   [ Eric Sandeen ]
   * powernap.spec: cleaned up a bit for better building/installation on RH
     systems
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 12 Sep 2011 11:48:30 -0400
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Oct 2011 15:02:52 -0400
 
 powernap (2.15-0ubuntu1) oneiric; urgency=low
 

@@ -106,13 +106,15 @@ def get_arp_cache():
 # Source the current, working arp table
 def get_arp_current(host_to_mac):
     # Load hostnames
-    for i in os.popen("/usr/sbin/arp | awk '{print $3 \" \"  $1}'"):
-        (m, h) = i.split()
+    for i in os.popen("/usr/sbin/arp"):
+        m = i.split()[2]
+        h = i.split()[0]
         if is_mac(m):
             host_to_mac[h] = m
     # Load ip addresses
-    for i in os.popen("/usr/sbin/arp -n | awk '{print $3 \" \"  $1}'"):
-        (m, h) = i.split()
+    for i in os.popen("/usr/sbin/arp -n"):
+        m = i.split()[2]
+        h = i.split()[0]
         if is_mac(m):
             host_to_mac[h] = m
     return host_to_mac
