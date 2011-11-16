@@ -67,6 +67,13 @@ WARN = y
 #    DEBUG = 2
 DEBUG = 0
 
+# The powernap daemon can watch for changes in the configuration file in
+# /etc/powernap directory without having to restart it.
+# The default value is n.
+#    WATCH_CONFIG = y
+#    WATCH_CONFIG = n
+WATCH_CONFIG = n
+
 ############################################################################
 ####                        STAGE2 ACTION                               ####
 ############################################################################

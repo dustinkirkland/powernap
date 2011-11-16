@@ -180,8 +180,16 @@ def powernapd_loop():
     stage2_grace_seconds = int(powernap.STAGE2_ABSENT_SECONDS/4)
     unflag_powersave()
     users_warned = False
+    watch_config_timestamp = os.stat(powernap.CONFIG).st_mtime
 
     while 1:
+        if powernap.WATCH_CONFIG == True:
+            if watch_config_timestamp != os.stat(powernap.CONFIG).st_mtime:
+                # TODO: This only reloads general settings. Does not restart monitors.
+                # In the future, this should also stop/start monitors when reloading.
+                debug(logging.WARNING, "Reloading configuration file")
+                powernap.load_config_file()
+                watch_config_timestamp = os.stat(powernap.CONFIG).st_mtime
         debug(logging.DEBUG, "Sleeping [%d] seconds" % powernap.INTERVAL_SECONDS)
         time.sleep(powernap.INTERVAL_SECONDS)
         # Examine monitor activity, compute absent time of each monitored monitor process

@@ -38,6 +38,7 @@ class PowerNap:
         self.STAGE2_ACTION_METHOD = 4
         self.MONITORS = []
         self.WARN = False
+        self.WATCH_CONFIG = False
         self.stage2_action_enabled = False
         # Load default config file (/etc/powernap/config)
         self.load_config_file()
@@ -104,6 +105,13 @@ class PowerNap:
         if var == "warn":
             if value == "y" or value == "yes":
                 self.WARN = True
+            else:
+                self.WARN = False
+        if var == "watch_config":
+            if value == "y" or value == "yes":
+                self.WATCH_CONFIG = True
+            else:
+                self.WATCH_CONFIG = False
 
     def set_stage2_values(self, var, value):
         if var == "stage2_action_method":

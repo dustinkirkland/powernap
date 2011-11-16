@@ -10,7 +10,10 @@ powernap (2.16) unreleased; urgency=low
   * powernap.spec: cleaned up a bit for better building/installation on RH
     systems
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 24 Oct 2011 15:02:52 -0400
+  [ Remi Druilhe ]
+  * Dynamically reload configuration file (LP: #887680)
+
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 16 Nov 2011 14:18:10 -0500
 
 powernap (2.15-0ubuntu1) oneiric; urgency=low
 
