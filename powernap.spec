@@ -86,7 +86,7 @@ popd
 
 pushd $RPM_BUILD_ROOT/etc/pm/power.d
 for x in 01cpu_online cpu_frequency eth_speed usb usb_autosuspend video ; do
-install -D %_topdir/BUILD/powernap-%{version}/actions/$x $RPM_BUILD_ROOT/etc/pm/power.d
+install -D %_topdir/BUILD/powernap-%{version}/actions/pm/$x $RPM_BUILD_ROOT/etc/pm/power.d
 done
 popd
 

@@ -74,6 +74,14 @@ DEBUG = 0
 #    WATCH_CONFIG = n
 WATCH_CONFIG = n
 
+# Kernel Modules that are to be disabled when running PowerNap on Powersave
+# mode
+#MODULES = btusb sco tfcomm bnep
+
+# Network Services that are to be disabled when running PowerNap on
+# PowerSave mode
+#SERVICES = postgresql-8.4 apache2 ntp network-manager
+
 ############################################################################
 ####                        STAGE2 ACTION                               ####
 ############################################################################
