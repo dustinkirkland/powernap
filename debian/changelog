@@ -1,8 +1,10 @@
 powernap (2.17) unreleased; urgency=low
 
-  * UNRELEASED
+  [ Bryce Harrington ]
+  * actions/{service,kernel_module}: Add scripts to handle services and
+    kernel modules on powersave mode.
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 29 Nov 2011 14:42:48 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 29 Nov 2011 14:48:03 -0500
 
 powernap (2.16-0ubuntu1) precise; urgency=low
 
