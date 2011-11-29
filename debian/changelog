@@ -1,4 +1,4 @@
-powernap (2.16) unreleased; urgency=low
+powernap (2.16-0ubuntu1) precise; urgency=low
 
   [ Andres Rodriguez ]
   * debian/control: Move python-scapy Depends to Suggests.
@@ -13,7 +13,7 @@ powernap (2.16) unreleased; urgency=low
   [ Remi Druilhe ]
   * Dynamically reload configuration file (LP: #887680)
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 16 Nov 2011 14:18:10 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Tue, 29 Nov 2011 14:42:41 -0500
 
 powernap (2.15-0ubuntu1) oneiric; urgency=low
 
