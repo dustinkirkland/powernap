@@ -50,7 +50,7 @@ case $1 in
 	true)
 		unload_module $2 ;;
 	false)
-		load_module $2 ;;
+		reload_module $2 ;;
 	help)
 		help ;;
 	*)
