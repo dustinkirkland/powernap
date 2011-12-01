@@ -1,2 +1,3 @@
 actions/pm/* etc/pm/power.d
+actions/powernap/* etc/powernap/actions
 powernap usr/share/pyshared

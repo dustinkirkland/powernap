@@ -138,11 +138,23 @@ def take_recover_action():
     debug(logging.WARNING, "Taking recover action [%s]" % powernap.RECOVER_ACTION)
     os.system(powernap.RECOVER_ACTION)
     unflag_powersave()
-    debug(logging.DEBUG, "Reseting counters after taking recover action")
     for monitor in MONITORS:
         monitor._absent_seconds = 0
     if os.path.exists("/var/run/powernap.state"):
 	os.unlink("/var/run/powernap.state")
+    # Re-enable SERVICES/MODULES when waking from PowerSave
+    # TODO: This should probably go into their own executable.
+    if powernap.KERN_MODULES:
+        debug(logging.WARNING, "Re-enabling Kernel Modules")
+        for module in powernap.KERN_MODULES:
+            debug(logging.WARNING, "  Module [%s]" % module)
+            os.system("/etc/powernap/actions/kernel_module false %s" % module)
+    if powernap.SERVICES:
+        debug(logging.WARNING, "Re-enabling Services")
+        for service in powernap.SERVICES:
+            debug(logging.WARNING, "  Service [%s]" % service)
+            os.system("/etc/poewrnap/actions/services false %s" % service)
+    debug(logging.DEBUG, "Reseting counters after taking recover action")
 
 # Handler for asynchronous external signals
 def take_recover_action_handler(signal, frame):
@@ -156,6 +168,19 @@ def take_action():
     for monitor in MONITORS:
         monitor._absent_seconds = 0
     os.system("%s %s" % (powernap.ACTION, powernap.ACTION_METHOD))
+    # Disable MODULES/SERVICES when on PowerSave if defined.
+    # TODO: This should probably go into their own executable.
+    if powernap.ACTION_METHOD == 0:
+        if powernap.KERN_MODULES:
+            debug(logging.WARNING, "Disabling Kernel Modules")
+            for module in powernap.KERN_MODULES:
+                debug(logging.WARNING, "  Kernel Module [%s]" % module)
+                os.system("/etc/powernap/actions/kernel_module true %s" % module)
+        if powernap.SERVICES:
+            debug(logging.WARNING, "Disabling Services")
+            for service in powernap.SERVICES:
+                debug(logging.WARNING, "  Service [%s]" % module)
+                os.system("/etc/powernap/actions/kernel_module true %s" % service)
 
 # Handler for asynchronous external signals
 def take_action_handler(signal, frame):

@@ -39,8 +39,8 @@ class PowerNap:
         self.MONITORS = []
         self.WARN = False
         self.WATCH_CONFIG = False
-        self.MODULES = None
-        self.SERVICES = None
+        self.KERN_MODULES = {}
+        self.SERVICES = {}
         self.stage2_action_enabled = False
         # Load default config file (/etc/powernap/config)
         self.load_config_file()
@@ -114,10 +114,10 @@ class PowerNap:
                 self.WATCH_CONFIG = True
             else:
                 self.WATCH_CONFIG = False
-        if var == "modules":
-            self.MODULES = value
+        if var == "kern_modules":
+            self.KERN_MODULES = value.split()
         if var == "services":
-            self.SERVICES = value
+            self.SERVICES = value.split()
 
     def set_stage2_values(self, var, value):
         if var == "stage2_action_method":

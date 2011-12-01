@@ -76,7 +76,7 @@ WATCH_CONFIG = n
 
 # Kernel Modules that are to be disabled when running PowerNap on Powersave
 # mode
-#MODULES = btusb sco tfcomm bnep
+#KERN_MODULES = btusb sco tfcomm bnep
 
 # Network Services that are to be disabled when running PowerNap on
 # PowerSave mode
