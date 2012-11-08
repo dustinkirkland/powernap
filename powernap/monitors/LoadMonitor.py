@@ -33,7 +33,7 @@ class LoadMonitor():
         t = self._threshold
         if t == "n":
             t = multiprocessing.cpu_count()
-        if os.getloadavg()[0] > t:
+        if os.getloadavg()[0] > float(t):
 	    return True
 	return False
 

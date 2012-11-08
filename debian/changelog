@@ -1,8 +1,10 @@
-powernap (2.18) unreleased; urgency=low
+powernap (3.0) unreleased; urgency=low
 
-  * UNRELEASED
+  [ Frank Steinberg ]
+  * LoadMonitor: handle float values correctly (LP: #1070696)
+  * TCPMonitor: handle IPv6 connections correctly (LP: #1070695)
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Thu, 01 Dec 2011 12:43:57 -0500
+ -- Andres Rodriguez <andreserl@ubuntu.com>  Mon, 04 Jun 2012 12:59:15 -0400
 
 powernap (2.17-0ubuntu1) precise; urgency=low
 

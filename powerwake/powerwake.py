@@ -105,7 +105,7 @@ class PowerWake:
 
     def get_mac_or_ip_from_arp(self, host):
         mac_or_ip = None
-        for i in os.popen("/usr/sbin/arp -n"):                                           
+        for i in os.popen("/usr/sbin/arp -n"):
             m = i.split()[2]
             h = i.split()[0]
             if self.is_mac(host) and host == m and self.is_ip(h):

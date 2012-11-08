@@ -38,11 +38,11 @@ class TCPMonitor():
         port_start = int(config['port'].split("-")[0].strip())
         port_end = int(config['port'].split("-")[-1].strip()) + 1 # Add one to use correctly in range
         for port in range(port_start, port_end):
-            self._regexes.append(re.compile("^tcp\W.*:%s\W.*ESTABLISHED$" % port))
+            self._regexes.append(re.compile("^tcp.*\W.*:%s\W.*ESTABLISHED$" % port))
 
     # Check for connections
     def active(self):
-        ps = commands.getoutput("netstat -nt").splitlines()
+        ps = commands.getoutput("netstat -Wnt").splitlines()
         if find_connection(ps, self._regexes):
 		return True
 	return False
