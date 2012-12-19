@@ -8,6 +8,14 @@ start on runlevel [2345]
 expect daemon
 
 pre-start script
+	if [ -f /etc/default/powernap ]; then
+		. /etc/default/powernap
+        fi
+	if [ "$START" != "yes" ]; then
+		stop
+		exit 0
+	fi
+
 	if [ -x /etc/powernap/ethtool-command ]; then
 		# Allow for admin-customized ethtool commands here
 		/etc/powernap/ethtool-command
