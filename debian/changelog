@@ -1,6 +1,7 @@
 powernap (2.19) unreleased; urgency=low
 
-  * UNRELEASED
+  [Benjamin Kerensa]
+  * Fix Typo in Package Description
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 19 Dec 2012 11:11:05 -0500
 

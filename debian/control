@@ -62,7 +62,7 @@ Depends: ${misc:Depends}, ${python:Depends}, debconf (>= 0.5) | debconf-2.0,
 Enhances: powerwake
 Description: remotely wake a napping system - Server Daemon
  PowerWake Server is a mechanism to remotely monitor and wake up systems
- based on manual intervation, or automatic intervention based on a set of
+ based on manual intervention, or automatic intervention based on a set of
  monitors.
  .
  PowerWake Server can monitor:
