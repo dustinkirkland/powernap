@@ -7,6 +7,21 @@ if [ -n "$2" ] && dpkg --compare-versions "$2" lt 2.0; then
 	cat /usr/share/powernap/config > /etc/powernap/config
 fi
 
+# can be removed after 16.04 LTS
+DEFAULT_FILE=/etc/default/powernap
+if [ -f ${DEFAULT_FILE}.enable ]; then
+    deb-systemd-helper enable powernap.service >/dev/null || true
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload || true
+        deb-systemd-invoke start powernap.service >/dev/null || true
+    fi
+    rm -f /etc/init/powernap.override
+    rm -f ${DEFAULT_FILE}.enable
+else
+    # as we don't have any daemon-reload run done (due to --no-enable --no-start), do it now
+    [ -d /run/systemd/system ] && systemctl daemon-reload || true
+fi
+
 #DEBHELPER#
 
 exit 0

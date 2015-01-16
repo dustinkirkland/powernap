@@ -16,6 +16,17 @@ if [ -n "$2" ] && dpkg --compare-versions "$2" lt 2.0; then
 	fi
 fi
 
+# can be removed after 16.04 LTS
+DEFAULT_FILE=/etc/default/powernap
+if [ "$1" = upgrade ]; then
+
+    if [ -f $DEFAULT_FILE ] && egrep -sqi 'START="?yes' $DEFAULT_FILE; then
+        # once the override file is installed, we'll remove it to reenable the upstart job
+        touch ${DEFAULT_FILE}.enable
+    fi
+
+fi
+
 #DEBHELPER#
 
 exit 0

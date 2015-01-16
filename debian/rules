@@ -8,5 +8,17 @@ get-orig-source:
 	bzr export ../${PKG}_${VER}.orig.tar.gz
 
 %:
-	dh $@ --with python2
+	dh $@ --with python2,systemd
 
+# don't enable or starts the service by default
+# ideally, we would have try-restart once we get only a systemd
+# service (but not possible as there is only an upstart+systemd job
+# for now)
+override_dh_installinit:
+	dh_installinit --no-start
+override_dh_systemd_enable:
+	dh_systemd_enable -p powernap --no-enable
+	dh_systemd_enable -p powerwaked
+override_dh_systemd_start:
+	dh_systemd_start -p powernap --no-start
+	dh_systemd_start -p powerwaked

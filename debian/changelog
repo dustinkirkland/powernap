@@ -1,9 +1,18 @@
-powernap (2.19) unreleased; urgency=low
+powernap (2.19) UNRELEASED; urgency=low
 
-  [Benjamin Kerensa]
+  [ Didier Roche ]
+  * Add systemd support. Keep the previously enabled status.
+  * Ship an override file instead of /etc/default/powernap to disable
+    by default the service under upstart and don't rely on the default
+    START state in conffile. Handle the transition to keep the same state
+    under systemd.
+  * Remove now uneeded /etc/default/powernap
+  * Factorize some prestart code in new /usr/share/powernap/powernap-ethtool
+
+  [ Benjamin Kerensa ]
   * Fix Typo in Package Description
 
- -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 19 Dec 2012 11:11:05 -0500
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 16 Jan 2015 15:52:16 +0100
 
 powernap (2.18-0ubuntu2) trusty; urgency=medium
 
