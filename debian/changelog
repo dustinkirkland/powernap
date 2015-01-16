@@ -5,6 +5,12 @@ powernap (2.19) unreleased; urgency=low
 
  -- Andres Rodriguez <andreserl@ubuntu.com>  Wed, 19 Dec 2012 11:11:05 -0500
 
+powernap (2.18-0ubuntu2) trusty; urgency=medium
+
+  * Rebuild to drop files installed into /usr/share/pyshared.
+
+ -- Matthias Klose <doko@ubuntu.com>  Sun, 23 Feb 2014 13:50:01 +0000
+
 powernap (2.18-0ubuntu1) raring; urgency=low
 
   [ Frank Steinberg ]
