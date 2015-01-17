@@ -1,4 +1,4 @@
-powernap (2.19) vivid; urgency=low
+powernap (2.19) UNRELEASED; urgency=low
 
   [ Didier Roche ]
   * Add systemd support. Keep the previously enabled status.
