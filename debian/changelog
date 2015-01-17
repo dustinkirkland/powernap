@@ -1,8 +1,8 @@
-powernap (2.20) unreleased; urgency=medium
+powernap (2.20-0ubuntu1) vivid; urgency=medium
 
   * Rebuild for Ubuntu release
 
- -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 16 Jan 2015 20:33:48 -0600
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 16 Jan 2015 20:35:52 -0600
 
 powernap (2.19-0ubuntu1) vivid; urgency=low
 
