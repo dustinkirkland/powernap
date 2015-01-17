@@ -1,4 +1,4 @@
-powernap (2.19) UNRELEASED; urgency=low
+powernap (2.19-0ubuntu1) vivid; urgency=low
 
   [ Didier Roche ]
   * Add systemd support. Keep the previously enabled status.
@@ -12,7 +12,7 @@ powernap (2.19) UNRELEASED; urgency=low
   [ Benjamin Kerensa ]
   * Fix Typo in Package Description
 
- -- Didier Roche <didrocks@ubuntu.com>  Fri, 16 Jan 2015 16:43:37 +0100
+ -- Dustin Kirkland <kirkland@ubuntu.com>  Fri, 16 Jan 2015 20:33:45 -0600
 
 powernap (2.18-0ubuntu2) trusty; urgency=medium
 
